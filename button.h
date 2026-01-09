@@ -11,6 +11,7 @@
 /*--- Declaración de funciones visibles del módulo button.c/button.h ---*/
 
 void Eint4567_init(void);
+int Sudoku_Partida_Terminada(void);
 
 
 

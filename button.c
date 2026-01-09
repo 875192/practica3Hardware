@@ -26,6 +26,7 @@ static volatile uint8_t columna = 0;
 static volatile uint8_t valor = 0;
 static volatile uint8_t valor_previo = 0;  /* Para detectar modificación de valor */
 static volatile uint8_t pantalla_mostrada = 0;  /* Flag para mostrar pantalla inicial solo una vez */
+static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la partida */
 
 /* Declaración externa de la cuadrícula del juego */
 extern CELDA (*cuadricula)[NUM_COLUMNAS];
@@ -51,29 +52,40 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                         
                         /* Pasar a introducir fila */
                         estado_juego = INTRODUCIR_FILA;
-                        int_count = 0;
-                        D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array Symbol) */
+                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+                        D8Led_symbol(15);  /* Mostrar 'F' de Fila */
                         pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
                         break;
                 
                 case INTRODUCIR_FILA:
                         if (boton_id == EVENTO_BOTON_DERECHO)
                         {
-                                /* Incrementar fila */
+                                /* Incrementar fila (ciclo: 0 → 1 → 2 → ... → 9 → 0) */
                                 int_count++;
                                 if (int_count > 9)
                                 {
-                                        int_count = 1;
+                                        int_count = 0;  /* Volver a 0 */
                                 }
                                 D8Led_symbol(int_count & 0x000f);
                         }
                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
                         {
-                                /* Confirmar fila y pasar a introducir columna */
-                                fila = int_count - 1;  /* Convertir a índice 0-8 */
-                                estado_juego = INTRODUCIR_COLUMNA;
-                                int_count = 0;
-                                D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en el array Symbol) */
+                                /* Verificar si se eligió fila 0 (terminar partida) */
+                                if (int_count == 0)
+                                {
+                                        /* Fila 0: terminar la partida */
+                                        estado_juego = PARTIDA_TERMINADA;
+                                        tiempo_final = timer2_count();
+                                        /* La pantalla final se mostrará en este estado */
+                                }
+                                else
+                                {
+                                        /* Confirmar fila y pasar a introducir columna */
+                                        fila = int_count - 1;  /* Convertir a índice 0-8 */
+                                        estado_juego = INTRODUCIR_COLUMNA;
+                                        int_count = 0;
+                                        D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en el array Symbol) */
+                                }
                         }
                         break;
                 
@@ -155,7 +167,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 
                                 /* Volver a introducir fila */
                                 estado_juego = INTRODUCIR_FILA;
-                                int_count = 0;
+                                int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila */
                                 break;
                         }
@@ -185,7 +197,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                         
                                         /* Volver a introducir fila */
                                         estado_juego = INTRODUCIR_FILA;
-                                        int_count = 0;
+                                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
                                 }
                                 else
@@ -200,10 +212,22 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                         
                                         /* Volver a introducir fila */
                                         estado_juego = INTRODUCIR_FILA;
-                                        int_count = 0;
+                                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
                                 }
                         }
+                        break;
+                
+                case PARTIDA_TERMINADA:
+                        /* Mostrar pantalla de despedida solo una vez */
+                        if (!pantalla_mostrada)
+                        {
+                                /* Usar la función existente de lcd.c */
+                                Sudoku_Pantalla_Final(tiempo_final);
+                                
+                                pantalla_mostrada = 1;
+                        }
+                        /* No hacer nada más - el juego permanece terminado */
                         break;
         }
 }
@@ -240,7 +264,11 @@ void Eint4567_ISR(void)
         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
 }
-
+/* Función para consultar si la partida está terminada */
+int Sudoku_Partida_Terminada(void)
+{
+	return (estado_juego == PARTIDA_TERMINADA);
+}
 void Eint4567_init(void)
 {
         /* Inicializar el temporizador dedicado a la eliminación de rebotes */

@@ -150,6 +150,7 @@ void Sudoku_Dibujar_Numero_En_Celda(INT16U fila, INT16U col, INT8U numero, INT8U
 void Sudoku_Dibujar_Candidatos_En_Celda(INT16U fila, INT16U col, INT16U candidatos);
 void Sudoku_Actualizar_Tablero_Completo(void* cuadricula);
 void Sudoku_Actualizar_Tiempo(INT32U tiempo_us);
+void Sudoku_Pantalla_Final(INT32U tiempo_us);
 
 #ifdef __cplusplus
 }

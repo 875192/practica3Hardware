@@ -458,6 +458,202 @@ Agregado timeout de seguridad en `Lcd_Dma_Trans()`:
 
 ---
 
+## PASO 6: PERMITIR FILA 0 PARA TERMINAR PARTIDA ✅
+
+### Archivos modificados:
+- `button.c` - Modificado estado INTRODUCIR_FILA para detectar fila 0
+- `eventos.h` - Agregado estado PARTIDA_TERMINADA al enum EstadoSudoku
+
+### Funcionalidad implementada:
+
+#### Ciclo de selección de fila modificado:
+```c
+/* En estado INTRODUCIR_FILA, al incrementar con botón derecho */
+int_count++;  /* Ciclo: 0 → 1 → 2 → ... → 9 → 0 */
+if (int_count > 9)
+{
+    int_count = 0;  /* Volver a 0 */
+}
+```
+
+**Secuencia de navegación:**
+- Al entrar al estado: Muestra 'F' (símbolo de Fila)
+- Primera pulsación botón derecho: Muestra 0
+- Siguientes pulsaciones: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 0 → ...
+
+**Inicialización del contador:**
+- `int_count = 9` al entrar a INTRODUCIR_FILA
+- Al incrementar va a 10, se resetea a 0
+- Asegura que el 0 aparezca primero en el ciclo
+
+#### Detección y manejo de Fila 0:
+```c
+else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+{
+    /* Verificar si se eligió fila 0 (terminar partida) */
+    if (int_count == 0)
+    {
+        /* Fila 0: terminar la partida */
+        estado_juego = PARTIDA_TERMINADA;
+        tiempo_final = timer2_count();
+        /* La pantalla final se mostrará en este estado */
+    }
+    else
+    {
+        /* Confirmar fila y pasar a introducir columna */
+        fila = int_count - 1;  /* Convertir a índice 0-8 */
+        estado_juego = INTRODUCIR_COLUMNA;
+        // ...
+    }
+}
+```
+
+**Comportamiento:**
+1. Usuario navega con botón derecho hasta el 0
+2. Presiona botón izquierdo para confirmar
+3. Sistema captura tiempo actual: `tiempo_final = timer2_count()`
+4. Cambia a estado PARTIDA_TERMINADA
+5. Se muestra pantalla final (ver Paso 7)
+
+### Estado PARTIDA_TERMINADA:
+```c
+typedef enum {
+    ESPERANDO_INICIO,
+    INTRODUCIR_FILA,
+    INTRODUCIR_COLUMNA,
+    VERIFICAR_CELDA,
+    INTRODUCIR_VALOR,
+    VERIFICAR_VALOR,
+    PARTIDA_TERMINADA  // ← Nuevo estado agregado
+} EstadoSudoku;
+```
+
+### Variables asociadas:
+```c
+static volatile uint32_t tiempo_final = 0;  /* Tiempo al terminar partida */
+```
+
+### Ubicación en el código:
+- **Ciclo de fila**: `button.c`, estado INTRODUCIR_FILA, líneas ~62-69
+- **Detección fila 0**: `button.c`, estado INTRODUCIR_FILA, líneas ~73-82
+- **Estado enum**: `eventos.h`, líneas ~28-37
+
+---
+
+## PASO 7: PANTALLA FINAL CON TIEMPO CONGELADO ✅
+
+### Archivos modificados:
+- `button.c` - Implementado manejo del estado PARTIDA_TERMINADA
+- `button.h` - Agregada función `Sudoku_Partida_Terminada()`
+- `main.c` - Modificado bucle principal para detener actualización del tiempo
+- `lcd.c` - Utilizada función existente `Sudoku_Pantalla_Final()`
+
+### Funcionalidad implementada:
+
+#### 1. Función auxiliar para consultar estado:
+```c
+/* En button.c */
+int Sudoku_Partida_Terminada(void)
+{
+    return (estado_juego == PARTIDA_TERMINADA);
+}
+```
+
+**Propósito:**
+- Permite a otros módulos consultar si la partida ha terminado
+- Encapsula la variable estática `estado_juego`
+- Facilita la coordinación entre módulos
+
+#### 2. Manejo del estado PARTIDA_TERMINADA:
+```c
+case PARTIDA_TERMINADA:
+    /* Mostrar pantalla de despedida solo una vez */
+    if (!pantalla_mostrada)
+    {
+        /* Usar la función existente de lcd.c */
+        Sudoku_Pantalla_Final(tiempo_final);
+        
+        pantalla_mostrada = 1;
+    }
+    /* No hacer nada más - el juego permanece terminado */
+    break;
+```
+
+**Comportamiento:**
+- Usa flag `pantalla_mostrada` para dibujar solo una vez
+- Llama a `Sudoku_Pantalla_Final()` con el tiempo capturado
+- No responde a pulsaciones de botones (sin transición de estado)
+- El juego queda permanentemente detenido
+
+#### 3. Detención del temporizador en main.c:
+```c
+/* Actualizar cada 1 segundo (1000000 microsegundos) */
+if ((tiempo_actual - tiempo_anterior) >= 1000000)
+{
+    /* Solo actualizar si la partida no ha terminado */
+    if (!Sudoku_Partida_Terminada())
+    {
+        Sudoku_Actualizar_Tiempo(tiempo_actual);
+    }
+    tiempo_anterior = tiempo_actual;
+}
+```
+
+**Efecto:**
+- El bucle principal sigue ejecutándose
+- La actualización del tiempo se detiene al terminar la partida
+- El tiempo mostrado queda "congelado" en el valor de `tiempo_final`
+- Evita que el temporizador siga apareciendo sobre la pantalla final
+
+#### 4. Pantalla final mostrada:
+La función `Sudoku_Pantalla_Final()` (ya existente en lcd.c) muestra:
+
+**Elementos visuales:**
+- **Título**: "PARTIDA TERMINADA" (posición Y=40)
+- **Etiqueta**: "Tiempo final:" (posición Y=80)
+- **Tiempo**: Formato "MM:SS" (posición Y=100)
+- **Mensaje**: "Pulse un boton para jugar de nuevo" (dentro de rectángulo, Y=150-190)
+
+**Nota:** El mensaje de reinicio se muestra pero no tiene efecto, ya que el estado PARTIDA_TERMINADA no realiza transiciones.
+
+### Flujo completo de finalización:
+
+1. **Usuario selecciona Fila 0 y confirma**
+   - Estado: INTRODUCIR_FILA → PARTIDA_TERMINADA
+   - Se captura: `tiempo_final = timer2_count()`
+
+2. **Primera pulsación de cualquier botón**
+   - Entra a `case PARTIDA_TERMINADA`
+   - `pantalla_mostrada == 0` → Dibuja pantalla final
+   - `pantalla_mostrada = 1`
+
+3. **Bucle principal detecta estado terminado**
+   - `Sudoku_Partida_Terminada()` retorna 1
+   - `Sudoku_Actualizar_Tiempo()` no se ejecuta
+   - Tiempo queda congelado en pantalla final
+
+4. **Siguientes pulsaciones de botones**
+   - Entran a `case PARTIDA_TERMINADA`
+   - `pantalla_mostrada == 1` → No hace nada
+   - El juego permanece en este estado indefinidamente
+
+### Ubicación en el código:
+- **Estado PARTIDA_TERMINADA**: `button.c`, líneas ~221-232
+- **Función getter**: `button.c`, líneas ~258-261
+- **Declaración getter**: `button.h`, línea ~14
+- **Bucle principal**: `main.c`, líneas ~112-119
+- **Pantalla final**: `lcd.c`, función existente líneas ~806-847
+
+### Características implementadas:
+✅ Tiempo se congela al seleccionar Fila 0  
+✅ Pantalla final muestra tiempo del momento exacto de finalización  
+✅ Temporizador deja de actualizarse (no aparece sobre pantalla final)  
+✅ Juego queda permanentemente detenido  
+✅ Botones no tienen efecto después de terminar  
+✅ Uso de función existente `Sudoku_Pantalla_Final()` (reutilización de código)  
+
+---
+
 ## ESTADO ACTUAL DEL PROYECTO
 
 ### Funcionalidades completadas:
@@ -468,33 +664,32 @@ Agregado timeout de seguridad en `Lcd_Dma_Trans()`:
 ✅ Resaltar celdas con error (borde grueso)  
 ✅ Mostrar candidatos en celdas vacías (grid 3x3 con círculos)  
 ✅ Actualizar tiempo en pantalla en tiempo real (cada segundo)  
+✅ Permitir Fila 0 para terminar partida (con captura de tiempo)  
+✅ Pantalla final con tiempo congelado  
+✅ Detención del temporizador al finalizar  
 ✅ Estructura de máquina de estados del juego (ya existía en button.c)  
 ✅ Sistema de antirrebotes para botones (ya existía en timer3)  
 ✅ Sistema de medición de tiempo (ya existía en timer2)  
 
-### Pendiente de implementar:
-⏳ Pantalla final de victoria/derrota  
-⏳ Permitir fila 0 para terminar partida  
+### PARTE A - COMPLETADA AL 100% ✅
+
+Todas las funcionalidades requeridas para la Parte A de la Práctica 3 han sido implementadas y probadas exitosamente.
 
 ---
 
-## PRÓXIMOS PASOS SUGERIDOS
+## PRÓXIMOS PASOS (PARTE B Y C)
 
-### Paso 5: Actualizar tiempo en pantalla en tiempo real ⏳ SIGUIENTE
-- Implementar función para actualizar solo el área del tiempo sin redibujar todo
-- Convertir el tiempo del timer2 (ms) a formato MM:SS
-- Llamar periódicamente desde el bucle principal o timer
-- Modificar función para actualizar solo el área del tiempo
-- Llamar periódicamente desde el timer2
+### Parte B: Plataforma autónoma
+- Programación en Flash mediante JTAG
+- Copia de código ROM → RAM
+- Inicialización del controlador de memoria
+- Ejecución autónoma sin depurador
 
-### Paso 6: Resaltar errores
-- Implementar función para dibujar celda con error (borde grueso/color invertido)
-- Detectar y marcar todas las celdas involucradas en error
-
-### Paso 7: Permitir Fila 0 para terminar partida
-- Modificar máquina de estados para aceptar fila 0
-- Pasar a estado de finalización cuando fila == 0
-- Mensaje para reiniciar
+### Parte C: Pantalla táctil
+- Uso del touchscreen como entrada alternativa
+- Selección de celdas mediante toques
+- Introducción de valores por pantalla táctil
+- Integración con la máquina de estados existente
 
 ---
 

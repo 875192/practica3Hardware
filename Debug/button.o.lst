@@ -321,10 +321,13 @@
  3226 0005 00       		.space	1
  3227              	pantalla_mostrada:
  3228 0006 00       		.space	1
- 3229              		.text
- 3230              		.align	2
- 3232              	boton_confirmado:
- 3233              	.LFB7:
+ 3229 0007 00       		.align	2
+ 3230              	tiempo_final:
+ 3231 0008 00000000 		.space	4
+ 3232              		.text
+ 3233              		.align	2
+ 3235              	boton_confirmado:
+ 3236              	.LFB7:
    1:../button.c   **** /*********************************************************************************************
    2:../button.c   **** * Fichero:      button.c
    3:../button.c   **** * Autor:
@@ -353,1033 +356,1148 @@
   26:../button.c   **** static volatile uint8_t valor = 0;
   27:../button.c   **** static volatile uint8_t valor_previo = 0;  /* Para detectar modificación de valor */
   28:../button.c   **** static volatile uint8_t pantalla_mostrada = 0;  /* Flag para mostrar pantalla inicial solo una vez 
-  29:../button.c   **** 
-  30:../button.c   **** /* Declaración externa de la cuadrícula del juego */
-  31:../button.c   **** extern CELDA (*cuadricula)[NUM_COLUMNAS];
-  32:../button.c   **** extern int celdas_vacias;
-  33:../button.c   **** 
-  34:../button.c   **** /* Callback para recibir la confirmación de pulsaciones filtradas por el timer3 */
-  35:../button.c   **** static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR Y PROPAGAR SEGUN L
-  36:../button.c   **** {
- 3234              		.loc 1 36 0
- 3235              		.cfi_startproc
- 3236              		@ Function supports interworking.
- 3237              		@ args = 0, pretend = 0, frame = 8
- 3238              		@ frame_needed = 1, uses_anonymous_args = 0
- 3239 01b4 0DC0A0E1 		mov	ip, sp
- 3240              	.LCFI12:
- 3241              		.cfi_def_cfa_register 12
- 3242 01b8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
- 3243 01bc 04B04CE2 		sub	fp, ip, #4
- 3244              		.cfi_offset 14, -8
- 3245              		.cfi_offset 13, -12
- 3246              		.cfi_offset 11, -16
- 3247              	.LCFI13:
- 3248              		.cfi_def_cfa 11, 4
- 3249 01c0 08D04DE2 		sub	sp, sp, #8
- 3250 01c4 0030A0E1 		mov	r3, r0
- 3251 01c8 0D304BE5 		strb	r3, [fp, #-13]
-  37:../button.c   ****         cola_depuracion(timer2_count(), boton_id, estado_juego);
- 3252              		.loc 1 37 0
- 3253 01cc FEFFFFEB 		bl	timer2_count
- 3254 01d0 0010A0E1 		mov	r1, r0
- 3255 01d4 7C369FE5 		ldr	r3, .L35
- 3256 01d8 0030D3E5 		ldrb	r3, [r3, #0]
- 3257 01dc FF3003E2 		and	r3, r3, #255
- 3258 01e0 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
- 3259 01e4 0100A0E1 		mov	r0, r1
- 3260 01e8 0210A0E1 		mov	r1, r2
- 3261 01ec 0320A0E1 		mov	r2, r3
- 3262 01f0 FEFFFFEB 		bl	cola_depuracion
-  38:../button.c   ****         
-  39:../button.c   ****         switch (estado_juego)
- 3263              		.loc 1 39 0
- 3264 01f4 5C369FE5 		ldr	r3, .L35
- 3265 01f8 0030D3E5 		ldrb	r3, [r3, #0]
- 3266 01fc FF3003E2 		and	r3, r3, #255
- 3267 0200 050053E3 		cmp	r3, #5
- 3268 0204 03F19F97 		ldrls	pc, [pc, r3, asl #2]
- 3269 0208 8F0100EA 		b	.L7
- 3270              	.L15:
- 3271 020c 24020000 		.word	.L9
- 3272 0210 84020000 		.word	.L10
- 3273 0214 34030000 		.word	.L11
- 3274 0218 F4030000 		.word	.L12
- 3275 021c 7C040000 		.word	.L13
- 3276 0220 1C050000 		.word	.L14
- 3277              	.L9:
-  40:../button.c   ****         {
-  41:../button.c   ****                 case ESPERANDO_INICIO:
-  42:../button.c   ****                         /* Cualquier botón inicia el juego */
-  43:../button.c   ****                         /* Calcular candidatos por primera vez */
-  44:../button.c   ****                         celdas_vacias = candidatos_actualizar_all(cuadricula);
- 3278              		.loc 1 44 0
- 3279 0224 30369FE5 		ldr	r3, .L35+4
- 3280 0228 003093E5 		ldr	r3, [r3, #0]
- 3281 022c 0300A0E1 		mov	r0, r3
- 3282 0230 FEFFFFEB 		bl	candidatos_actualizar_all
- 3283 0234 0020A0E1 		mov	r2, r0
- 3284 0238 20369FE5 		ldr	r3, .L35+8
- 3285 023c 002083E5 		str	r2, [r3, #0]
-  45:../button.c   ****                         
-  46:../button.c   ****                         /* Dibujar el tablero del juego */
-  47:../button.c   ****                         Sudoku_Dibujar_Tablero();
- 3286              		.loc 1 47 0
- 3287 0240 FEFFFFEB 		bl	Sudoku_Dibujar_Tablero
-  48:../button.c   ****                         
-  49:../button.c   ****                         /* Actualizar con los valores de la cuadrícula */
-  50:../button.c   ****                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
- 3288              		.loc 1 50 0
- 3289 0244 10369FE5 		ldr	r3, .L35+4
- 3290 0248 003093E5 		ldr	r3, [r3, #0]
- 3291 024c 0300A0E1 		mov	r0, r3
- 3292 0250 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
-  51:../button.c   ****                         
-  52:../button.c   ****                         /* Pasar a introducir fila */
-  53:../button.c   ****                         estado_juego = INTRODUCIR_FILA;
- 3293              		.loc 1 53 0
- 3294 0254 FC359FE5 		ldr	r3, .L35
- 3295 0258 0120A0E3 		mov	r2, #1
- 3296 025c 0020C3E5 		strb	r2, [r3, #0]
-  54:../button.c   ****                         int_count = 0;
- 3297              		.loc 1 54 0
- 3298 0260 FC359FE5 		ldr	r3, .L35+12
- 3299 0264 0020A0E3 		mov	r2, #0
- 3300 0268 0020C3E5 		strb	r2, [r3, #0]
-  55:../button.c   ****                         D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array Symbol) *
- 3301              		.loc 1 55 0
- 3302 026c 0F00A0E3 		mov	r0, #15
- 3303 0270 FEFFFFEB 		bl	D8Led_symbol
-  56:../button.c   ****                         pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
- 3304              		.loc 1 56 0
- 3305 0274 EC359FE5 		ldr	r3, .L35+16
- 3306 0278 0020A0E3 		mov	r2, #0
- 3307 027c 0020C3E5 		strb	r2, [r3, #0]
-  57:../button.c   ****                         break;
- 3308              		.loc 1 57 0
- 3309 0280 710100EA 		b	.L7
- 3310              	.L10:
-  58:../button.c   ****                 
-  59:../button.c   ****                 case INTRODUCIR_FILA:
-  60:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
- 3311              		.loc 1 60 0
- 3312 0284 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3313 0288 080053E3 		cmp	r3, #8
- 3314 028c 1500001A 		bne	.L16
-  61:../button.c   ****                         {
-  62:../button.c   ****                                 /* Incrementar fila */
-  63:../button.c   ****                                 int_count++;
- 3315              		.loc 1 63 0
- 3316 0290 CC359FE5 		ldr	r3, .L35+12
- 3317 0294 0030D3E5 		ldrb	r3, [r3, #0]
- 3318 0298 FF3003E2 		and	r3, r3, #255
- 3319 029c 013083E2 		add	r3, r3, #1
- 3320 02a0 FF2003E2 		and	r2, r3, #255
- 3321 02a4 B8359FE5 		ldr	r3, .L35+12
- 3322 02a8 0020C3E5 		strb	r2, [r3, #0]
-  64:../button.c   ****                                 if (int_count > 9)
- 3323              		.loc 1 64 0
- 3324 02ac B0359FE5 		ldr	r3, .L35+12
- 3325 02b0 0030D3E5 		ldrb	r3, [r3, #0]
- 3326 02b4 FF3003E2 		and	r3, r3, #255
- 3327 02b8 090053E3 		cmp	r3, #9
- 3328 02bc 0200009A 		bls	.L17
-  65:../button.c   ****                                 {
-  66:../button.c   ****                                         int_count = 1;
- 3329              		.loc 1 66 0
- 3330 02c0 9C359FE5 		ldr	r3, .L35+12
- 3331 02c4 0120A0E3 		mov	r2, #1
- 3332 02c8 0020C3E5 		strb	r2, [r3, #0]
- 3333              	.L17:
-  67:../button.c   ****                                 }
-  68:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
- 3334              		.loc 1 68 0
- 3335 02cc 90359FE5 		ldr	r3, .L35+12
- 3336 02d0 0030D3E5 		ldrb	r3, [r3, #0]
- 3337 02d4 FF3003E2 		and	r3, r3, #255
- 3338 02d8 0F3003E2 		and	r3, r3, #15
- 3339 02dc 0300A0E1 		mov	r0, r3
- 3340 02e0 FEFFFFEB 		bl	D8Led_symbol
-  69:../button.c   ****                         }
-  70:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
-  71:../button.c   ****                         {
-  72:../button.c   ****                                 /* Confirmar fila y pasar a introducir columna */
-  73:../button.c   ****                                 fila = int_count - 1;  /* Convertir a índice 0-8 */
-  74:../button.c   ****                                 estado_juego = INTRODUCIR_COLUMNA;
-  75:../button.c   ****                                 int_count = 0;
-  76:../button.c   ****                                 D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en el arra
-  77:../button.c   ****                         }
-  78:../button.c   ****                         break;
- 3341              		.loc 1 78 0
- 3342 02e4 580100EA 		b	.L7
- 3343              	.L16:
-  70:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
- 3344              		.loc 1 70 0
- 3345 02e8 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3346 02ec 040053E3 		cmp	r3, #4
- 3347 02f0 5001001A 		bne	.L32
-  73:../button.c   ****                                 fila = int_count - 1;  /* Convertir a índice 0-8 */
- 3348              		.loc 1 73 0
- 3349 02f4 68359FE5 		ldr	r3, .L35+12
- 3350 02f8 0030D3E5 		ldrb	r3, [r3, #0]
- 3351 02fc FF3003E2 		and	r3, r3, #255
- 3352 0300 013043E2 		sub	r3, r3, #1
- 3353 0304 FF2003E2 		and	r2, r3, #255
- 3354 0308 5C359FE5 		ldr	r3, .L35+20
- 3355 030c 0020C3E5 		strb	r2, [r3, #0]
-  74:../button.c   ****                                 estado_juego = INTRODUCIR_COLUMNA;
- 3356              		.loc 1 74 0
- 3357 0310 40359FE5 		ldr	r3, .L35
- 3358 0314 0220A0E3 		mov	r2, #2
- 3359 0318 0020C3E5 		strb	r2, [r3, #0]
-  75:../button.c   ****                                 int_count = 0;
- 3360              		.loc 1 75 0
- 3361 031c 40359FE5 		ldr	r3, .L35+12
- 3362 0320 0020A0E3 		mov	r2, #0
- 3363 0324 0020C3E5 		strb	r2, [r3, #0]
-  76:../button.c   ****                                 D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en el arra
- 3364              		.loc 1 76 0
- 3365 0328 0C00A0E3 		mov	r0, #12
- 3366 032c FEFFFFEB 		bl	D8Led_symbol
- 3367              		.loc 1 78 0
- 3368 0330 450100EA 		b	.L7
- 3369              	.L11:
-  79:../button.c   ****                 
-  80:../button.c   ****                 case INTRODUCIR_COLUMNA:
-  81:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
- 3370              		.loc 1 81 0
- 3371 0334 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3372 0338 080053E3 		cmp	r3, #8
- 3373 033c 1500001A 		bne	.L19
-  82:../button.c   ****                         {
-  83:../button.c   ****                                 /* Incrementar columna */
-  84:../button.c   ****                                 int_count++;
- 3374              		.loc 1 84 0
- 3375 0340 1C359FE5 		ldr	r3, .L35+12
- 3376 0344 0030D3E5 		ldrb	r3, [r3, #0]
- 3377 0348 FF3003E2 		and	r3, r3, #255
- 3378 034c 013083E2 		add	r3, r3, #1
- 3379 0350 FF2003E2 		and	r2, r3, #255
- 3380 0354 08359FE5 		ldr	r3, .L35+12
- 3381 0358 0020C3E5 		strb	r2, [r3, #0]
-  85:../button.c   ****                                 if (int_count > 9)
- 3382              		.loc 1 85 0
- 3383 035c 00359FE5 		ldr	r3, .L35+12
- 3384 0360 0030D3E5 		ldrb	r3, [r3, #0]
- 3385 0364 FF3003E2 		and	r3, r3, #255
- 3386 0368 090053E3 		cmp	r3, #9
- 3387 036c 0200009A 		bls	.L20
-  86:../button.c   ****                                 {
-  87:../button.c   ****                                         int_count = 1;
- 3388              		.loc 1 87 0
- 3389 0370 EC349FE5 		ldr	r3, .L35+12
- 3390 0374 0120A0E3 		mov	r2, #1
- 3391 0378 0020C3E5 		strb	r2, [r3, #0]
- 3392              	.L20:
+  29:../button.c   **** static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la partida */
+  30:../button.c   **** 
+  31:../button.c   **** /* Declaración externa de la cuadrícula del juego */
+  32:../button.c   **** extern CELDA (*cuadricula)[NUM_COLUMNAS];
+  33:../button.c   **** extern int celdas_vacias;
+  34:../button.c   **** 
+  35:../button.c   **** /* Callback para recibir la confirmación de pulsaciones filtradas por el timer3 */
+  36:../button.c   **** static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR Y PROPAGAR SEGUN L
+  37:../button.c   **** {
+ 3237              		.loc 1 37 0
+ 3238              		.cfi_startproc
+ 3239              		@ Function supports interworking.
+ 3240              		@ args = 0, pretend = 0, frame = 8
+ 3241              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3242 01b4 0DC0A0E1 		mov	ip, sp
+ 3243              	.LCFI12:
+ 3244              		.cfi_def_cfa_register 12
+ 3245 01b8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3246 01bc 04B04CE2 		sub	fp, ip, #4
+ 3247              		.cfi_offset 14, -8
+ 3248              		.cfi_offset 13, -12
+ 3249              		.cfi_offset 11, -16
+ 3250              	.LCFI13:
+ 3251              		.cfi_def_cfa 11, 4
+ 3252 01c0 08D04DE2 		sub	sp, sp, #8
+ 3253 01c4 0030A0E1 		mov	r3, r0
+ 3254 01c8 0D304BE5 		strb	r3, [fp, #-13]
+  38:../button.c   ****         cola_depuracion(timer2_count(), boton_id, estado_juego);
+ 3255              		.loc 1 38 0
+ 3256 01cc FEFFFFEB 		bl	timer2_count
+ 3257 01d0 0010A0E1 		mov	r1, r0
+ 3258 01d4 F4369FE5 		ldr	r3, .L39
+ 3259 01d8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3260 01dc FF3003E2 		and	r3, r3, #255
+ 3261 01e0 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 3262 01e4 0100A0E1 		mov	r0, r1
+ 3263 01e8 0210A0E1 		mov	r1, r2
+ 3264 01ec 0320A0E1 		mov	r2, r3
+ 3265 01f0 FEFFFFEB 		bl	cola_depuracion
+  39:../button.c   ****         
+  40:../button.c   ****         switch (estado_juego)
+ 3266              		.loc 1 40 0
+ 3267 01f4 D4369FE5 		ldr	r3, .L39
+ 3268 01f8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3269 01fc FF3003E2 		and	r3, r3, #255
+ 3270 0200 070053E3 		cmp	r3, #7
+ 3271 0204 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 3272 0208 AD0100EA 		b	.L7
+ 3273              	.L16:
+ 3274 020c 2C020000 		.word	.L9
+ 3275 0210 8C020000 		.word	.L10
+ 3276 0214 70030000 		.word	.L11
+ 3277 0218 30040000 		.word	.L12
+ 3278 021c B8040000 		.word	.L13
+ 3279 0220 58050000 		.word	.L14
+ 3280 0224 C4080000 		.word	.L7
+ 3281 0228 74080000 		.word	.L15
+ 3282              	.L9:
+  41:../button.c   ****         {
+  42:../button.c   ****                 case ESPERANDO_INICIO:
+  43:../button.c   ****                         /* Cualquier botón inicia el juego */
+  44:../button.c   ****                         /* Calcular candidatos por primera vez */
+  45:../button.c   ****                         celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 3283              		.loc 1 45 0
+ 3284 022c A0369FE5 		ldr	r3, .L39+4
+ 3285 0230 003093E5 		ldr	r3, [r3, #0]
+ 3286 0234 0300A0E1 		mov	r0, r3
+ 3287 0238 FEFFFFEB 		bl	candidatos_actualizar_all
+ 3288 023c 0020A0E1 		mov	r2, r0
+ 3289 0240 90369FE5 		ldr	r3, .L39+8
+ 3290 0244 002083E5 		str	r2, [r3, #0]
+  46:../button.c   ****                         
+  47:../button.c   ****                         /* Dibujar el tablero del juego */
+  48:../button.c   ****                         Sudoku_Dibujar_Tablero();
+ 3291              		.loc 1 48 0
+ 3292 0248 FEFFFFEB 		bl	Sudoku_Dibujar_Tablero
+  49:../button.c   ****                         
+  50:../button.c   ****                         /* Actualizar con los valores de la cuadrícula */
+  51:../button.c   ****                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 3293              		.loc 1 51 0
+ 3294 024c 80369FE5 		ldr	r3, .L39+4
+ 3295 0250 003093E5 		ldr	r3, [r3, #0]
+ 3296 0254 0300A0E1 		mov	r0, r3
+ 3297 0258 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+  52:../button.c   ****                         
+  53:../button.c   ****                         /* Pasar a introducir fila */
+  54:../button.c   ****                         estado_juego = INTRODUCIR_FILA;
+ 3298              		.loc 1 54 0
+ 3299 025c 6C369FE5 		ldr	r3, .L39
+ 3300 0260 0120A0E3 		mov	r2, #1
+ 3301 0264 0020C3E5 		strb	r2, [r3, #0]
+  55:../button.c   ****                         int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+ 3302              		.loc 1 55 0
+ 3303 0268 6C369FE5 		ldr	r3, .L39+12
+ 3304 026c 0920A0E3 		mov	r2, #9
+ 3305 0270 0020C3E5 		strb	r2, [r3, #0]
+  56:../button.c   ****                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 3306              		.loc 1 56 0
+ 3307 0274 0F00A0E3 		mov	r0, #15
+ 3308 0278 FEFFFFEB 		bl	D8Led_symbol
+  57:../button.c   ****                         pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
+ 3309              		.loc 1 57 0
+ 3310 027c 5C369FE5 		ldr	r3, .L39+16
+ 3311 0280 0020A0E3 		mov	r2, #0
+ 3312 0284 0020C3E5 		strb	r2, [r3, #0]
+  58:../button.c   ****                         break;
+ 3313              		.loc 1 58 0
+ 3314 0288 8D0100EA 		b	.L7
+ 3315              	.L10:
+  59:../button.c   ****                 
+  60:../button.c   ****                 case INTRODUCIR_FILA:
+  61:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 3316              		.loc 1 61 0
+ 3317 028c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3318 0290 080053E3 		cmp	r3, #8
+ 3319 0294 1500001A 		bne	.L17
+  62:../button.c   ****                         {
+  63:../button.c   ****                                 /* Incrementar fila (ciclo: 0 → 1 → 2 → ... → 9 → 0) */
+  64:../button.c   ****                                 int_count++;
+ 3320              		.loc 1 64 0
+ 3321 0298 3C369FE5 		ldr	r3, .L39+12
+ 3322 029c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3323 02a0 FF3003E2 		and	r3, r3, #255
+ 3324 02a4 013083E2 		add	r3, r3, #1
+ 3325 02a8 FF2003E2 		and	r2, r3, #255
+ 3326 02ac 28369FE5 		ldr	r3, .L39+12
+ 3327 02b0 0020C3E5 		strb	r2, [r3, #0]
+  65:../button.c   ****                                 if (int_count > 9)
+ 3328              		.loc 1 65 0
+ 3329 02b4 20369FE5 		ldr	r3, .L39+12
+ 3330 02b8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3331 02bc FF3003E2 		and	r3, r3, #255
+ 3332 02c0 090053E3 		cmp	r3, #9
+ 3333 02c4 0200009A 		bls	.L18
+  66:../button.c   ****                                 {
+  67:../button.c   ****                                         int_count = 0;  /* Volver a 0 */
+ 3334              		.loc 1 67 0
+ 3335 02c8 0C369FE5 		ldr	r3, .L39+12
+ 3336 02cc 0020A0E3 		mov	r2, #0
+ 3337 02d0 0020C3E5 		strb	r2, [r3, #0]
+ 3338              	.L18:
+  68:../button.c   ****                                 }
+  69:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
+ 3339              		.loc 1 69 0
+ 3340 02d4 00369FE5 		ldr	r3, .L39+12
+ 3341 02d8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3342 02dc FF3003E2 		and	r3, r3, #255
+ 3343 02e0 0F3003E2 		and	r3, r3, #15
+ 3344 02e4 0300A0E1 		mov	r0, r3
+ 3345 02e8 FEFFFFEB 		bl	D8Led_symbol
+  70:../button.c   ****                         }
+  71:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+  72:../button.c   ****                         {
+  73:../button.c   ****                                 /* Verificar si se eligió fila 0 (terminar partida) */
+  74:../button.c   ****                                 if (int_count == 0)
+  75:../button.c   ****                                 {
+  76:../button.c   ****                                         /* Fila 0: terminar la partida */
+  77:../button.c   ****                                         estado_juego = PARTIDA_TERMINADA;
+  78:../button.c   ****                                         tiempo_final = timer2_count();
+  79:../button.c   ****                                         /* La pantalla final se mostrará en este estado */
+  80:../button.c   ****                                 }
+  81:../button.c   ****                                 else
+  82:../button.c   ****                                 {
+  83:../button.c   ****                                         /* Confirmar fila y pasar a introducir columna */
+  84:../button.c   ****                                         fila = int_count - 1;  /* Convertir a índice 0-8 */
+  85:../button.c   ****                                         estado_juego = INTRODUCIR_COLUMNA;
+  86:../button.c   ****                                         int_count = 0;
+  87:../button.c   ****                                         D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en
   88:../button.c   ****                                 }
-  89:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
- 3393              		.loc 1 89 0
- 3394 037c E0349FE5 		ldr	r3, .L35+12
- 3395 0380 0030D3E5 		ldrb	r3, [r3, #0]
- 3396 0384 FF3003E2 		and	r3, r3, #255
- 3397 0388 0F3003E2 		and	r3, r3, #15
- 3398 038c 0300A0E1 		mov	r0, r3
- 3399 0390 FEFFFFEB 		bl	D8Led_symbol
-  90:../button.c   ****                         }
-  91:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
-  92:../button.c   ****                         {
-  93:../button.c   ****                                 /* Confirmar columna y pasar a introducir valor */
-  94:../button.c   ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
-  95:../button.c   ****                                 estado_juego = VERIFICAR_CELDA;
-  96:../button.c   ****                                 int_count = 0;
-  97:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
-  98:../button.c   ****                         }
-  99:../button.c   ****                         break;
- 3400              		.loc 1 99 0
- 3401 0394 2C0100EA 		b	.L7
- 3402              	.L19:
-  91:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
- 3403              		.loc 1 91 0
- 3404 0398 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3405 039c 040053E3 		cmp	r3, #4
- 3406 03a0 2601001A 		bne	.L33
-  94:../button.c   ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
- 3407              		.loc 1 94 0
- 3408 03a4 B8349FE5 		ldr	r3, .L35+12
- 3409 03a8 0030D3E5 		ldrb	r3, [r3, #0]
- 3410 03ac FF3003E2 		and	r3, r3, #255
- 3411 03b0 013043E2 		sub	r3, r3, #1
- 3412 03b4 FF2003E2 		and	r2, r3, #255
- 3413 03b8 B0349FE5 		ldr	r3, .L35+24
- 3414 03bc 0020C3E5 		strb	r2, [r3, #0]
-  95:../button.c   ****                                 estado_juego = VERIFICAR_CELDA;
- 3415              		.loc 1 95 0
- 3416 03c0 90349FE5 		ldr	r3, .L35
- 3417 03c4 0320A0E3 		mov	r2, #3
- 3418 03c8 0020C3E5 		strb	r2, [r3, #0]
-  96:../button.c   ****                                 int_count = 0;
- 3419              		.loc 1 96 0
- 3420 03cc 90349FE5 		ldr	r3, .L35+12
- 3421 03d0 0020A0E3 		mov	r2, #0
- 3422 03d4 0020C3E5 		strb	r2, [r3, #0]
-  97:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
- 3423              		.loc 1 97 0
- 3424 03d8 84349FE5 		ldr	r3, .L35+12
- 3425 03dc 0030D3E5 		ldrb	r3, [r3, #0]
- 3426 03e0 FF3003E2 		and	r3, r3, #255
- 3427 03e4 0F3003E2 		and	r3, r3, #15
- 3428 03e8 0300A0E1 		mov	r0, r3
- 3429 03ec FEFFFFEB 		bl	D8Led_symbol
- 3430              		.loc 1 99 0
- 3431 03f0 150100EA 		b	.L7
- 3432              	.L12:
- 100:../button.c   ****                 
- 101:../button.c   ****                 case VERIFICAR_CELDA:
- 102:../button.c   ****                         /* Primero se verifica si la celda[fila][columna] no es una pista */
- 103:../button.c   ****                         if (celda_es_pista(cuadricula[fila][columna]))
- 3433              		.loc 1 103 0
- 3434 03f4 60349FE5 		ldr	r3, .L35+4
- 3435 03f8 002093E5 		ldr	r2, [r3, #0]
- 3436 03fc 68349FE5 		ldr	r3, .L35+20
- 3437 0400 0030D3E5 		ldrb	r3, [r3, #0]
- 3438 0404 FF3003E2 		and	r3, r3, #255
- 3439 0408 8332A0E1 		mov	r3, r3, asl #5
- 3440 040c 032082E0 		add	r2, r2, r3
- 3441 0410 58349FE5 		ldr	r3, .L35+24
- 3442 0414 0030D3E5 		ldrb	r3, [r3, #0]
- 3443 0418 FF3003E2 		and	r3, r3, #255
- 3444 041c 8330A0E1 		mov	r3, r3, asl #1
- 3445 0420 033082E0 		add	r3, r2, r3
- 3446 0424 B030D3E1 		ldrh	r3, [r3, #0]
- 3447 0428 0300A0E1 		mov	r0, r3
- 3448 042c 33FFFFEB 		bl	celda_es_pista
- 3449 0430 0030A0E1 		mov	r3, r0
- 3450 0434 000053E3 		cmp	r3, #0
- 3451 0438 0800000A 		beq	.L22
+  89:../button.c   ****                         }
+  90:../button.c   ****                         break;
+ 3346              		.loc 1 90 0
+ 3347 02ec 740100EA 		b	.L7
+ 3348              	.L17:
+  71:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 3349              		.loc 1 71 0
+ 3350 02f0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3351 02f4 040053E3 		cmp	r3, #4
+ 3352 02f8 6A01001A 		bne	.L35
+  74:../button.c   ****                                 if (int_count == 0)
+ 3353              		.loc 1 74 0
+ 3354 02fc D8359FE5 		ldr	r3, .L39+12
+ 3355 0300 0030D3E5 		ldrb	r3, [r3, #0]
+ 3356 0304 FF3003E2 		and	r3, r3, #255
+ 3357 0308 000053E3 		cmp	r3, #0
+ 3358 030c 0700001A 		bne	.L20
+  77:../button.c   ****                                         estado_juego = PARTIDA_TERMINADA;
+ 3359              		.loc 1 77 0
+ 3360 0310 B8359FE5 		ldr	r3, .L39
+ 3361 0314 0720A0E3 		mov	r2, #7
+ 3362 0318 0020C3E5 		strb	r2, [r3, #0]
+  78:../button.c   ****                                         tiempo_final = timer2_count();
+ 3363              		.loc 1 78 0
+ 3364 031c FEFFFFEB 		bl	timer2_count
+ 3365 0320 0020A0E1 		mov	r2, r0
+ 3366 0324 B8359FE5 		ldr	r3, .L39+20
+ 3367 0328 002083E5 		str	r2, [r3, #0]
+ 3368              		.loc 1 90 0
+ 3369 032c 640100EA 		b	.L7
+ 3370              	.L20:
+  84:../button.c   ****                                         fila = int_count - 1;  /* Convertir a índice 0-8 */
+ 3371              		.loc 1 84 0
+ 3372 0330 A4359FE5 		ldr	r3, .L39+12
+ 3373 0334 0030D3E5 		ldrb	r3, [r3, #0]
+ 3374 0338 FF3003E2 		and	r3, r3, #255
+ 3375 033c 013043E2 		sub	r3, r3, #1
+ 3376 0340 FF2003E2 		and	r2, r3, #255
+ 3377 0344 9C359FE5 		ldr	r3, .L39+24
+ 3378 0348 0020C3E5 		strb	r2, [r3, #0]
+  85:../button.c   ****                                         estado_juego = INTRODUCIR_COLUMNA;
+ 3379              		.loc 1 85 0
+ 3380 034c 7C359FE5 		ldr	r3, .L39
+ 3381 0350 0220A0E3 		mov	r2, #2
+ 3382 0354 0020C3E5 		strb	r2, [r3, #0]
+  86:../button.c   ****                                         int_count = 0;
+ 3383              		.loc 1 86 0
+ 3384 0358 7C359FE5 		ldr	r3, .L39+12
+ 3385 035c 0020A0E3 		mov	r2, #0
+ 3386 0360 0020C3E5 		strb	r2, [r3, #0]
+  87:../button.c   ****                                         D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en
+ 3387              		.loc 1 87 0
+ 3388 0364 0C00A0E3 		mov	r0, #12
+ 3389 0368 FEFFFFEB 		bl	D8Led_symbol
+ 3390              		.loc 1 90 0
+ 3391 036c 540100EA 		b	.L7
+ 3392              	.L11:
+  91:../button.c   ****                 
+  92:../button.c   ****                 case INTRODUCIR_COLUMNA:
+  93:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 3393              		.loc 1 93 0
+ 3394 0370 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3395 0374 080053E3 		cmp	r3, #8
+ 3396 0378 1500001A 		bne	.L21
+  94:../button.c   ****                         {
+  95:../button.c   ****                                 /* Incrementar columna */
+  96:../button.c   ****                                 int_count++;
+ 3397              		.loc 1 96 0
+ 3398 037c 58359FE5 		ldr	r3, .L39+12
+ 3399 0380 0030D3E5 		ldrb	r3, [r3, #0]
+ 3400 0384 FF3003E2 		and	r3, r3, #255
+ 3401 0388 013083E2 		add	r3, r3, #1
+ 3402 038c FF2003E2 		and	r2, r3, #255
+ 3403 0390 44359FE5 		ldr	r3, .L39+12
+ 3404 0394 0020C3E5 		strb	r2, [r3, #0]
+  97:../button.c   ****                                 if (int_count > 9)
+ 3405              		.loc 1 97 0
+ 3406 0398 3C359FE5 		ldr	r3, .L39+12
+ 3407 039c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3408 03a0 FF3003E2 		and	r3, r3, #255
+ 3409 03a4 090053E3 		cmp	r3, #9
+ 3410 03a8 0200009A 		bls	.L22
+  98:../button.c   ****                                 {
+  99:../button.c   ****                                         int_count = 1;
+ 3411              		.loc 1 99 0
+ 3412 03ac 28359FE5 		ldr	r3, .L39+12
+ 3413 03b0 0120A0E3 		mov	r2, #1
+ 3414 03b4 0020C3E5 		strb	r2, [r3, #0]
+ 3415              	.L22:
+ 100:../button.c   ****                                 }
+ 101:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
+ 3416              		.loc 1 101 0
+ 3417 03b8 1C359FE5 		ldr	r3, .L39+12
+ 3418 03bc 0030D3E5 		ldrb	r3, [r3, #0]
+ 3419 03c0 FF3003E2 		and	r3, r3, #255
+ 3420 03c4 0F3003E2 		and	r3, r3, #15
+ 3421 03c8 0300A0E1 		mov	r0, r3
+ 3422 03cc FEFFFFEB 		bl	D8Led_symbol
+ 102:../button.c   ****                         }
+ 103:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
  104:../button.c   ****                         {
- 105:../button.c   ****                                 // Se vuelve al estado INTRODUCIR_FILA
- 106:../button.c   ****                                 estado_juego = INTRODUCIR_FILA;
- 3452              		.loc 1 106 0
- 3453 043c 14349FE5 		ldr	r3, .L35
- 3454 0440 0120A0E3 		mov	r2, #1
- 3455 0444 0020C3E5 		strb	r2, [r3, #0]
- 107:../button.c   ****                                 int_count = 0;
- 3456              		.loc 1 107 0
- 3457 0448 14349FE5 		ldr	r3, .L35+12
- 3458 044c 0020A0E3 		mov	r2, #0
- 3459 0450 0020C3E5 		strb	r2, [r3, #0]
- 108:../button.c   ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array S
- 3460              		.loc 1 108 0
- 3461 0454 0F00A0E3 		mov	r0, #15
- 3462 0458 FEFFFFEB 		bl	D8Led_symbol
- 109:../button.c   ****                         } 
- 110:../button.c   ****                         else
- 111:../button.c   ****                         {
- 112:../button.c   ****                                 // Si no es pista, se pasa a INTRODUCIR_VALOR
- 113:../button.c   ****                                 estado_juego = INTRODUCIR_VALOR;
- 114:../button.c   ****                                 int_count = 0;
- 115:../button.c   ****                         }
- 116:../button.c   ****                         break;
- 3463              		.loc 1 116 0
- 3464 045c FA0000EA 		b	.L7
- 3465              	.L22:
- 113:../button.c   ****                                 estado_juego = INTRODUCIR_VALOR;
- 3466              		.loc 1 113 0
- 3467 0460 F0339FE5 		ldr	r3, .L35
- 3468 0464 0420A0E3 		mov	r2, #4
- 3469 0468 0020C3E5 		strb	r2, [r3, #0]
- 114:../button.c   ****                                 int_count = 0;
- 3470              		.loc 1 114 0
- 3471 046c F0339FE5 		ldr	r3, .L35+12
- 3472 0470 0020A0E3 		mov	r2, #0
- 3473 0474 0020C3E5 		strb	r2, [r3, #0]
- 3474              		.loc 1 116 0
- 3475 0478 F30000EA 		b	.L7
- 3476              	.L13:
- 117:../button.c   ****                 
- 118:../button.c   ****                 case INTRODUCIR_VALOR:
- 119:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
- 3477              		.loc 1 119 0
- 3478 047c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3479 0480 080053E3 		cmp	r3, #8
- 3480 0484 1500001A 		bne	.L24
- 120:../button.c   ****                         {
- 121:../button.c   ****                                 /* Incrementar valor */
- 122:../button.c   ****                                 int_count++;
- 3481              		.loc 1 122 0
- 3482 0488 D4339FE5 		ldr	r3, .L35+12
- 3483 048c 0030D3E5 		ldrb	r3, [r3, #0]
- 3484 0490 FF3003E2 		and	r3, r3, #255
- 3485 0494 013083E2 		add	r3, r3, #1
- 3486 0498 FF2003E2 		and	r2, r3, #255
- 3487 049c C0339FE5 		ldr	r3, .L35+12
- 3488 04a0 0020C3E5 		strb	r2, [r3, #0]
- 123:../button.c   ****                                 if (int_count > 9)
- 3489              		.loc 1 123 0
- 3490 04a4 B8339FE5 		ldr	r3, .L35+12
- 3491 04a8 0030D3E5 		ldrb	r3, [r3, #0]
- 3492 04ac FF3003E2 		and	r3, r3, #255
- 3493 04b0 090053E3 		cmp	r3, #9
- 3494 04b4 0200009A 		bls	.L25
- 124:../button.c   ****                                 {
- 125:../button.c   ****                                         int_count = 0;
- 3495              		.loc 1 125 0
- 3496 04b8 A4339FE5 		ldr	r3, .L35+12
- 3497 04bc 0020A0E3 		mov	r2, #0
- 3498 04c0 0020C3E5 		strb	r2, [r3, #0]
- 3499              	.L25:
- 126:../button.c   ****                                 }
- 127:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
- 3500              		.loc 1 127 0
- 3501 04c4 98339FE5 		ldr	r3, .L35+12
- 3502 04c8 0030D3E5 		ldrb	r3, [r3, #0]
- 3503 04cc FF3003E2 		and	r3, r3, #255
- 3504 04d0 0F3003E2 		and	r3, r3, #15
- 3505 04d4 0300A0E1 		mov	r0, r3
- 3506 04d8 FEFFFFEB 		bl	D8Led_symbol
- 128:../button.c   ****                         }
- 129:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
- 130:../button.c   ****                         {
- 131:../button.c   ****                                 /* Confirmar valor e intentar escribir en la celda */
- 132:../button.c   ****                                 valor = int_count;  /* Valor a escribir (0-9) */
- 133:../button.c   ****                                 
- 134:../button.c   ****                                 estado_juego = VERIFICAR_VALOR;
- 135:../button.c   ****                                 int_count = 0;
- 136:../button.c   ****                         }
- 137:../button.c   ****                         break;
- 3507              		.loc 1 137 0
- 3508 04dc DA0000EA 		b	.L7
- 3509              	.L24:
- 129:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
- 3510              		.loc 1 129 0
- 3511 04e0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
- 3512 04e4 040053E3 		cmp	r3, #4
- 3513 04e8 D600001A 		bne	.L34
- 132:../button.c   ****                                 valor = int_count;  /* Valor a escribir (0-9) */
- 3514              		.loc 1 132 0
- 3515 04ec 70339FE5 		ldr	r3, .L35+12
- 3516 04f0 0030D3E5 		ldrb	r3, [r3, #0]
- 3517 04f4 FF2003E2 		and	r2, r3, #255
- 3518 04f8 74339FE5 		ldr	r3, .L35+28
- 3519 04fc 0020C3E5 		strb	r2, [r3, #0]
- 134:../button.c   ****                                 estado_juego = VERIFICAR_VALOR;
- 3520              		.loc 1 134 0
- 3521 0500 50339FE5 		ldr	r3, .L35
- 3522 0504 0520A0E3 		mov	r2, #5
- 3523 0508 0020C3E5 		strb	r2, [r3, #0]
- 135:../button.c   ****                                 int_count = 0;
- 3524              		.loc 1 135 0
- 3525 050c 50339FE5 		ldr	r3, .L35+12
- 3526 0510 0020A0E3 		mov	r2, #0
- 3527 0514 0020C3E5 		strb	r2, [r3, #0]
- 3528              		.loc 1 137 0
- 3529 0518 CB0000EA 		b	.L7
- 3530              	.L14:
- 138:../button.c   ****                 
- 139:../button.c   ****                 case VERIFICAR_VALOR:
- 140:../button.c   ****                         /* Guardar valor previo de la celda */
- 141:../button.c   ****                         valor_previo = celda_leer_valor(cuadricula[fila][columna]);
- 3531              		.loc 1 141 0
- 3532 051c 38339FE5 		ldr	r3, .L35+4
- 3533 0520 002093E5 		ldr	r2, [r3, #0]
- 3534 0524 40339FE5 		ldr	r3, .L35+20
- 3535 0528 0030D3E5 		ldrb	r3, [r3, #0]
- 3536 052c FF3003E2 		and	r3, r3, #255
- 3537 0530 8332A0E1 		mov	r3, r3, asl #5
- 3538 0534 032082E0 		add	r2, r2, r3
- 3539 0538 30339FE5 		ldr	r3, .L35+24
- 3540 053c 0030D3E5 		ldrb	r3, [r3, #0]
- 3541 0540 FF3003E2 		and	r3, r3, #255
- 3542 0544 8330A0E1 		mov	r3, r3, asl #1
- 3543 0548 033082E0 		add	r3, r2, r3
- 3544 054c B030D3E1 		ldrh	r3, [r3, #0]
- 3545 0550 0300A0E1 		mov	r0, r3
- 3546 0554 C7FEFFEB 		bl	celda_leer_valor
- 3547 0558 0030A0E1 		mov	r3, r0
- 3548 055c 0320A0E1 		mov	r2, r3
- 3549 0560 10339FE5 		ldr	r3, .L35+32
- 3550 0564 0020C3E5 		strb	r2, [r3, #0]
- 142:../button.c   ****                         
- 143:../button.c   ****                         if (valor == 0)
- 3551              		.loc 1 143 0
- 3552 0568 04339FE5 		ldr	r3, .L35+28
- 3553 056c 0030D3E5 		ldrb	r3, [r3, #0]
- 3554 0570 FF3003E2 		and	r3, r3, #255
- 3555 0574 000053E3 		cmp	r3, #0
- 3556 0578 3200001A 		bne	.L27
- 144:../button.c   ****                         {
- 145:../button.c   ****                                 /* Valor 0 = borrar -> pasar a BORRAR_VALOR */
- 146:../button.c   ****                                 /* Borrar el valor de la celda */
- 147:../button.c   ****                                 celda_limpiar_error(&cuadricula[fila][columna]);
- 3557              		.loc 1 147 0
- 3558 057c D8329FE5 		ldr	r3, .L35+4
- 3559 0580 003093E5 		ldr	r3, [r3, #0]
- 3560 0584 0320A0E1 		mov	r2, r3
- 3561 0588 DC329FE5 		ldr	r3, .L35+20
- 3562 058c 0030D3E5 		ldrb	r3, [r3, #0]
- 3563 0590 FF3003E2 		and	r3, r3, #255
- 3564 0594 0312A0E1 		mov	r1, r3, asl #4
- 3565 0598 D0329FE5 		ldr	r3, .L35+24
- 3566 059c 0030D3E5 		ldrb	r3, [r3, #0]
- 3567 05a0 FF3003E2 		and	r3, r3, #255
- 3568 05a4 033081E0 		add	r3, r1, r3
- 3569 05a8 8330A0E1 		mov	r3, r3, asl #1
- 3570 05ac 033082E0 		add	r3, r2, r3
- 3571 05b0 0300A0E1 		mov	r0, r3
- 3572 05b4 EFFEFFEB 		bl	celda_limpiar_error
- 148:../button.c   ****                                 celda_poner_valor(&cuadricula[fila][columna], 0);
- 3573              		.loc 1 148 0
- 3574 05b8 9C329FE5 		ldr	r3, .L35+4
- 3575 05bc 003093E5 		ldr	r3, [r3, #0]
- 3576 05c0 0320A0E1 		mov	r2, r3
- 3577 05c4 A0329FE5 		ldr	r3, .L35+20
- 3578 05c8 0030D3E5 		ldrb	r3, [r3, #0]
- 3579 05cc FF3003E2 		and	r3, r3, #255
- 3580 05d0 0312A0E1 		mov	r1, r3, asl #4
- 3581 05d4 94329FE5 		ldr	r3, .L35+24
- 3582 05d8 0030D3E5 		ldrb	r3, [r3, #0]
- 3583 05dc FF3003E2 		and	r3, r3, #255
- 3584 05e0 033081E0 		add	r3, r1, r3
- 3585 05e4 8330A0E1 		mov	r3, r3, asl #1
- 3586 05e8 033082E0 		add	r3, r2, r3
- 3587 05ec 0300A0E1 		mov	r0, r3
- 3588 05f0 0010A0E3 		mov	r1, #0
- 3589 05f4 81FEFFEB 		bl	celda_poner_valor
- 149:../button.c   ****                                 
- 150:../button.c   ****                                 /* Al borrar un valor, hay que recalcular todos los candidatos */
- 151:../button.c   ****                                 celdas_vacias = candidatos_actualizar_all(cuadricula);
- 3590              		.loc 1 151 0
- 3591 05f8 5C329FE5 		ldr	r3, .L35+4
- 3592 05fc 003093E5 		ldr	r3, [r3, #0]
- 3593 0600 0300A0E1 		mov	r0, r3
- 3594 0604 FEFFFFEB 		bl	candidatos_actualizar_all
- 3595 0608 0020A0E1 		mov	r2, r0
- 3596 060c 4C329FE5 		ldr	r3, .L35+8
- 3597 0610 002083E5 		str	r2, [r3, #0]
- 152:../button.c   ****                                 
- 153:../button.c   ****                                 /* Actualizar la visualización del tablero */
- 154:../button.c   ****                                 Sudoku_Actualizar_Tablero_Completo(cuadricula);
- 3598              		.loc 1 154 0
- 3599 0614 40329FE5 		ldr	r3, .L35+4
- 3600 0618 003093E5 		ldr	r3, [r3, #0]
- 3601 061c 0300A0E1 		mov	r0, r3
- 3602 0620 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
- 155:../button.c   ****                                 
- 156:../button.c   ****                                 /* Volver a introducir fila */
- 157:../button.c   ****                                 estado_juego = INTRODUCIR_FILA;
- 3603              		.loc 1 157 0
- 3604 0624 2C329FE5 		ldr	r3, .L35
- 3605 0628 0120A0E3 		mov	r2, #1
- 3606 062c 0020C3E5 		strb	r2, [r3, #0]
- 158:../button.c   ****                                 int_count = 0;
- 3607              		.loc 1 158 0
- 3608 0630 2C329FE5 		ldr	r3, .L35+12
- 3609 0634 0020A0E3 		mov	r2, #0
- 3610 0638 0020C3E5 		strb	r2, [r3, #0]
- 159:../button.c   ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila */
- 3611              		.loc 1 159 0
- 3612 063c 0F00A0E3 		mov	r0, #15
- 3613 0640 FEFFFFEB 		bl	D8Led_symbol
- 160:../button.c   ****                                 break;
- 3614              		.loc 1 160 0
- 3615 0644 800000EA 		b	.L7
- 3616              	.L27:
- 161:../button.c   ****                         }
- 162:../button.c   ****                         else
- 163:../button.c   ****                         {
- 164:../button.c   ****                                 /* Verificar si el valor es candidato */
- 165:../button.c   ****                                 if (celda_es_candidato(cuadricula[fila][columna], valor))
- 3617              		.loc 1 165 0
- 3618 0648 0C329FE5 		ldr	r3, .L35+4
- 3619 064c 002093E5 		ldr	r2, [r3, #0]
- 3620 0650 14329FE5 		ldr	r3, .L35+20
- 3621 0654 0030D3E5 		ldrb	r3, [r3, #0]
- 3622 0658 FF3003E2 		and	r3, r3, #255
- 3623 065c 8332A0E1 		mov	r3, r3, asl #5
- 3624 0660 032082E0 		add	r2, r2, r3
- 3625 0664 04329FE5 		ldr	r3, .L35+24
- 3626 0668 0030D3E5 		ldrb	r3, [r3, #0]
- 3627 066c FF3003E2 		and	r3, r3, #255
- 3628 0670 8330A0E1 		mov	r3, r3, asl #1
- 3629 0674 033082E0 		add	r3, r2, r3
- 3630 0678 B020D3E1 		ldrh	r2, [r3, #0]
- 3631 067c F0319FE5 		ldr	r3, .L35+28
- 3632 0680 0030D3E5 		ldrb	r3, [r3, #0]
- 3633 0684 FF3003E2 		and	r3, r3, #255
- 3634 0688 0200A0E1 		mov	r0, r2
- 3635 068c 0310A0E1 		mov	r1, r3
- 3636 0690 86FEFFEB 		bl	celda_es_candidato
- 3637 0694 0030A0E1 		mov	r3, r0
- 3638 0698 000053E3 		cmp	r3, #0
- 3639 069c 4700000A 		beq	.L28
- 166:../button.c   ****                                 {
- 167:../button.c   ****                                         /* Es candidato: escribir el valor en la celda */
- 168:../button.c   ****                                         celda_limpiar_error(&cuadricula[fila][columna]);
- 3640              		.loc 1 168 0
- 3641 06a0 B4319FE5 		ldr	r3, .L35+4
- 3642 06a4 003093E5 		ldr	r3, [r3, #0]
- 3643 06a8 0320A0E1 		mov	r2, r3
- 3644 06ac B8319FE5 		ldr	r3, .L35+20
- 3645 06b0 0030D3E5 		ldrb	r3, [r3, #0]
- 3646 06b4 FF3003E2 		and	r3, r3, #255
- 3647 06b8 0312A0E1 		mov	r1, r3, asl #4
- 3648 06bc AC319FE5 		ldr	r3, .L35+24
- 3649 06c0 0030D3E5 		ldrb	r3, [r3, #0]
- 3650 06c4 FF3003E2 		and	r3, r3, #255
- 3651 06c8 033081E0 		add	r3, r1, r3
- 3652 06cc 8330A0E1 		mov	r3, r3, asl #1
- 3653 06d0 033082E0 		add	r3, r2, r3
- 3654 06d4 0300A0E1 		mov	r0, r3
- 3655 06d8 A6FEFFEB 		bl	celda_limpiar_error
- 169:../button.c   ****                                         celda_poner_valor(&cuadricula[fila][columna], valor);
- 3656              		.loc 1 169 0
- 3657 06dc 78319FE5 		ldr	r3, .L35+4
- 3658 06e0 003093E5 		ldr	r3, [r3, #0]
- 3659 06e4 0320A0E1 		mov	r2, r3
- 3660 06e8 7C319FE5 		ldr	r3, .L35+20
- 3661 06ec 0030D3E5 		ldrb	r3, [r3, #0]
- 3662 06f0 FF3003E2 		and	r3, r3, #255
- 3663 06f4 0312A0E1 		mov	r1, r3, asl #4
- 3664 06f8 70319FE5 		ldr	r3, .L35+24
- 3665 06fc 0030D3E5 		ldrb	r3, [r3, #0]
- 3666 0700 FF3003E2 		and	r3, r3, #255
- 3667 0704 033081E0 		add	r3, r1, r3
- 3668 0708 8330A0E1 		mov	r3, r3, asl #1
- 3669 070c 032082E0 		add	r2, r2, r3
- 3670 0710 5C319FE5 		ldr	r3, .L35+28
- 3671 0714 0030D3E5 		ldrb	r3, [r3, #0]
- 3672 0718 FF3003E2 		and	r3, r3, #255
- 3673 071c 0200A0E1 		mov	r0, r2
- 3674 0720 0310A0E1 		mov	r1, r3
- 3675 0724 35FEFFEB 		bl	celda_poner_valor
- 170:../button.c   ****                                         
- 171:../button.c   ****                                         /* Decidir si propagar o actualizar según el caso */
- 172:../button.c   ****                                         if (valor_previo != 0)
- 3676              		.loc 1 172 0
- 3677 0728 48319FE5 		ldr	r3, .L35+32
- 3678 072c 0030D3E5 		ldrb	r3, [r3, #0]
- 3679 0730 FF3003E2 		and	r3, r3, #255
- 3680 0734 000053E3 		cmp	r3, #0
- 3681 0738 0700000A 		beq	.L29
- 173:../button.c   ****                                         {
- 174:../button.c   ****                                                 /* Se modificó un valor previo -> recalcular todo 
- 175:../button.c   ****                                                 celdas_vacias = candidatos_actualizar_all(cuadricul
- 3682              		.loc 1 175 0
- 3683 073c 18319FE5 		ldr	r3, .L35+4
- 3684 0740 003093E5 		ldr	r3, [r3, #0]
- 3685 0744 0300A0E1 		mov	r0, r3
- 3686 0748 FEFFFFEB 		bl	candidatos_actualizar_all
- 3687 074c 0020A0E1 		mov	r2, r0
- 3688 0750 08319FE5 		ldr	r3, .L35+8
- 3689 0754 002083E5 		str	r2, [r3, #0]
- 3690 0758 0B0000EA 		b	.L30
- 3691              	.L29:
- 176:../button.c   ****                                         }
- 177:../button.c   ****                                         else
- 178:../button.c   ****                                         {
- 179:../button.c   ****                                                 /* Celda vacía -> solo propagar el nuevo valor */
- 180:../button.c   ****                                                 candidatos_propagar_arm(cuadricula, fila, columna);
- 3692              		.loc 1 180 0
- 3693 075c F8309FE5 		ldr	r3, .L35+4
- 3694 0760 001093E5 		ldr	r1, [r3, #0]
- 3695 0764 00319FE5 		ldr	r3, .L35+20
- 3696 0768 0030D3E5 		ldrb	r3, [r3, #0]
- 3697 076c FF2003E2 		and	r2, r3, #255
- 3698 0770 F8309FE5 		ldr	r3, .L35+24
- 3699 0774 0030D3E5 		ldrb	r3, [r3, #0]
- 3700 0778 FF3003E2 		and	r3, r3, #255
- 3701 077c 0100A0E1 		mov	r0, r1
- 3702 0780 0210A0E1 		mov	r1, r2
- 3703 0784 0320A0E1 		mov	r2, r3
- 3704 0788 FEFFFFEB 		bl	candidatos_propagar_arm
- 3705              	.L30:
- 181:../button.c   ****                                         }
+ 105:../button.c   ****                                 /* Confirmar columna y pasar a introducir valor */
+ 106:../button.c   ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
+ 107:../button.c   ****                                 estado_juego = VERIFICAR_CELDA;
+ 108:../button.c   ****                                 int_count = 0;
+ 109:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
+ 110:../button.c   ****                         }
+ 111:../button.c   ****                         break;
+ 3423              		.loc 1 111 0
+ 3424 03d0 3B0100EA 		b	.L7
+ 3425              	.L21:
+ 103:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 3426              		.loc 1 103 0
+ 3427 03d4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3428 03d8 040053E3 		cmp	r3, #4
+ 3429 03dc 3301001A 		bne	.L36
+ 106:../button.c   ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
+ 3430              		.loc 1 106 0
+ 3431 03e0 F4349FE5 		ldr	r3, .L39+12
+ 3432 03e4 0030D3E5 		ldrb	r3, [r3, #0]
+ 3433 03e8 FF3003E2 		and	r3, r3, #255
+ 3434 03ec 013043E2 		sub	r3, r3, #1
+ 3435 03f0 FF2003E2 		and	r2, r3, #255
+ 3436 03f4 F0349FE5 		ldr	r3, .L39+28
+ 3437 03f8 0020C3E5 		strb	r2, [r3, #0]
+ 107:../button.c   ****                                 estado_juego = VERIFICAR_CELDA;
+ 3438              		.loc 1 107 0
+ 3439 03fc CC349FE5 		ldr	r3, .L39
+ 3440 0400 0320A0E3 		mov	r2, #3
+ 3441 0404 0020C3E5 		strb	r2, [r3, #0]
+ 108:../button.c   ****                                 int_count = 0;
+ 3442              		.loc 1 108 0
+ 3443 0408 CC349FE5 		ldr	r3, .L39+12
+ 3444 040c 0020A0E3 		mov	r2, #0
+ 3445 0410 0020C3E5 		strb	r2, [r3, #0]
+ 109:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
+ 3446              		.loc 1 109 0
+ 3447 0414 C0349FE5 		ldr	r3, .L39+12
+ 3448 0418 0030D3E5 		ldrb	r3, [r3, #0]
+ 3449 041c FF3003E2 		and	r3, r3, #255
+ 3450 0420 0F3003E2 		and	r3, r3, #15
+ 3451 0424 0300A0E1 		mov	r0, r3
+ 3452 0428 FEFFFFEB 		bl	D8Led_symbol
+ 3453              		.loc 1 111 0
+ 3454 042c 240100EA 		b	.L7
+ 3455              	.L12:
+ 112:../button.c   ****                 
+ 113:../button.c   ****                 case VERIFICAR_CELDA:
+ 114:../button.c   ****                         /* Primero se verifica si la celda[fila][columna] no es una pista */
+ 115:../button.c   ****                         if (celda_es_pista(cuadricula[fila][columna]))
+ 3456              		.loc 1 115 0
+ 3457 0430 9C349FE5 		ldr	r3, .L39+4
+ 3458 0434 002093E5 		ldr	r2, [r3, #0]
+ 3459 0438 A8349FE5 		ldr	r3, .L39+24
+ 3460 043c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3461 0440 FF3003E2 		and	r3, r3, #255
+ 3462 0444 8332A0E1 		mov	r3, r3, asl #5
+ 3463 0448 032082E0 		add	r2, r2, r3
+ 3464 044c 98349FE5 		ldr	r3, .L39+28
+ 3465 0450 0030D3E5 		ldrb	r3, [r3, #0]
+ 3466 0454 FF3003E2 		and	r3, r3, #255
+ 3467 0458 8330A0E1 		mov	r3, r3, asl #1
+ 3468 045c 033082E0 		add	r3, r2, r3
+ 3469 0460 B030D3E1 		ldrh	r3, [r3, #0]
+ 3470 0464 0300A0E1 		mov	r0, r3
+ 3471 0468 24FFFFEB 		bl	celda_es_pista
+ 3472 046c 0030A0E1 		mov	r3, r0
+ 3473 0470 000053E3 		cmp	r3, #0
+ 3474 0474 0800000A 		beq	.L24
+ 116:../button.c   ****                         {
+ 117:../button.c   ****                                 // Se vuelve al estado INTRODUCIR_FILA
+ 118:../button.c   ****                                 estado_juego = INTRODUCIR_FILA;
+ 3475              		.loc 1 118 0
+ 3476 0478 50349FE5 		ldr	r3, .L39
+ 3477 047c 0120A0E3 		mov	r2, #1
+ 3478 0480 0020C3E5 		strb	r2, [r3, #0]
+ 119:../button.c   ****                                 int_count = 0;
+ 3479              		.loc 1 119 0
+ 3480 0484 50349FE5 		ldr	r3, .L39+12
+ 3481 0488 0020A0E3 		mov	r2, #0
+ 3482 048c 0020C3E5 		strb	r2, [r3, #0]
+ 120:../button.c   ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array S
+ 3483              		.loc 1 120 0
+ 3484 0490 0F00A0E3 		mov	r0, #15
+ 3485 0494 FEFFFFEB 		bl	D8Led_symbol
+ 121:../button.c   ****                         } 
+ 122:../button.c   ****                         else
+ 123:../button.c   ****                         {
+ 124:../button.c   ****                                 // Si no es pista, se pasa a INTRODUCIR_VALOR
+ 125:../button.c   ****                                 estado_juego = INTRODUCIR_VALOR;
+ 126:../button.c   ****                                 int_count = 0;
+ 127:../button.c   ****                         }
+ 128:../button.c   ****                         break;
+ 3486              		.loc 1 128 0
+ 3487 0498 090100EA 		b	.L7
+ 3488              	.L24:
+ 125:../button.c   ****                                 estado_juego = INTRODUCIR_VALOR;
+ 3489              		.loc 1 125 0
+ 3490 049c 2C349FE5 		ldr	r3, .L39
+ 3491 04a0 0420A0E3 		mov	r2, #4
+ 3492 04a4 0020C3E5 		strb	r2, [r3, #0]
+ 126:../button.c   ****                                 int_count = 0;
+ 3493              		.loc 1 126 0
+ 3494 04a8 2C349FE5 		ldr	r3, .L39+12
+ 3495 04ac 0020A0E3 		mov	r2, #0
+ 3496 04b0 0020C3E5 		strb	r2, [r3, #0]
+ 3497              		.loc 1 128 0
+ 3498 04b4 020100EA 		b	.L7
+ 3499              	.L13:
+ 129:../button.c   ****                 
+ 130:../button.c   ****                 case INTRODUCIR_VALOR:
+ 131:../button.c   ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 3500              		.loc 1 131 0
+ 3501 04b8 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3502 04bc 080053E3 		cmp	r3, #8
+ 3503 04c0 1500001A 		bne	.L26
+ 132:../button.c   ****                         {
+ 133:../button.c   ****                                 /* Incrementar valor */
+ 134:../button.c   ****                                 int_count++;
+ 3504              		.loc 1 134 0
+ 3505 04c4 10349FE5 		ldr	r3, .L39+12
+ 3506 04c8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3507 04cc FF3003E2 		and	r3, r3, #255
+ 3508 04d0 013083E2 		add	r3, r3, #1
+ 3509 04d4 FF2003E2 		and	r2, r3, #255
+ 3510 04d8 FC339FE5 		ldr	r3, .L39+12
+ 3511 04dc 0020C3E5 		strb	r2, [r3, #0]
+ 135:../button.c   ****                                 if (int_count > 9)
+ 3512              		.loc 1 135 0
+ 3513 04e0 F4339FE5 		ldr	r3, .L39+12
+ 3514 04e4 0030D3E5 		ldrb	r3, [r3, #0]
+ 3515 04e8 FF3003E2 		and	r3, r3, #255
+ 3516 04ec 090053E3 		cmp	r3, #9
+ 3517 04f0 0200009A 		bls	.L27
+ 136:../button.c   ****                                 {
+ 137:../button.c   ****                                         int_count = 0;
+ 3518              		.loc 1 137 0
+ 3519 04f4 E0339FE5 		ldr	r3, .L39+12
+ 3520 04f8 0020A0E3 		mov	r2, #0
+ 3521 04fc 0020C3E5 		strb	r2, [r3, #0]
+ 3522              	.L27:
+ 138:../button.c   ****                                 }
+ 139:../button.c   ****                                 D8Led_symbol(int_count & 0x000f);
+ 3523              		.loc 1 139 0
+ 3524 0500 D4339FE5 		ldr	r3, .L39+12
+ 3525 0504 0030D3E5 		ldrb	r3, [r3, #0]
+ 3526 0508 FF3003E2 		and	r3, r3, #255
+ 3527 050c 0F3003E2 		and	r3, r3, #15
+ 3528 0510 0300A0E1 		mov	r0, r3
+ 3529 0514 FEFFFFEB 		bl	D8Led_symbol
+ 140:../button.c   ****                         }
+ 141:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 142:../button.c   ****                         {
+ 143:../button.c   ****                                 /* Confirmar valor e intentar escribir en la celda */
+ 144:../button.c   ****                                 valor = int_count;  /* Valor a escribir (0-9) */
+ 145:../button.c   ****                                 
+ 146:../button.c   ****                                 estado_juego = VERIFICAR_VALOR;
+ 147:../button.c   ****                                 int_count = 0;
+ 148:../button.c   ****                         }
+ 149:../button.c   ****                         break;
+ 3530              		.loc 1 149 0
+ 3531 0518 E90000EA 		b	.L7
+ 3532              	.L26:
+ 141:../button.c   ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 3533              		.loc 1 141 0
+ 3534 051c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3535 0520 040053E3 		cmp	r3, #4
+ 3536 0524 E300001A 		bne	.L37
+ 144:../button.c   ****                                 valor = int_count;  /* Valor a escribir (0-9) */
+ 3537              		.loc 1 144 0
+ 3538 0528 AC339FE5 		ldr	r3, .L39+12
+ 3539 052c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3540 0530 FF2003E2 		and	r2, r3, #255
+ 3541 0534 B4339FE5 		ldr	r3, .L39+32
+ 3542 0538 0020C3E5 		strb	r2, [r3, #0]
+ 146:../button.c   ****                                 estado_juego = VERIFICAR_VALOR;
+ 3543              		.loc 1 146 0
+ 3544 053c 8C339FE5 		ldr	r3, .L39
+ 3545 0540 0520A0E3 		mov	r2, #5
+ 3546 0544 0020C3E5 		strb	r2, [r3, #0]
+ 147:../button.c   ****                                 int_count = 0;
+ 3547              		.loc 1 147 0
+ 3548 0548 8C339FE5 		ldr	r3, .L39+12
+ 3549 054c 0020A0E3 		mov	r2, #0
+ 3550 0550 0020C3E5 		strb	r2, [r3, #0]
+ 3551              		.loc 1 149 0
+ 3552 0554 DA0000EA 		b	.L7
+ 3553              	.L14:
+ 150:../button.c   ****                 
+ 151:../button.c   ****                 case VERIFICAR_VALOR:
+ 152:../button.c   ****                         /* Guardar valor previo de la celda */
+ 153:../button.c   ****                         valor_previo = celda_leer_valor(cuadricula[fila][columna]);
+ 3554              		.loc 1 153 0
+ 3555 0558 74339FE5 		ldr	r3, .L39+4
+ 3556 055c 002093E5 		ldr	r2, [r3, #0]
+ 3557 0560 80339FE5 		ldr	r3, .L39+24
+ 3558 0564 0030D3E5 		ldrb	r3, [r3, #0]
+ 3559 0568 FF3003E2 		and	r3, r3, #255
+ 3560 056c 8332A0E1 		mov	r3, r3, asl #5
+ 3561 0570 032082E0 		add	r2, r2, r3
+ 3562 0574 70339FE5 		ldr	r3, .L39+28
+ 3563 0578 0030D3E5 		ldrb	r3, [r3, #0]
+ 3564 057c FF3003E2 		and	r3, r3, #255
+ 3565 0580 8330A0E1 		mov	r3, r3, asl #1
+ 3566 0584 033082E0 		add	r3, r2, r3
+ 3567 0588 B030D3E1 		ldrh	r3, [r3, #0]
+ 3568 058c 0300A0E1 		mov	r0, r3
+ 3569 0590 B8FEFFEB 		bl	celda_leer_valor
+ 3570 0594 0030A0E1 		mov	r3, r0
+ 3571 0598 0320A0E1 		mov	r2, r3
+ 3572 059c 50339FE5 		ldr	r3, .L39+36
+ 3573 05a0 0020C3E5 		strb	r2, [r3, #0]
+ 154:../button.c   ****                         
+ 155:../button.c   ****                         if (valor == 0)
+ 3574              		.loc 1 155 0
+ 3575 05a4 44339FE5 		ldr	r3, .L39+32
+ 3576 05a8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3577 05ac FF3003E2 		and	r3, r3, #255
+ 3578 05b0 000053E3 		cmp	r3, #0
+ 3579 05b4 3200001A 		bne	.L29
+ 156:../button.c   ****                         {
+ 157:../button.c   ****                                 /* Valor 0 = borrar -> pasar a BORRAR_VALOR */
+ 158:../button.c   ****                                 /* Borrar el valor de la celda */
+ 159:../button.c   ****                                 celda_limpiar_error(&cuadricula[fila][columna]);
+ 3580              		.loc 1 159 0
+ 3581 05b8 14339FE5 		ldr	r3, .L39+4
+ 3582 05bc 003093E5 		ldr	r3, [r3, #0]
+ 3583 05c0 0320A0E1 		mov	r2, r3
+ 3584 05c4 1C339FE5 		ldr	r3, .L39+24
+ 3585 05c8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3586 05cc FF3003E2 		and	r3, r3, #255
+ 3587 05d0 0312A0E1 		mov	r1, r3, asl #4
+ 3588 05d4 10339FE5 		ldr	r3, .L39+28
+ 3589 05d8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3590 05dc FF3003E2 		and	r3, r3, #255
+ 3591 05e0 033081E0 		add	r3, r1, r3
+ 3592 05e4 8330A0E1 		mov	r3, r3, asl #1
+ 3593 05e8 033082E0 		add	r3, r2, r3
+ 3594 05ec 0300A0E1 		mov	r0, r3
+ 3595 05f0 E0FEFFEB 		bl	celda_limpiar_error
+ 160:../button.c   ****                                 celda_poner_valor(&cuadricula[fila][columna], 0);
+ 3596              		.loc 1 160 0
+ 3597 05f4 D8329FE5 		ldr	r3, .L39+4
+ 3598 05f8 003093E5 		ldr	r3, [r3, #0]
+ 3599 05fc 0320A0E1 		mov	r2, r3
+ 3600 0600 E0329FE5 		ldr	r3, .L39+24
+ 3601 0604 0030D3E5 		ldrb	r3, [r3, #0]
+ 3602 0608 FF3003E2 		and	r3, r3, #255
+ 3603 060c 0312A0E1 		mov	r1, r3, asl #4
+ 3604 0610 D4329FE5 		ldr	r3, .L39+28
+ 3605 0614 0030D3E5 		ldrb	r3, [r3, #0]
+ 3606 0618 FF3003E2 		and	r3, r3, #255
+ 3607 061c 033081E0 		add	r3, r1, r3
+ 3608 0620 8330A0E1 		mov	r3, r3, asl #1
+ 3609 0624 033082E0 		add	r3, r2, r3
+ 3610 0628 0300A0E1 		mov	r0, r3
+ 3611 062c 0010A0E3 		mov	r1, #0
+ 3612 0630 72FEFFEB 		bl	celda_poner_valor
+ 161:../button.c   ****                                 
+ 162:../button.c   ****                                 /* Al borrar un valor, hay que recalcular todos los candidatos */
+ 163:../button.c   ****                                 celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 3613              		.loc 1 163 0
+ 3614 0634 98329FE5 		ldr	r3, .L39+4
+ 3615 0638 003093E5 		ldr	r3, [r3, #0]
+ 3616 063c 0300A0E1 		mov	r0, r3
+ 3617 0640 FEFFFFEB 		bl	candidatos_actualizar_all
+ 3618 0644 0020A0E1 		mov	r2, r0
+ 3619 0648 88329FE5 		ldr	r3, .L39+8
+ 3620 064c 002083E5 		str	r2, [r3, #0]
+ 164:../button.c   ****                                 
+ 165:../button.c   ****                                 /* Actualizar la visualización del tablero */
+ 166:../button.c   ****                                 Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 3621              		.loc 1 166 0
+ 3622 0650 7C329FE5 		ldr	r3, .L39+4
+ 3623 0654 003093E5 		ldr	r3, [r3, #0]
+ 3624 0658 0300A0E1 		mov	r0, r3
+ 3625 065c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 167:../button.c   ****                                 
+ 168:../button.c   ****                                 /* Volver a introducir fila */
+ 169:../button.c   ****                                 estado_juego = INTRODUCIR_FILA;
+ 3626              		.loc 1 169 0
+ 3627 0660 68329FE5 		ldr	r3, .L39
+ 3628 0664 0120A0E3 		mov	r2, #1
+ 3629 0668 0020C3E5 		strb	r2, [r3, #0]
+ 170:../button.c   ****                                 int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+ 3630              		.loc 1 170 0
+ 3631 066c 68329FE5 		ldr	r3, .L39+12
+ 3632 0670 0920A0E3 		mov	r2, #9
+ 3633 0674 0020C3E5 		strb	r2, [r3, #0]
+ 171:../button.c   ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 3634              		.loc 1 171 0
+ 3635 0678 0F00A0E3 		mov	r0, #15
+ 3636 067c FEFFFFEB 		bl	D8Led_symbol
+ 172:../button.c   ****                                 break;
+ 3637              		.loc 1 172 0
+ 3638 0680 8F0000EA 		b	.L7
+ 3639              	.L29:
+ 173:../button.c   ****                         }
+ 174:../button.c   ****                         else
+ 175:../button.c   ****                         {
+ 176:../button.c   ****                                 /* Verificar si el valor es candidato */
+ 177:../button.c   ****                                 if (celda_es_candidato(cuadricula[fila][columna], valor))
+ 3640              		.loc 1 177 0
+ 3641 0684 48329FE5 		ldr	r3, .L39+4
+ 3642 0688 002093E5 		ldr	r2, [r3, #0]
+ 3643 068c 54329FE5 		ldr	r3, .L39+24
+ 3644 0690 0030D3E5 		ldrb	r3, [r3, #0]
+ 3645 0694 FF3003E2 		and	r3, r3, #255
+ 3646 0698 8332A0E1 		mov	r3, r3, asl #5
+ 3647 069c 032082E0 		add	r2, r2, r3
+ 3648 06a0 44329FE5 		ldr	r3, .L39+28
+ 3649 06a4 0030D3E5 		ldrb	r3, [r3, #0]
+ 3650 06a8 FF3003E2 		and	r3, r3, #255
+ 3651 06ac 8330A0E1 		mov	r3, r3, asl #1
+ 3652 06b0 033082E0 		add	r3, r2, r3
+ 3653 06b4 B020D3E1 		ldrh	r2, [r3, #0]
+ 3654 06b8 30329FE5 		ldr	r3, .L39+32
+ 3655 06bc 0030D3E5 		ldrb	r3, [r3, #0]
+ 3656 06c0 FF3003E2 		and	r3, r3, #255
+ 3657 06c4 0200A0E1 		mov	r0, r2
+ 3658 06c8 0310A0E1 		mov	r1, r3
+ 3659 06cc 77FEFFEB 		bl	celda_es_candidato
+ 3660 06d0 0030A0E1 		mov	r3, r0
+ 3661 06d4 000053E3 		cmp	r3, #0
+ 3662 06d8 4700000A 		beq	.L30
+ 178:../button.c   ****                                 {
+ 179:../button.c   ****                                         /* Es candidato: escribir el valor en la celda */
+ 180:../button.c   ****                                         celda_limpiar_error(&cuadricula[fila][columna]);
+ 3663              		.loc 1 180 0
+ 3664 06dc F0319FE5 		ldr	r3, .L39+4
+ 3665 06e0 003093E5 		ldr	r3, [r3, #0]
+ 3666 06e4 0320A0E1 		mov	r2, r3
+ 3667 06e8 F8319FE5 		ldr	r3, .L39+24
+ 3668 06ec 0030D3E5 		ldrb	r3, [r3, #0]
+ 3669 06f0 FF3003E2 		and	r3, r3, #255
+ 3670 06f4 0312A0E1 		mov	r1, r3, asl #4
+ 3671 06f8 EC319FE5 		ldr	r3, .L39+28
+ 3672 06fc 0030D3E5 		ldrb	r3, [r3, #0]
+ 3673 0700 FF3003E2 		and	r3, r3, #255
+ 3674 0704 033081E0 		add	r3, r1, r3
+ 3675 0708 8330A0E1 		mov	r3, r3, asl #1
+ 3676 070c 033082E0 		add	r3, r2, r3
+ 3677 0710 0300A0E1 		mov	r0, r3
+ 3678 0714 97FEFFEB 		bl	celda_limpiar_error
+ 181:../button.c   ****                                         celda_poner_valor(&cuadricula[fila][columna], valor);
+ 3679              		.loc 1 181 0
+ 3680 0718 B4319FE5 		ldr	r3, .L39+4
+ 3681 071c 003093E5 		ldr	r3, [r3, #0]
+ 3682 0720 0320A0E1 		mov	r2, r3
+ 3683 0724 BC319FE5 		ldr	r3, .L39+24
+ 3684 0728 0030D3E5 		ldrb	r3, [r3, #0]
+ 3685 072c FF3003E2 		and	r3, r3, #255
+ 3686 0730 0312A0E1 		mov	r1, r3, asl #4
+ 3687 0734 B0319FE5 		ldr	r3, .L39+28
+ 3688 0738 0030D3E5 		ldrb	r3, [r3, #0]
+ 3689 073c FF3003E2 		and	r3, r3, #255
+ 3690 0740 033081E0 		add	r3, r1, r3
+ 3691 0744 8330A0E1 		mov	r3, r3, asl #1
+ 3692 0748 032082E0 		add	r2, r2, r3
+ 3693 074c 9C319FE5 		ldr	r3, .L39+32
+ 3694 0750 0030D3E5 		ldrb	r3, [r3, #0]
+ 3695 0754 FF3003E2 		and	r3, r3, #255
+ 3696 0758 0200A0E1 		mov	r0, r2
+ 3697 075c 0310A0E1 		mov	r1, r3
+ 3698 0760 26FEFFEB 		bl	celda_poner_valor
  182:../button.c   ****                                         
- 183:../button.c   ****                                         /* Actualizar la visualización del tablero */
- 184:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
- 3706              		.loc 1 184 0
- 3707 078c C8309FE5 		ldr	r3, .L35+4
- 3708 0790 003093E5 		ldr	r3, [r3, #0]
- 3709 0794 0300A0E1 		mov	r0, r3
- 3710 0798 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
- 185:../button.c   ****                                         
- 186:../button.c   ****                                         /* Volver a introducir fila */
- 187:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
- 3711              		.loc 1 187 0
- 3712 079c B4309FE5 		ldr	r3, .L35
- 3713 07a0 0120A0E3 		mov	r2, #1
- 3714 07a4 0020C3E5 		strb	r2, [r3, #0]
- 188:../button.c   ****                                         int_count = 0;
- 3715              		.loc 1 188 0
- 3716 07a8 B4309FE5 		ldr	r3, .L35+12
- 3717 07ac 0020A0E3 		mov	r2, #0
- 3718 07b0 0020C3E5 		strb	r2, [r3, #0]
- 189:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
- 3719              		.loc 1 189 0
- 3720 07b4 0F00A0E3 		mov	r0, #15
- 3721 07b8 FEFFFFEB 		bl	D8Led_symbol
- 190:../button.c   ****                                 }
- 191:../button.c   ****                                 else
- 192:../button.c   ****                                 {
- 193:../button.c   ****                                         /* No es candidato: marcar error y mostrar 'E' */
- 194:../button.c   ****                                         celda_marcar_error(&cuadricula[fila][columna]);
- 195:../button.c   ****                                         
- 196:../button.c   ****                                         /* Actualizar la visualización del tablero */
- 197:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
- 198:../button.c   ****                                         
- 199:../button.c   ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
- 200:../button.c   ****                                         
- 201:../button.c   ****                                         /* Volver a introducir fila */
- 202:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
- 203:../button.c   ****                                         int_count = 0;
- 204:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
- 205:../button.c   ****                                 }
- 206:../button.c   ****                         }
- 207:../button.c   ****                         break;
- 3722              		.loc 1 207 0
- 3723 07bc 220000EA 		b	.L7
- 3724              	.L28:
- 194:../button.c   ****                                         celda_marcar_error(&cuadricula[fila][columna]);
- 3725              		.loc 1 194 0
- 3726 07c0 94309FE5 		ldr	r3, .L35+4
- 3727 07c4 003093E5 		ldr	r3, [r3, #0]
- 3728 07c8 0320A0E1 		mov	r2, r3
- 3729 07cc 98309FE5 		ldr	r3, .L35+20
- 3730 07d0 0030D3E5 		ldrb	r3, [r3, #0]
- 3731 07d4 FF3003E2 		and	r3, r3, #255
- 3732 07d8 0312A0E1 		mov	r1, r3, asl #4
- 3733 07dc 8C309FE5 		ldr	r3, .L35+24
- 3734 07e0 0030D3E5 		ldrb	r3, [r3, #0]
- 3735 07e4 FF3003E2 		and	r3, r3, #255
- 3736 07e8 033081E0 		add	r3, r1, r3
- 3737 07ec 8330A0E1 		mov	r3, r3, asl #1
- 3738 07f0 033082E0 		add	r3, r2, r3
- 3739 07f4 0300A0E1 		mov	r0, r3
- 3740 07f8 4FFEFFEB 		bl	celda_marcar_error
- 197:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
- 3741              		.loc 1 197 0
- 3742 07fc 58309FE5 		ldr	r3, .L35+4
- 3743 0800 003093E5 		ldr	r3, [r3, #0]
- 3744 0804 0300A0E1 		mov	r0, r3
- 3745 0808 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
- 199:../button.c   ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
- 3746              		.loc 1 199 0
- 3747 080c 0E00A0E3 		mov	r0, #14
- 3748 0810 FEFFFFEB 		bl	D8Led_symbol
- 202:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
- 3749              		.loc 1 202 0
- 3750 0814 3C309FE5 		ldr	r3, .L35
- 3751 0818 0120A0E3 		mov	r2, #1
- 3752 081c 0020C3E5 		strb	r2, [r3, #0]
- 203:../button.c   ****                                         int_count = 0;
- 3753              		.loc 1 203 0
- 3754 0820 3C309FE5 		ldr	r3, .L35+12
- 3755 0824 0020A0E3 		mov	r2, #0
- 3756 0828 0020C3E5 		strb	r2, [r3, #0]
- 204:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
- 3757              		.loc 1 204 0
- 3758 082c 0F00A0E3 		mov	r0, #15
- 3759 0830 FEFFFFEB 		bl	D8Led_symbol
- 3760              		.loc 1 207 0
- 3761 0834 040000EA 		b	.L7
- 3762              	.L32:
-  78:../button.c   ****                         break;
- 3763              		.loc 1 78 0
- 3764 0838 0000A0E1 		mov	r0, r0	@ nop
- 3765 083c 020000EA 		b	.L7
- 3766              	.L33:
-  99:../button.c   ****                         break;
- 3767              		.loc 1 99 0
- 3768 0840 0000A0E1 		mov	r0, r0	@ nop
- 3769 0844 000000EA 		b	.L7
- 3770              	.L34:
- 137:../button.c   ****                         break;
- 3771              		.loc 1 137 0
- 3772 0848 0000A0E1 		mov	r0, r0	@ nop
- 3773              	.L7:
- 208:../button.c   ****         }
- 209:../button.c   **** }
- 3774              		.loc 1 209 0
- 3775 084c 0CD04BE2 		sub	sp, fp, #12
- 3776 0850 00689DE8 		ldmfd	sp, {fp, sp, lr}
- 3777 0854 1EFF2FE1 		bx	lr
- 3778              	.L36:
- 3779              		.align	2
- 3780              	.L35:
- 3781 0858 00000000 		.word	estado_juego
- 3782 085c 00000000 		.word	cuadricula
- 3783 0860 00000000 		.word	celdas_vacias
- 3784 0864 01000000 		.word	int_count
- 3785 0868 06000000 		.word	pantalla_mostrada
- 3786 086c 02000000 		.word	fila
- 3787 0870 03000000 		.word	columna
- 3788 0874 04000000 		.word	valor
- 3789 0878 05000000 		.word	valor_previo
- 3790              		.cfi_endproc
- 3791              	.LFE7:
- 3793              		.align	2
- 3794              		.global	Eint4567_ISR
- 3796              	Eint4567_ISR:
- 3797              	.LFB8:
- 210:../button.c   **** 
- 211:../button.c   **** /* declaración de función que es rutina de servicio de interrupción
- 212:../button.c   ****  * https://gcc.gnu.org/onlinedocs/gcc/ARM-Function-Attributes.html */
- 213:../button.c   **** void Eint4567_ISR(void) __attribute__((interrupt("IRQ")));
- 214:../button.c   **** 
- 215:../button.c   **** /*--- código de funciones ---*/
- 216:../button.c   **** void Eint4567_ISR(void)
- 217:../button.c   **** {
- 3798              		.loc 1 217 0
- 3799              		.cfi_startproc
- 3800              		@ Interrupt Service Routine.
- 3801              		@ args = 0, pretend = 0, frame = 8
- 3802              		@ frame_needed = 1, uses_anonymous_args = 0
- 3803 087c 04C02DE5 		str	ip, [sp, #-4]!
- 3804 0880 0DC0A0E1 		mov	ip, sp
- 3805              	.LCFI14:
- 3806              		.cfi_def_cfa_register 12
- 3807 0884 0FD82DE9 		stmfd	sp!, {r0, r1, r2, r3, fp, ip, lr, pc}
- 3808 0888 04B04CE2 		sub	fp, ip, #4
- 3809              		.cfi_offset 14, -8
- 3810              		.cfi_offset 13, -12
- 3811              		.cfi_offset 11, -16
- 3812              		.cfi_offset 3, -20
- 3813              		.cfi_offset 2, -24
- 3814              		.cfi_offset 1, -28
- 3815              		.cfi_offset 0, -32
- 3816              	.LCFI15:
- 3817              		.cfi_def_cfa 11, 4
- 3818 088c 08D04DE2 		sub	sp, sp, #8
- 218:../button.c   ****         /* Identificar la interrupción (hay dos pulsadores) */
- 219:../button.c   ****         unsigned int pending = rEXTINTPND & 0xF;
- 3819              		.loc 1 219 0
- 3820 0890 8C309FE5 		ldr	r3, .L41
- 3821 0894 003093E5 		ldr	r3, [r3, #0]
- 3822 0898 0F3003E2 		and	r3, r3, #15
- 3823 089c 24300BE5 		str	r3, [fp, #-36]
- 220:../button.c   ****         uint8_t boton_id = 0;
- 3824              		.loc 1 220 0
- 3825 08a0 0030A0E3 		mov	r3, #0
- 3826 08a4 1D304BE5 		strb	r3, [fp, #-29]
- 221:../button.c   **** 
- 222:../button.c   ****         if (pending & 0x4)
- 3827              		.loc 1 222 0
- 3828 08a8 24301BE5 		ldr	r3, [fp, #-36]
- 3829 08ac 043003E2 		and	r3, r3, #4
- 3830 08b0 000053E3 		cmp	r3, #0
- 3831 08b4 0200000A 		beq	.L38
- 223:../button.c   ****         {
- 224:../button.c   ****                 boton_id = EVENTO_BOTON_IZQUIERDO;
- 3832              		.loc 1 224 0
- 3833 08b8 0430A0E3 		mov	r3, #4
- 3834 08bc 1D304BE5 		strb	r3, [fp, #-29]
- 3835 08c0 050000EA 		b	.L39
- 3836              	.L38:
- 225:../button.c   ****         }
- 226:../button.c   ****         else if (pending & 0x8)
- 3837              		.loc 1 226 0
- 3838 08c4 24301BE5 		ldr	r3, [fp, #-36]
- 3839 08c8 083003E2 		and	r3, r3, #8
- 3840 08cc 000053E3 		cmp	r3, #0
- 3841 08d0 0100000A 		beq	.L39
- 227:../button.c   ****         {
- 228:../button.c   ****                 boton_id = EVENTO_BOTON_DERECHO;
- 3842              		.loc 1 228 0
- 3843 08d4 0830A0E3 		mov	r3, #8
- 3844 08d8 1D304BE5 		strb	r3, [fp, #-29]
- 3845              	.L39:
- 229:../button.c   ****         }
- 230:../button.c   **** 
- 231:../button.c   ****         if (boton_id != 0U)
- 3846              		.loc 1 231 0
- 3847 08dc 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
- 3848 08e0 000053E3 		cmp	r3, #0
- 3849 08e4 0200000A 		beq	.L40
- 232:../button.c   ****         {
- 233:../button.c   ****                 /* No registrar la pulsación inicial, solo las confirmadas */
+ 183:../button.c   ****                                         /* Decidir si propagar o actualizar según el caso */
+ 184:../button.c   ****                                         if (valor_previo != 0)
+ 3699              		.loc 1 184 0
+ 3700 0764 88319FE5 		ldr	r3, .L39+36
+ 3701 0768 0030D3E5 		ldrb	r3, [r3, #0]
+ 3702 076c FF3003E2 		and	r3, r3, #255
+ 3703 0770 000053E3 		cmp	r3, #0
+ 3704 0774 0700000A 		beq	.L31
+ 185:../button.c   ****                                         {
+ 186:../button.c   ****                                                 /* Se modificó un valor previo -> recalcular todo 
+ 187:../button.c   ****                                                 celdas_vacias = candidatos_actualizar_all(cuadricul
+ 3705              		.loc 1 187 0
+ 3706 0778 54319FE5 		ldr	r3, .L39+4
+ 3707 077c 003093E5 		ldr	r3, [r3, #0]
+ 3708 0780 0300A0E1 		mov	r0, r3
+ 3709 0784 FEFFFFEB 		bl	candidatos_actualizar_all
+ 3710 0788 0020A0E1 		mov	r2, r0
+ 3711 078c 44319FE5 		ldr	r3, .L39+8
+ 3712 0790 002083E5 		str	r2, [r3, #0]
+ 3713 0794 0B0000EA 		b	.L32
+ 3714              	.L31:
+ 188:../button.c   ****                                         }
+ 189:../button.c   ****                                         else
+ 190:../button.c   ****                                         {
+ 191:../button.c   ****                                                 /* Celda vacía -> solo propagar el nuevo valor */
+ 192:../button.c   ****                                                 candidatos_propagar_arm(cuadricula, fila, columna);
+ 3715              		.loc 1 192 0
+ 3716 0798 34319FE5 		ldr	r3, .L39+4
+ 3717 079c 001093E5 		ldr	r1, [r3, #0]
+ 3718 07a0 40319FE5 		ldr	r3, .L39+24
+ 3719 07a4 0030D3E5 		ldrb	r3, [r3, #0]
+ 3720 07a8 FF2003E2 		and	r2, r3, #255
+ 3721 07ac 38319FE5 		ldr	r3, .L39+28
+ 3722 07b0 0030D3E5 		ldrb	r3, [r3, #0]
+ 3723 07b4 FF3003E2 		and	r3, r3, #255
+ 3724 07b8 0100A0E1 		mov	r0, r1
+ 3725 07bc 0210A0E1 		mov	r1, r2
+ 3726 07c0 0320A0E1 		mov	r2, r3
+ 3727 07c4 FEFFFFEB 		bl	candidatos_propagar_arm
+ 3728              	.L32:
+ 193:../button.c   ****                                         }
+ 194:../button.c   ****                                         
+ 195:../button.c   ****                                         /* Actualizar la visualización del tablero */
+ 196:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 3729              		.loc 1 196 0
+ 3730 07c8 04319FE5 		ldr	r3, .L39+4
+ 3731 07cc 003093E5 		ldr	r3, [r3, #0]
+ 3732 07d0 0300A0E1 		mov	r0, r3
+ 3733 07d4 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 197:../button.c   ****                                         
+ 198:../button.c   ****                                         /* Volver a introducir fila */
+ 199:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
+ 3734              		.loc 1 199 0
+ 3735 07d8 F0309FE5 		ldr	r3, .L39
+ 3736 07dc 0120A0E3 		mov	r2, #1
+ 3737 07e0 0020C3E5 		strb	r2, [r3, #0]
+ 200:../button.c   ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 3738              		.loc 1 200 0
+ 3739 07e4 F0309FE5 		ldr	r3, .L39+12
+ 3740 07e8 0920A0E3 		mov	r2, #9
+ 3741 07ec 0020C3E5 		strb	r2, [r3, #0]
+ 201:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 3742              		.loc 1 201 0
+ 3743 07f0 0F00A0E3 		mov	r0, #15
+ 3744 07f4 FEFFFFEB 		bl	D8Led_symbol
+ 202:../button.c   ****                                 }
+ 203:../button.c   ****                                 else
+ 204:../button.c   ****                                 {
+ 205:../button.c   ****                                         /* No es candidato: marcar error y mostrar 'E' */
+ 206:../button.c   ****                                         celda_marcar_error(&cuadricula[fila][columna]);
+ 207:../button.c   ****                                         
+ 208:../button.c   ****                                         /* Actualizar la visualización del tablero */
+ 209:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 210:../button.c   ****                                         
+ 211:../button.c   ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
+ 212:../button.c   ****                                         
+ 213:../button.c   ****                                         /* Volver a introducir fila */
+ 214:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
+ 215:../button.c   ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 216:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 217:../button.c   ****                                 }
+ 218:../button.c   ****                         }
+ 219:../button.c   ****                         break;
+ 3745              		.loc 1 219 0
+ 3746 07f8 310000EA 		b	.L7
+ 3747              	.L30:
+ 206:../button.c   ****                                         celda_marcar_error(&cuadricula[fila][columna]);
+ 3748              		.loc 1 206 0
+ 3749 07fc D0309FE5 		ldr	r3, .L39+4
+ 3750 0800 003093E5 		ldr	r3, [r3, #0]
+ 3751 0804 0320A0E1 		mov	r2, r3
+ 3752 0808 D8309FE5 		ldr	r3, .L39+24
+ 3753 080c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3754 0810 FF3003E2 		and	r3, r3, #255
+ 3755 0814 0312A0E1 		mov	r1, r3, asl #4
+ 3756 0818 CC309FE5 		ldr	r3, .L39+28
+ 3757 081c 0030D3E5 		ldrb	r3, [r3, #0]
+ 3758 0820 FF3003E2 		and	r3, r3, #255
+ 3759 0824 033081E0 		add	r3, r1, r3
+ 3760 0828 8330A0E1 		mov	r3, r3, asl #1
+ 3761 082c 033082E0 		add	r3, r2, r3
+ 3762 0830 0300A0E1 		mov	r0, r3
+ 3763 0834 40FEFFEB 		bl	celda_marcar_error
+ 209:../button.c   ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 3764              		.loc 1 209 0
+ 3765 0838 94309FE5 		ldr	r3, .L39+4
+ 3766 083c 003093E5 		ldr	r3, [r3, #0]
+ 3767 0840 0300A0E1 		mov	r0, r3
+ 3768 0844 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 211:../button.c   ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
+ 3769              		.loc 1 211 0
+ 3770 0848 0E00A0E3 		mov	r0, #14
+ 3771 084c FEFFFFEB 		bl	D8Led_symbol
+ 214:../button.c   ****                                         estado_juego = INTRODUCIR_FILA;
+ 3772              		.loc 1 214 0
+ 3773 0850 78309FE5 		ldr	r3, .L39
+ 3774 0854 0120A0E3 		mov	r2, #1
+ 3775 0858 0020C3E5 		strb	r2, [r3, #0]
+ 215:../button.c   ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 3776              		.loc 1 215 0
+ 3777 085c 78309FE5 		ldr	r3, .L39+12
+ 3778 0860 0920A0E3 		mov	r2, #9
+ 3779 0864 0020C3E5 		strb	r2, [r3, #0]
+ 216:../button.c   ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 3780              		.loc 1 216 0
+ 3781 0868 0F00A0E3 		mov	r0, #15
+ 3782 086c FEFFFFEB 		bl	D8Led_symbol
+ 3783              		.loc 1 219 0
+ 3784 0870 130000EA 		b	.L7
+ 3785              	.L15:
+ 220:../button.c   ****                 
+ 221:../button.c   ****                 case PARTIDA_TERMINADA:
+ 222:../button.c   ****                         /* Mostrar pantalla de despedida solo una vez */
+ 223:../button.c   ****                         if (!pantalla_mostrada)
+ 3786              		.loc 1 223 0
+ 3787 0874 64309FE5 		ldr	r3, .L39+16
+ 3788 0878 0030D3E5 		ldrb	r3, [r3, #0]
+ 3789 087c FF3003E2 		and	r3, r3, #255
+ 3790 0880 000053E3 		cmp	r3, #0
+ 3791 0884 0D00001A 		bne	.L38
+ 224:../button.c   ****                         {
+ 225:../button.c   ****                                 /* Usar la función existente de lcd.c */
+ 226:../button.c   ****                                 Sudoku_Pantalla_Final(tiempo_final);
+ 3792              		.loc 1 226 0
+ 3793 0888 54309FE5 		ldr	r3, .L39+20
+ 3794 088c 003093E5 		ldr	r3, [r3, #0]
+ 3795 0890 0300A0E1 		mov	r0, r3
+ 3796 0894 FEFFFFEB 		bl	Sudoku_Pantalla_Final
+ 227:../button.c   ****                                 
+ 228:../button.c   ****                                 pantalla_mostrada = 1;
+ 3797              		.loc 1 228 0
+ 3798 0898 40309FE5 		ldr	r3, .L39+16
+ 3799 089c 0120A0E3 		mov	r2, #1
+ 3800 08a0 0020C3E5 		strb	r2, [r3, #0]
+ 229:../button.c   ****                         }
+ 230:../button.c   ****                         /* No hacer nada más - el juego permanece terminado */
+ 231:../button.c   ****                         break;
+ 3801              		.loc 1 231 0
+ 3802 08a4 060000EA 		b	.L7
+ 3803              	.L35:
+  90:../button.c   ****                         break;
+ 3804              		.loc 1 90 0
+ 3805 08a8 0000A0E1 		mov	r0, r0	@ nop
+ 3806 08ac 040000EA 		b	.L7
+ 3807              	.L36:
+ 111:../button.c   ****                         break;
+ 3808              		.loc 1 111 0
+ 3809 08b0 0000A0E1 		mov	r0, r0	@ nop
+ 3810 08b4 020000EA 		b	.L7
+ 3811              	.L37:
+ 149:../button.c   ****                         break;
+ 3812              		.loc 1 149 0
+ 3813 08b8 0000A0E1 		mov	r0, r0	@ nop
+ 3814 08bc 000000EA 		b	.L7
+ 3815              	.L38:
+ 3816              		.loc 1 231 0
+ 3817 08c0 0000A0E1 		mov	r0, r0	@ nop
+ 3818              	.L7:
+ 232:../button.c   ****         }
+ 233:../button.c   **** }
+ 3819              		.loc 1 233 0
+ 3820 08c4 0CD04BE2 		sub	sp, fp, #12
+ 3821 08c8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3822 08cc 1EFF2FE1 		bx	lr
+ 3823              	.L40:
+ 3824              		.align	2
+ 3825              	.L39:
+ 3826 08d0 00000000 		.word	estado_juego
+ 3827 08d4 00000000 		.word	cuadricula
+ 3828 08d8 00000000 		.word	celdas_vacias
+ 3829 08dc 01000000 		.word	int_count
+ 3830 08e0 06000000 		.word	pantalla_mostrada
+ 3831 08e4 08000000 		.word	tiempo_final
+ 3832 08e8 02000000 		.word	fila
+ 3833 08ec 03000000 		.word	columna
+ 3834 08f0 04000000 		.word	valor
+ 3835 08f4 05000000 		.word	valor_previo
+ 3836              		.cfi_endproc
+ 3837              	.LFE7:
+ 3839              		.align	2
+ 3840              		.global	Eint4567_ISR
+ 3842              	Eint4567_ISR:
+ 3843              	.LFB8:
  234:../button.c   **** 
- 235:../button.c   ****                 /* Iniciar la máquina de antirrebotes. Si está ocupada, no hacer nada */
- 236:../button.c   ****                 timer3_start_antirrebote(boton_id);
- 3850              		.loc 1 236 0
- 3851 08e8 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
- 3852 08ec 0300A0E1 		mov	r0, r3
- 3853 08f0 FEFFFFEB 		bl	timer3_start_antirrebote
- 3854              	.L40:
- 237:../button.c   ****         }
+ 235:../button.c   **** /* declaración de función que es rutina de servicio de interrupción
+ 236:../button.c   ****  * https://gcc.gnu.org/onlinedocs/gcc/ARM-Function-Attributes.html */
+ 237:../button.c   **** void Eint4567_ISR(void) __attribute__((interrupt("IRQ")));
  238:../button.c   **** 
- 239:../button.c   ****         /* Finalizar ISR */
- 240:../button.c   ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
- 3855              		.loc 1 240 0
- 3856 08f4 28309FE5 		ldr	r3, .L41
- 3857 08f8 0F20A0E3 		mov	r2, #15
- 3858 08fc 002083E5 		str	r2, [r3, #0]
- 241:../button.c   ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
- 3859              		.loc 1 241 0
- 3860 0900 20309FE5 		ldr	r3, .L41+4
- 3861 0904 1C209FE5 		ldr	r2, .L41+4
- 3862 0908 002092E5 		ldr	r2, [r2, #0]
- 3863 090c 022682E3 		orr	r2, r2, #2097152
- 3864 0910 002083E5 		str	r2, [r3, #0]
- 242:../button.c   **** }
- 3865              		.loc 1 242 0
- 3866 0914 1CD04BE2 		sub	sp, fp, #28
- 3867 0918 0F689DE8 		ldmfd	sp, {r0, r1, r2, r3, fp, sp, lr}
- 3868 091c 04C09DE4 		ldmfd	sp!, {ip}
- 3869 0920 04F05EE2 		subs	pc, lr, #4
- 3870              	.L42:
- 3871              		.align	2
- 3872              	.L41:
- 3873 0924 5400D201 		.word	30539860
- 3874 0928 2400E001 		.word	31457316
- 3875              		.cfi_endproc
- 3876              	.LFE8:
- 3878              		.align	2
- 3879              		.global	Eint4567_init
- 3881              	Eint4567_init:
- 3882              	.LFB9:
- 243:../button.c   **** 
- 244:../button.c   **** void Eint4567_init(void)
- 245:../button.c   **** {
- 3883              		.loc 1 245 0
- 3884              		.cfi_startproc
- 3885              		@ Function supports interworking.
- 3886              		@ args = 0, pretend = 0, frame = 0
- 3887              		@ frame_needed = 1, uses_anonymous_args = 0
- 3888 092c 0DC0A0E1 		mov	ip, sp
- 3889              	.LCFI16:
- 3890              		.cfi_def_cfa_register 12
- 3891 0930 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
- 3892 0934 04B04CE2 		sub	fp, ip, #4
- 3893              		.cfi_offset 14, -8
- 3894              		.cfi_offset 13, -12
- 3895              		.cfi_offset 11, -16
- 3896              	.LCFI17:
- 3897              		.cfi_def_cfa 11, 4
- 246:../button.c   ****         /* Inicializar el temporizador dedicado a la eliminación de rebotes */
- 247:../button.c   ****         timer3_init(boton_confirmado);
- 3898              		.loc 1 247 0
- 3899 0938 AC009FE5 		ldr	r0, .L44
- 3900 093c FEFFFFEB 		bl	timer3_init
- 248:../button.c   **** 
- 249:../button.c   ****         /* Configuracion del controlador de interrupciones. Estos registros están definidos en 44b
- 250:../button.c   ****         rI_ISPC    = 0x3ffffff;         // Borra INTPND escribiendo 1s en I_ISPC
- 3901              		.loc 1 250 0
- 3902 0940 A8309FE5 		ldr	r3, .L44+4
- 3903 0944 3F23E0E3 		mvn	r2, #-67108864
- 3904 0948 002083E5 		str	r2, [r3, #0]
- 251:../button.c   ****         rEXTINTPND = 0xf;               // Borra EXTINTPND escribiendo 1s en el propio registro
- 3905              		.loc 1 251 0
- 3906 094c A0309FE5 		ldr	r3, .L44+8
- 3907 0950 0F20A0E3 		mov	r2, #15
- 3908 0954 002083E5 		str	r2, [r3, #0]
- 252:../button.c   ****         rINTMOD    = 0x0;               // Configura las lineas como de tipo IRQ
- 3909              		.loc 1 252 0
- 3910 0958 98309FE5 		ldr	r3, .L44+12
- 3911 095c 0020A0E3 		mov	r2, #0
- 3912 0960 002083E5 		str	r2, [r3, #0]
- 253:../button.c   ****         rINTCON    = 0x1;               // Habilita int. vectorizadas y la linea IRQ (FIQ no)
- 3913              		.loc 1 253 0
- 3914 0964 1E36A0E3 		mov	r3, #31457280
- 3915 0968 0120A0E3 		mov	r2, #1
- 3916 096c 002083E5 		str	r2, [r3, #0]
- 254:../button.c   ****         rINTMSK    &= ~(BIT_EINT4567);  // habilitamos interrupcion linea eint4567 en vector de mas
- 3917              		.loc 1 254 0
- 3918 0970 84309FE5 		ldr	r3, .L44+16
- 3919 0974 80209FE5 		ldr	r2, .L44+16
- 3920 0978 002092E5 		ldr	r2, [r2, #0]
- 3921 097c 0226C2E3 		bic	r2, r2, #2097152
- 3922 0980 002083E5 		str	r2, [r3, #0]
- 255:../button.c   **** 
- 256:../button.c   ****         /* Establece la rutina de servicio para Eint4567 */
- 257:../button.c   ****         pISR_EINT4567 = (int) Eint4567_ISR;
- 3923              		.loc 1 257 0
- 3924 0984 74309FE5 		ldr	r3, .L44+20
- 3925 0988 74209FE5 		ldr	r2, .L44+24
- 3926 098c 002083E5 		str	r2, [r3, #0]
+ 239:../button.c   **** /*--- código de funciones ---*/
+ 240:../button.c   **** void Eint4567_ISR(void)
+ 241:../button.c   **** {
+ 3844              		.loc 1 241 0
+ 3845              		.cfi_startproc
+ 3846              		@ Interrupt Service Routine.
+ 3847              		@ args = 0, pretend = 0, frame = 8
+ 3848              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3849 08f8 04C02DE5 		str	ip, [sp, #-4]!
+ 3850 08fc 0DC0A0E1 		mov	ip, sp
+ 3851              	.LCFI14:
+ 3852              		.cfi_def_cfa_register 12
+ 3853 0900 0FD82DE9 		stmfd	sp!, {r0, r1, r2, r3, fp, ip, lr, pc}
+ 3854 0904 04B04CE2 		sub	fp, ip, #4
+ 3855              		.cfi_offset 14, -8
+ 3856              		.cfi_offset 13, -12
+ 3857              		.cfi_offset 11, -16
+ 3858              		.cfi_offset 3, -20
+ 3859              		.cfi_offset 2, -24
+ 3860              		.cfi_offset 1, -28
+ 3861              		.cfi_offset 0, -32
+ 3862              	.LCFI15:
+ 3863              		.cfi_def_cfa 11, 4
+ 3864 0908 08D04DE2 		sub	sp, sp, #8
+ 242:../button.c   ****         /* Identificar la interrupción (hay dos pulsadores) */
+ 243:../button.c   ****         unsigned int pending = rEXTINTPND & 0xF;
+ 3865              		.loc 1 243 0
+ 3866 090c 8C309FE5 		ldr	r3, .L45
+ 3867 0910 003093E5 		ldr	r3, [r3, #0]
+ 3868 0914 0F3003E2 		and	r3, r3, #15
+ 3869 0918 24300BE5 		str	r3, [fp, #-36]
+ 244:../button.c   ****         uint8_t boton_id = 0;
+ 3870              		.loc 1 244 0
+ 3871 091c 0030A0E3 		mov	r3, #0
+ 3872 0920 1D304BE5 		strb	r3, [fp, #-29]
+ 245:../button.c   **** 
+ 246:../button.c   ****         if (pending & 0x4)
+ 3873              		.loc 1 246 0
+ 3874 0924 24301BE5 		ldr	r3, [fp, #-36]
+ 3875 0928 043003E2 		and	r3, r3, #4
+ 3876 092c 000053E3 		cmp	r3, #0
+ 3877 0930 0200000A 		beq	.L42
+ 247:../button.c   ****         {
+ 248:../button.c   ****                 boton_id = EVENTO_BOTON_IZQUIERDO;
+ 3878              		.loc 1 248 0
+ 3879 0934 0430A0E3 		mov	r3, #4
+ 3880 0938 1D304BE5 		strb	r3, [fp, #-29]
+ 3881 093c 050000EA 		b	.L43
+ 3882              	.L42:
+ 249:../button.c   ****         }
+ 250:../button.c   ****         else if (pending & 0x8)
+ 3883              		.loc 1 250 0
+ 3884 0940 24301BE5 		ldr	r3, [fp, #-36]
+ 3885 0944 083003E2 		and	r3, r3, #8
+ 3886 0948 000053E3 		cmp	r3, #0
+ 3887 094c 0100000A 		beq	.L43
+ 251:../button.c   ****         {
+ 252:../button.c   ****                 boton_id = EVENTO_BOTON_DERECHO;
+ 3888              		.loc 1 252 0
+ 3889 0950 0830A0E3 		mov	r3, #8
+ 3890 0954 1D304BE5 		strb	r3, [fp, #-29]
+ 3891              	.L43:
+ 253:../button.c   ****         }
+ 254:../button.c   **** 
+ 255:../button.c   ****         if (boton_id != 0U)
+ 3892              		.loc 1 255 0
+ 3893 0958 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 3894 095c 000053E3 		cmp	r3, #0
+ 3895 0960 0200000A 		beq	.L44
+ 256:../button.c   ****         {
+ 257:../button.c   ****                 /* No registrar la pulsación inicial, solo las confirmadas */
  258:../button.c   **** 
- 259:../button.c   ****         /* Configuracion del puerto G */
- 260:../button.c   ****         rPCONG  = 0xffff;                       // Establece la funcion de los pines (EINT0-7)
- 3927              		.loc 1 260 0
- 3928 0990 70309FE5 		ldr	r3, .L44+28
- 3929 0994 70209FE5 		ldr	r2, .L44+32
- 3930 0998 002083E5 		str	r2, [r3, #0]
- 261:../button.c   ****         rPUPG   = 0x0;                  // Habilita el "pull up" del puerto
- 3931              		.loc 1 261 0
- 3932 099c 6C309FE5 		ldr	r3, .L44+36
- 3933 09a0 0020A0E3 		mov	r2, #0
- 3934 09a4 002083E5 		str	r2, [r3, #0]
- 262:../button.c   ****         rEXTINT = rEXTINT | 0x22222222;   // Configura las lineas de int. como de flanco de bajada
- 3935              		.loc 1 262 0
- 3936 09a8 64209FE5 		ldr	r2, .L44+40
- 3937 09ac 60309FE5 		ldr	r3, .L44+40
- 3938 09b0 001093E5 		ldr	r1, [r3, #0]
- 3939 09b4 5C309FE5 		ldr	r3, .L44+44
- 3940 09b8 033081E1 		orr	r3, r1, r3
- 3941 09bc 003082E5 		str	r3, [r2, #0]
- 263:../button.c   **** 
- 264:../button.c   ****         /* Por precaucion, se vuelven a borrar los bits de INTPND y EXTINTPND */
- 265:../button.c   ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
- 3942              		.loc 1 265 0
- 3943 09c0 2C309FE5 		ldr	r3, .L44+8
- 3944 09c4 0F20A0E3 		mov	r2, #15
- 3945 09c8 002083E5 		str	r2, [r3, #0]
- 266:../button.c   ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
- 3946              		.loc 1 266 0
- 3947 09cc 1C309FE5 		ldr	r3, .L44+4
- 3948 09d0 18209FE5 		ldr	r2, .L44+4
- 3949 09d4 002092E5 		ldr	r2, [r2, #0]
- 3950 09d8 022682E3 		orr	r2, r2, #2097152
- 3951 09dc 002083E5 		str	r2, [r3, #0]
- 267:../button.c   **** }
- 3952              		.loc 1 267 0
- 3953 09e0 0CD04BE2 		sub	sp, fp, #12
- 3954 09e4 00689DE8 		ldmfd	sp, {fp, sp, lr}
- 3955 09e8 1EFF2FE1 		bx	lr
- 3956              	.L45:
+ 259:../button.c   ****                 /* Iniciar la máquina de antirrebotes. Si está ocupada, no hacer nada */
+ 260:../button.c   ****                 timer3_start_antirrebote(boton_id);
+ 3896              		.loc 1 260 0
+ 3897 0964 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 3898 0968 0300A0E1 		mov	r0, r3
+ 3899 096c FEFFFFEB 		bl	timer3_start_antirrebote
+ 3900              	.L44:
+ 261:../button.c   ****         }
+ 262:../button.c   **** 
+ 263:../button.c   ****         /* Finalizar ISR */
+ 264:../button.c   ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
+ 3901              		.loc 1 264 0
+ 3902 0970 28309FE5 		ldr	r3, .L45
+ 3903 0974 0F20A0E3 		mov	r2, #15
+ 3904 0978 002083E5 		str	r2, [r3, #0]
+ 265:../button.c   ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
+ 3905              		.loc 1 265 0
+ 3906 097c 20309FE5 		ldr	r3, .L45+4
+ 3907 0980 1C209FE5 		ldr	r2, .L45+4
+ 3908 0984 002092E5 		ldr	r2, [r2, #0]
+ 3909 0988 022682E3 		orr	r2, r2, #2097152
+ 3910 098c 002083E5 		str	r2, [r3, #0]
+ 266:../button.c   **** }
+ 3911              		.loc 1 266 0
+ 3912 0990 1CD04BE2 		sub	sp, fp, #28
+ 3913 0994 0F689DE8 		ldmfd	sp, {r0, r1, r2, r3, fp, sp, lr}
+ 3914 0998 04C09DE4 		ldmfd	sp!, {ip}
+ 3915 099c 04F05EE2 		subs	pc, lr, #4
+ 3916              	.L46:
+ 3917              		.align	2
+ 3918              	.L45:
+ 3919 09a0 5400D201 		.word	30539860
+ 3920 09a4 2400E001 		.word	31457316
+ 3921              		.cfi_endproc
+ 3922              	.LFE8:
+ 3924              		.align	2
+ 3925              		.global	Sudoku_Partida_Terminada
+ 3927              	Sudoku_Partida_Terminada:
+ 3928              	.LFB9:
+ 267:../button.c   **** /* Función para consultar si la partida está terminada */
+ 268:../button.c   **** int Sudoku_Partida_Terminada(void)
+ 269:../button.c   **** {
+ 3929              		.loc 1 269 0
+ 3930              		.cfi_startproc
+ 3931              		@ Function supports interworking.
+ 3932              		@ args = 0, pretend = 0, frame = 0
+ 3933              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3934 09a8 0DC0A0E1 		mov	ip, sp
+ 3935              	.LCFI16:
+ 3936              		.cfi_def_cfa_register 12
+ 3937 09ac 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3938 09b0 04B04CE2 		sub	fp, ip, #4
+ 3939              		.cfi_offset 14, -8
+ 3940              		.cfi_offset 13, -12
+ 3941              		.cfi_offset 11, -16
+ 3942              	.LCFI17:
+ 3943              		.cfi_def_cfa 11, 4
+ 270:../button.c   **** 	return (estado_juego == PARTIDA_TERMINADA);
+ 3944              		.loc 1 270 0
+ 3945 09b4 20309FE5 		ldr	r3, .L48
+ 3946 09b8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3947 09bc FF3003E2 		and	r3, r3, #255
+ 3948 09c0 070053E3 		cmp	r3, #7
+ 3949 09c4 0030A013 		movne	r3, #0
+ 3950 09c8 0130A003 		moveq	r3, #1
+ 271:../button.c   **** }
+ 3951              		.loc 1 271 0
+ 3952 09cc 0300A0E1 		mov	r0, r3
+ 3953 09d0 0CD04BE2 		sub	sp, fp, #12
+ 3954 09d4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3955 09d8 1EFF2FE1 		bx	lr
+ 3956              	.L49:
  3957              		.align	2
- 3958              	.L44:
- 3959 09ec 00000000 		.word	boton_confirmado
- 3960 09f0 2400E001 		.word	31457316
- 3961 09f4 5400D201 		.word	30539860
- 3962 09f8 0800E001 		.word	31457288
- 3963 09fc 0C00E001 		.word	31457292
- 3964 0a00 74FF7F0C 		.word	209715060
- 3965 0a04 00000000 		.word	Eint4567_ISR
- 3966 0a08 4000D201 		.word	30539840
- 3967 0a0c FFFF0000 		.word	65535
- 3968 0a10 4800D201 		.word	30539848
- 3969 0a14 5000D201 		.word	30539856
- 3970 0a18 22222222 		.word	572662306
- 3971              		.cfi_endproc
- 3972              	.LFE9:
- 3974              	.Letext0:
+ 3958              	.L48:
+ 3959 09dc 00000000 		.word	estado_juego
+ 3960              		.cfi_endproc
+ 3961              	.LFE9:
+ 3963              		.align	2
+ 3964              		.global	Eint4567_init
+ 3966              	Eint4567_init:
+ 3967              	.LFB10:
+ 272:../button.c   **** void Eint4567_init(void)
+ 273:../button.c   **** {
+ 3968              		.loc 1 273 0
+ 3969              		.cfi_startproc
+ 3970              		@ Function supports interworking.
+ 3971              		@ args = 0, pretend = 0, frame = 0
+ 3972              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3973 09e0 0DC0A0E1 		mov	ip, sp
+ 3974              	.LCFI18:
+ 3975              		.cfi_def_cfa_register 12
+ 3976 09e4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3977 09e8 04B04CE2 		sub	fp, ip, #4
+ 3978              		.cfi_offset 14, -8
+ 3979              		.cfi_offset 13, -12
+ 3980              		.cfi_offset 11, -16
+ 3981              	.LCFI19:
+ 3982              		.cfi_def_cfa 11, 4
+ 274:../button.c   ****         /* Inicializar el temporizador dedicado a la eliminación de rebotes */
+ 275:../button.c   ****         timer3_init(boton_confirmado);
+ 3983              		.loc 1 275 0
+ 3984 09ec AC009FE5 		ldr	r0, .L51
+ 3985 09f0 FEFFFFEB 		bl	timer3_init
+ 276:../button.c   **** 
+ 277:../button.c   ****         /* Configuracion del controlador de interrupciones. Estos registros están definidos en 44b
+ 278:../button.c   ****         rI_ISPC    = 0x3ffffff;         // Borra INTPND escribiendo 1s en I_ISPC
+ 3986              		.loc 1 278 0
+ 3987 09f4 A8309FE5 		ldr	r3, .L51+4
+ 3988 09f8 3F23E0E3 		mvn	r2, #-67108864
+ 3989 09fc 002083E5 		str	r2, [r3, #0]
+ 279:../button.c   ****         rEXTINTPND = 0xf;               // Borra EXTINTPND escribiendo 1s en el propio registro
+ 3990              		.loc 1 279 0
+ 3991 0a00 A0309FE5 		ldr	r3, .L51+8
+ 3992 0a04 0F20A0E3 		mov	r2, #15
+ 3993 0a08 002083E5 		str	r2, [r3, #0]
+ 280:../button.c   ****         rINTMOD    = 0x0;               // Configura las lineas como de tipo IRQ
+ 3994              		.loc 1 280 0
+ 3995 0a0c 98309FE5 		ldr	r3, .L51+12
+ 3996 0a10 0020A0E3 		mov	r2, #0
+ 3997 0a14 002083E5 		str	r2, [r3, #0]
+ 281:../button.c   ****         rINTCON    = 0x1;               // Habilita int. vectorizadas y la linea IRQ (FIQ no)
+ 3998              		.loc 1 281 0
+ 3999 0a18 1E36A0E3 		mov	r3, #31457280
+ 4000 0a1c 0120A0E3 		mov	r2, #1
+ 4001 0a20 002083E5 		str	r2, [r3, #0]
+ 282:../button.c   ****         rINTMSK    &= ~(BIT_EINT4567);  // habilitamos interrupcion linea eint4567 en vector de mas
+ 4002              		.loc 1 282 0
+ 4003 0a24 84309FE5 		ldr	r3, .L51+16
+ 4004 0a28 80209FE5 		ldr	r2, .L51+16
+ 4005 0a2c 002092E5 		ldr	r2, [r2, #0]
+ 4006 0a30 0226C2E3 		bic	r2, r2, #2097152
+ 4007 0a34 002083E5 		str	r2, [r3, #0]
+ 283:../button.c   **** 
+ 284:../button.c   ****         /* Establece la rutina de servicio para Eint4567 */
+ 285:../button.c   ****         pISR_EINT4567 = (int) Eint4567_ISR;
+ 4008              		.loc 1 285 0
+ 4009 0a38 74309FE5 		ldr	r3, .L51+20
+ 4010 0a3c 74209FE5 		ldr	r2, .L51+24
+ 4011 0a40 002083E5 		str	r2, [r3, #0]
+ 286:../button.c   **** 
+ 287:../button.c   ****         /* Configuracion del puerto G */
+ 288:../button.c   ****         rPCONG  = 0xffff;                       // Establece la funcion de los pines (EINT0-7)
+ 4012              		.loc 1 288 0
+ 4013 0a44 70309FE5 		ldr	r3, .L51+28
+ 4014 0a48 70209FE5 		ldr	r2, .L51+32
+ 4015 0a4c 002083E5 		str	r2, [r3, #0]
+ 289:../button.c   ****         rPUPG   = 0x0;                  // Habilita el "pull up" del puerto
+ 4016              		.loc 1 289 0
+ 4017 0a50 6C309FE5 		ldr	r3, .L51+36
+ 4018 0a54 0020A0E3 		mov	r2, #0
+ 4019 0a58 002083E5 		str	r2, [r3, #0]
+ 290:../button.c   ****         rEXTINT = rEXTINT | 0x22222222;   // Configura las lineas de int. como de flanco de bajada
+ 4020              		.loc 1 290 0
+ 4021 0a5c 64209FE5 		ldr	r2, .L51+40
+ 4022 0a60 60309FE5 		ldr	r3, .L51+40
+ 4023 0a64 001093E5 		ldr	r1, [r3, #0]
+ 4024 0a68 5C309FE5 		ldr	r3, .L51+44
+ 4025 0a6c 033081E1 		orr	r3, r1, r3
+ 4026 0a70 003082E5 		str	r3, [r2, #0]
+ 291:../button.c   **** 
+ 292:../button.c   ****         /* Por precaucion, se vuelven a borrar los bits de INTPND y EXTINTPND */
+ 293:../button.c   ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
+ 4027              		.loc 1 293 0
+ 4028 0a74 2C309FE5 		ldr	r3, .L51+8
+ 4029 0a78 0F20A0E3 		mov	r2, #15
+ 4030 0a7c 002083E5 		str	r2, [r3, #0]
+ 294:../button.c   ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
+ 4031              		.loc 1 294 0
+ 4032 0a80 1C309FE5 		ldr	r3, .L51+4
+ 4033 0a84 18209FE5 		ldr	r2, .L51+4
+ 4034 0a88 002092E5 		ldr	r2, [r2, #0]
+ 4035 0a8c 022682E3 		orr	r2, r2, #2097152
+ 4036 0a90 002083E5 		str	r2, [r3, #0]
+ 295:../button.c   **** }
+ 4037              		.loc 1 295 0
+ 4038 0a94 0CD04BE2 		sub	sp, fp, #12
+ 4039 0a98 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 4040 0a9c 1EFF2FE1 		bx	lr
+ 4041              	.L52:
+ 4042              		.align	2
+ 4043              	.L51:
+ 4044 0aa0 00000000 		.word	boton_confirmado
+ 4045 0aa4 2400E001 		.word	31457316
+ 4046 0aa8 5400D201 		.word	30539860
+ 4047 0aac 0800E001 		.word	31457288
+ 4048 0ab0 0C00E001 		.word	31457292
+ 4049 0ab4 74FF7F0C 		.word	209715060
+ 4050 0ab8 00000000 		.word	Eint4567_ISR
+ 4051 0abc 4000D201 		.word	30539840
+ 4052 0ac0 FFFF0000 		.word	65535
+ 4053 0ac4 4800D201 		.word	30539848
+ 4054 0ac8 5000D201 		.word	30539856
+ 4055 0acc 22222222 		.word	572662306
+ 4056              		.cfi_endproc
+ 4057              	.LFE10:
+ 4059              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 button.c
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:2979   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:2981   .text:00000000 celda_poner_valor
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3032   .text:00000078 celda_leer_valor
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3067   .text:000000b0 celda_es_candidato
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3108   .text:00000100 celda_es_pista
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3144   .text:0000013c celda_marcar_error
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3180   .text:00000178 celda_limpiar_error
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3215   .bss:00000000 estado_juego
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3216   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3217   .bss:00000001 int_count
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3219   .bss:00000002 fila
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3221   .bss:00000003 columna
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3223   .bss:00000004 valor
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3225   .bss:00000005 valor_previo
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3227   .bss:00000006 pantalla_mostrada
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3232   .text:000001b4 boton_confirmado
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3271   .text:0000020c $d
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3279   .text:00000224 $a
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3781   .text:00000858 $d
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3793   .text:0000087c $a
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3796   .text:0000087c Eint4567_ISR
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3873   .text:00000924 $d
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3878   .text:0000092c $a
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3881   .text:0000092c Eint4567_init
-C:\Users\jaime\AppData\Local\Temp\ccOtiFVf.s:3959   .text:000009ec $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:2979   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:2981   .text:00000000 celda_poner_valor
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3032   .text:00000078 celda_leer_valor
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3067   .text:000000b0 celda_es_candidato
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3108   .text:00000100 celda_es_pista
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3144   .text:0000013c celda_marcar_error
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3180   .text:00000178 celda_limpiar_error
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3215   .bss:00000000 estado_juego
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3216   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3217   .bss:00000001 int_count
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3219   .bss:00000002 fila
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3221   .bss:00000003 columna
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3223   .bss:00000004 valor
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3225   .bss:00000005 valor_previo
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3227   .bss:00000006 pantalla_mostrada
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3230   .bss:00000008 tiempo_final
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3235   .text:000001b4 boton_confirmado
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3274   .text:0000020c $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3284   .text:0000022c $a
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3826   .text:000008d0 $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3839   .text:000008f8 $a
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3842   .text:000008f8 Eint4567_ISR
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3919   .text:000009a0 $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3924   .text:000009a8 $a
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3927   .text:000009a8 Sudoku_Partida_Terminada
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3959   .text:000009dc $d
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3963   .text:000009e0 $a
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:3966   .text:000009e0 Eint4567_init
+C:\Users\jaime\AppData\Local\Temp\cclow3py.s:4044   .text:00000aa0 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
@@ -1390,6 +1508,7 @@ Sudoku_Dibujar_Tablero
 Sudoku_Actualizar_Tablero_Completo
 D8Led_symbol
 candidatos_propagar_arm
+Sudoku_Pantalla_Final
 cuadricula
 celdas_vacias
 timer3_start_antirrebote

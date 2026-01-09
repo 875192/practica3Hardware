@@ -1205,32 +1205,32 @@
  2209              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 Bmp.c
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1212   .rodata:00000000 ucMouseMap
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1209   .rodata:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1458   .data:00000000 Stru_Bitmap_gbMouse
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1455   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1212   .rodata:00000000 ucMouseMap
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1209   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1458   .data:00000000 Stru_Bitmap_gbMouse
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1455   .data:00000000 $d
                             *COM*:00000002 ulMouseX
                             *COM*:00000002 ulMouseY
                             *COM*:00000078 ucCursorBackUp
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1470   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1473   .text:00000000 BitmapView
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1606   .text:0000018c BitmapPush
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1797   .text:000003ec $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1803   .text:000003f8 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:1806   .text:000003f8 BitmapPop
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2007   .text:00000680 $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2011   .text:00000684 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2014   .text:00000684 CursorInit
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2158   .text:00000790 CursorView
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2054   .text:000006d0 $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2059   .text:000006d8 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2062   .text:000006d8 CursorPush
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2103   .text:00000730 $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2107   .text:00000734 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2110   .text:00000734 CursorPop
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2149   .text:00000784 $d
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2155   .text:00000790 $a
-C:\Users\jaime\AppData\Local\Temp\ccjCgtcz.s:2205   .text:000007fc $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1470   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1473   .text:00000000 BitmapView
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1606   .text:0000018c BitmapPush
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1797   .text:000003ec $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1803   .text:000003f8 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:1806   .text:000003f8 BitmapPop
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2007   .text:00000680 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2011   .text:00000684 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2014   .text:00000684 CursorInit
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2158   .text:00000790 CursorView
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2054   .text:000006d0 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2059   .text:000006d8 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2062   .text:000006d8 CursorPush
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2103   .text:00000730 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2107   .text:00000734 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2110   .text:00000734 CursorPop
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2149   .text:00000784 $d
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2155   .text:00000790 $a
+C:\Users\jaime\AppData\Local\Temp\cclKZdkJ.s:2205   .text:000007fc $d
                      .debug_frame:00000010 $d
 
 NO UNDEFINED SYMBOLS

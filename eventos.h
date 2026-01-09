@@ -33,6 +33,7 @@ typedef enum {
     INTRODUCIR_VALOR,
     VERIFICAR_VALOR,
     BORRAR_VALOR,
+    PARTIDA_TERMINADA,
 } EstadoSudoku;
 
 #endif /* _EVENTOS_H_ */

@@ -113,7 +113,11 @@ void Main(void)
         /* Actualizar cada 1 segundo (1000000 microsegundos) */
         if ((tiempo_actual - tiempo_anterior) >= 1000000)
         {
-            Sudoku_Actualizar_Tiempo(tiempo_actual);
+            /* Solo actualizar si la partida no ha terminado */
+            if (!Sudoku_Partida_Terminada())
+            {
+                Sudoku_Actualizar_Tiempo(tiempo_actual);
+            }
             tiempo_anterior = tiempo_actual;
         }
     }

@@ -794,6 +794,46 @@ void Sudoku_Actualizar_Tiempo(INT32U tiempo_us)
 	/* Transferir solo esta actualización a pantalla */
 	Lcd_Dma_Trans();
 }
+
+/*********************************************************************************************
+* name:		Sudoku_Pantalla_Final()
+* func:		Muestra la pantalla final cuando termina la partida
+* para:		tiempo_us - tiempo total de la partida en microsegundos
+* ret:		none
+* modify:
+* comment:	Muestra el tiempo final y un mensaje para reiniciar
+*********************************************************************************************/
+void Sudoku_Pantalla_Final(INT32U tiempo_us)
+{
+	/* Convertir microsegundos a segundos */
+	INT32U segundos_totales = tiempo_us / 1000000;
+	
+	/* Calcular minutos y segundos */
+	INT16U minutos = segundos_totales / 60;
+	INT16U segundos = segundos_totales % 60;
+	
+	/* Crear string en formato MM:SS */
+	INT8U tiempo_str[10];
+	tiempo_str[0] = '0' + (minutos / 10);    /* Decenas de minutos */
+	tiempo_str[1] = '0' + (minutos % 10);    /* Unidades de minutos */
+	tiempo_str[2] = ':';
+	tiempo_str[3] = '0' + (segundos / 10);  /* Decenas de segundos */
+	tiempo_str[4] = '0' + (segundos % 10);  /* Unidades de segundos */
+	tiempo_str[5] = '\0';
+	
+	/* Limpiar pantalla */
+	Lcd_Clr();
+	
+	/* Título */
+	Lcd_DspAscII8x16(80, 40, BLACK, "PARTIDA TERMINADA");
+	
+	/* Mostrar tiempo final */
+	Lcd_DspAscII8x16(90, 80, BLACK, "Tiempo final:");
+	Lcd_DspAscII8x16(130, 100, BLACK, tiempo_str);
+	
+	/* Transferir a pantalla */
+	Lcd_Dma_Trans();
+}
 /*********************************************************************************************
 * name:		Sudoku_Dibujar_Tablero()
 * func:		Dibuja el tablero de Sudoku 9x9 con numeración
