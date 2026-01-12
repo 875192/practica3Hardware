@@ -151,6 +151,8 @@ void Sudoku_Dibujar_Candidatos_En_Celda(INT16U fila, INT16U col, INT16U candidat
 void Sudoku_Actualizar_Tablero_Completo(void* cuadricula);
 void Sudoku_Actualizar_Tiempo(INT32U tiempo_us);
 void Sudoku_Pantalla_Final(INT32U tiempo_us);
+void Sudoku_Dibujar_Teclado_Tactil(void);
+void Sudoku_Resaltar_Celda(INT16U fila, INT16U col, INT8U color);
 
 #ifdef __cplusplus
 }

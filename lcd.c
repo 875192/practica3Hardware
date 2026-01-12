@@ -855,6 +855,71 @@ void Sudoku_Pantalla_Final(INT32U tiempo_us)
 	/* Transferir a pantalla */
 	Lcd_Dma_Trans();
 }
+
+void Sudoku_Dibujar_Teclado_Tactil(void)
+{
+	#define TECLADO_X 245
+	#define TECLADO_Y 20
+	#define TECLADO_W 70
+	#define TECLADO_H 207
+	#define TECLADO_COLS 3
+	#define TECLADO_ROWS 4
+	#define TECLADO_CELDA_W (TECLADO_W / TECLADO_COLS)
+	#define TECLADO_CELDA_H (TECLADO_H / TECLADO_ROWS)
+
+	INT16U fila;
+	INT16U col;
+	INT8U num_str[2] = "0";
+
+	Lcd_Draw_Box(TECLADO_X, TECLADO_Y, TECLADO_X + TECLADO_W, TECLADO_Y + TECLADO_H, BLACK);
+
+	for (col = 1; col < TECLADO_COLS; col++)
+	{
+		INT16U x = TECLADO_X + col * TECLADO_CELDA_W;
+		Lcd_Draw_VLine(TECLADO_Y, TECLADO_Y + TECLADO_H, x, BLACK, 1);
+	}
+
+	for (fila = 1; fila < TECLADO_ROWS; fila++)
+	{
+		INT16U y = TECLADO_Y + fila * TECLADO_CELDA_H;
+		Lcd_Draw_HLine(TECLADO_X, TECLADO_X + TECLADO_W, y, BLACK, 1);
+	}
+
+	for (fila = 0; fila < 3; fila++)
+	{
+		for (col = 0; col < 3; col++)
+		{
+			INT16U valor = fila * 3 + col + 1;
+			num_str[0] = '0' + valor;
+			Lcd_DspAscII6x8(TECLADO_X + col * TECLADO_CELDA_W + TECLADO_CELDA_W / 2 - 3,
+			                TECLADO_Y + fila * TECLADO_CELDA_H + TECLADO_CELDA_H / 2 - 4,
+			                BLACK, num_str);
+		}
+	}
+
+	Lcd_DspAscII6x8(TECLADO_X + TECLADO_CELDA_W / 2 - 3,
+	                TECLADO_Y + 3 * TECLADO_CELDA_H + TECLADO_CELDA_H / 2 - 4,
+	                BLACK, "0");
+
+	Lcd_DspAscII6x8(TECLADO_X + TECLADO_CELDA_W + (TECLADO_CELDA_W - 18) / 2,
+	                TECLADO_Y + 3 * TECLADO_CELDA_H + TECLADO_CELDA_H / 2 - 4,
+	                BLACK, "FIN");
+}
+
+void Sudoku_Resaltar_Celda(INT16U fila, INT16U col, INT8U color)
+{
+	#define MARGEN_IZQ 20
+	#define MARGEN_SUP 10
+	#define TAM_CELDA 23
+
+	INT16U tablero_inicio_x = MARGEN_IZQ + 10;
+	INT16U tablero_inicio_y = MARGEN_SUP + 10;
+	INT16U celda_x = tablero_inicio_x + col * TAM_CELDA;
+	INT16U celda_y = tablero_inicio_y + fila * TAM_CELDA;
+
+	Lcd_Draw_Box(celda_x + 1, celda_y + 1, celda_x + TAM_CELDA - 1, celda_y + TAM_CELDA - 1, color);
+	Lcd_Dma_Trans();
+}
 /*********************************************************************************************
 * name:		Sudoku_Dibujar_Tablero()
 * func:		Dibuja el tablero de Sudoku 9x9 con numeración
@@ -923,6 +988,8 @@ void Sudoku_Dibujar_Tablero(void)
 	/* Mensaje de ayuda */
 	Lcd_DspAscII6x8(MARGEN_IZQ + 100, tablero_inicio_y + tablero_tam + 5, 
 	                DARKGRAY, "Fila 0: Salir");
+
+	Sudoku_Dibujar_Teclado_Tactil();
 	
 	/* Transferir a pantalla */
 	Lcd_Dma_Trans();
