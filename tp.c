@@ -1,7 +1,11 @@
 /*********************************************************************************************
-* File£º	tp.c
+static volatile INT16U ts_x = 0;
+static volatile INT16U ts_y = 0;
+static volatile int ts_evento_pendiente = 0;
+
+* FileÂ£Âº	tp.c
 * Author:	embest	
-* Desc£º	LCD touch screen control function
+* DescÂ£Âº	LCD touch screen control function
 * History:	
 *********************************************************************************************/
 
@@ -74,13 +78,30 @@ void TSInt(void)
 	Pt[5] = (Pt[0]+Pt[1]+Pt[2]+Pt[3]+Pt[4])/5;
      
 	if(!(CheckTSP|(tmp < Xmin)|(tmp > Xmax)|(Pt[5] < Ymin)|(Pt[5] > Ymax)))   // Is valid value?
-	  {
-		tmp = 320*(tmp - Xmin)/(Xmax - Xmin);   // X - position
-//		Uart_Printf("X-Posion[AIN1] is %04d   ", tmp);
+	{
+		if ((Xmax > Xmin) && (Ymax > Ymin))
+		{
+			tmp = (LCD_XSIZE - 1) * (tmp - Xmin) / (Xmax - Xmin);   // X - position
+//			Uart_Printf("X-Posion[AIN1] is %04d   ", tmp);
 			
-		Pt[5] = 240*(Pt[5] - Xmin)/(Ymax - Ymin);
-//		Uart_Printf("  Y-Posion[AIN0] is %04d\n", Pt[5]);
-      }
+			Pt[5] = (LCD_YSIZE - 1) * (Pt[5] - Ymin) / (Ymax - Ymin);
+//			Uart_Printf("  Y-Posion[AIN0] is %04d\n", Pt[5]);
+			if (tmp >= LCD_XSIZE)
+			{
+				tmp = LCD_XSIZE - 1;
+			}
+			if (Pt[5] >= LCD_YSIZE)
+			{
+				Pt[5] = LCD_YSIZE - 1;
+			}
+			if (!CheckTSP)
+			{
+				ts_x = (INT16U)tmp;
+				ts_y = (INT16U)Pt[5];
+				ts_evento_pendiente = 1;
+			}
+		}
+	}
 
     if(CheckTSP)
  	/*----------- check to ensure Xmax Ymax Xmin Ymin ------------*/
@@ -136,6 +157,55 @@ void TS_close(void)
 	/* Mask interrupt */
 	rINTMSK |=BIT_GLOBAL|BIT_EINT2;
 	pISR_EINT2 = (int)NULL;
+}
+
+void TS_Calibrar(void)
+{
+	Xmax = 750;
+	Xmin = 200;
+	Ymax = 620;
+	Ymin = 120;
+
+	oneTouch = 0;
+	CheckTSP = 1;
+
+	Lcd_Clr();
+	Lcd_DspAscII8x16(40, 40, BLACK, "CALIBRACION TP");
+	Lcd_DspAscII6x8(30, 80, BLACK, "Toque las dos marcas");
+	Lcd_DspAscII6x8(30, 90, BLACK, "en cualquier orden");
+	Lcd_Draw_Box(15, 15, 35, 35, BLACK);
+	Lcd_Draw_Box(LCD_XSIZE - 35, LCD_YSIZE - 35, LCD_XSIZE - 15, LCD_YSIZE - 15, BLACK);
+	Lcd_Dma_Trans();
+
+	while (CheckTSP)
+	{
+	}
+
+	Lcd_Clr();
+	Lcd_DspAscII6x8(90, 120, BLACK, "Calibracion OK");
+	Lcd_Dma_Trans();
+	Delay(50);
+}
+
+int TS_HayEvento(void)
+{
+	return ts_evento_pendiente;
+}
+
+void TS_LeerEvento(INT16U *x, INT16U *y)
+{
+	if (ts_evento_pendiente)
+	{
+		if (x != NULL)
+		{
+			*x = ts_x;
+		}
+		if (y != NULL)
+		{
+			*y = ts_y;
+		}
+		ts_evento_pendiente = 0;
+	}
 }
 
 void Lcd_TC(void)

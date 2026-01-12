@@ -1,7 +1,10 @@
 /*********************************************************************************************
-* File£º	tp.H
+void TS_Calibrar(void);
+int TS_HayEvento(void);
+void TS_LeerEvento(INT16U *x, INT16U *y);
+* FileÂ£Âº	tp.H
 * Author:	embest	
-* Desc£º	Touch Screen define file
+* DescÂ£Âº	Touch Screen define file
 * History:	
 *********************************************************************************************/
 #include "def.h"

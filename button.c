@@ -33,6 +33,27 @@ static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la parti
 extern CELDA (*cuadricula)[NUM_COLUMNAS];
 extern int celdas_vacias;
 
+static void sudoku_iniciar_partida(void)
+{
+	/* Guardar tiempo de inicio para reiniciar el contador */
+	tiempo_inicio = timer2_count();
+
+	/* Calcular candidatos por primera vez */
+	celdas_vacias = candidatos_actualizar_all(cuadricula);
+
+	/* Dibujar el tablero del juego */
+	Sudoku_Dibujar_Tablero();
+
+	/* Actualizar con los valores de la cuadrícula */
+	Sudoku_Actualizar_Tablero_Completo(cuadricula);
+
+	/* Pasar a introducir fila */
+	estado_juego = INTRODUCIR_FILA;
+	int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+	D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+	pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
+}
+
 /* Función auxiliar para marcar todas las celdas en conflicto con un valor */
 static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, uint8_t valor_error)
 {
@@ -94,23 +115,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
         {
                 case ESPERANDO_INICIO:
                         /* Cualquier botón inicia el juego */
-                        /* Guardar tiempo de inicio para reiniciar el contador */
-                        tiempo_inicio = timer2_count();
-                        
-                        /* Calcular candidatos por primera vez */
-                        celdas_vacias = candidatos_actualizar_all(cuadricula);
-                        
-                        /* Dibujar el tablero del juego */
-                        Sudoku_Dibujar_Tablero();
-                        
-                        /* Actualizar con los valores de la cuadrícula */
-                        Sudoku_Actualizar_Tablero_Completo(cuadricula);
-                        
-                        /* Pasar a introducir fila */
-                        estado_juego = INTRODUCIR_FILA;
-                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
-                        D8Led_symbol(15);  /* Mostrar 'F' de Fila */
-                        pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
+                        sudoku_iniciar_partida();
                         break;
                 
                 case INTRODUCIR_FILA:
@@ -377,6 +382,135 @@ int Sudoku_Partida_Terminada(void)
 int Sudoku_Juego_En_Progreso(void)
 {
 	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
+}
+
+void Sudoku_Iniciar_Partida(void)
+{
+	if (estado_juego == ESPERANDO_INICIO)
+	{
+		sudoku_iniciar_partida();
+	}
+}
+
+void Sudoku_Reiniciar_A_Esperando(void)
+{
+	if (estado_juego == PARTIDA_TERMINADA)
+	{
+		Sudoku_Pantalla_Inicial();
+		estado_juego = ESPERANDO_INICIO;
+		int_count = 0;
+		pantalla_mostrada = 0;
+	}
+}
+
+void Sudoku_Terminar_Partida(void)
+{
+	if (estado_juego != PARTIDA_TERMINADA)
+	{
+		tiempo_final = timer2_count() - tiempo_inicio;
+		estado_juego = PARTIDA_TERMINADA;
+		pantalla_mostrada = 1;
+		Sudoku_Pantalla_Final(tiempo_final);
+	}
+}
+
+void Sudoku_Procesar_Entrada_Tactil(unsigned char fila_t, unsigned char columna_t, unsigned char valor_t)
+{
+	uint8_t f;
+	uint8_t c;
+
+	if (estado_juego == ESPERANDO_INICIO)
+	{
+		sudoku_iniciar_partida();
+		return;
+	}
+
+	if (estado_juego == PARTIDA_TERMINADA)
+	{
+		Sudoku_Reiniciar_A_Esperando();
+		return;
+	}
+
+	if (fila_t >= NUM_FILAS || columna_t >= NUM_FILAS)
+	{
+		return;
+	}
+
+	if (celda_es_pista(cuadricula[fila_t][columna_t]))
+	{
+		return;
+	}
+
+	fila = fila_t;
+	columna = columna_t;
+	valor = valor_t;
+
+	valor_previo = celda_leer_valor(cuadricula[fila][columna]);
+
+	if (valor == 0)
+	{
+		for (f = 0; f < NUM_FILAS; f++)
+		{
+			for (c = 0; c < NUM_COLUMNAS; c++)
+			{
+				celda_limpiar_error(&cuadricula[f][c]);
+			}
+		}
+
+		celda_poner_valor(&cuadricula[fila][columna], 0);
+		celdas_vacias = candidatos_actualizar_all(cuadricula);
+		Sudoku_Actualizar_Tablero_Completo(cuadricula);
+		estado_juego = INTRODUCIR_FILA;
+		int_count = 9;
+		D8Led_symbol(15);
+		return;
+	}
+
+	if (celda_es_candidato(cuadricula[fila][columna], valor))
+	{
+		for (f = 0; f < NUM_FILAS; f++)
+		{
+			for (c = 0; c < NUM_COLUMNAS; c++)
+			{
+				celda_limpiar_error(&cuadricula[f][c]);
+			}
+		}
+
+		celda_poner_valor(&cuadricula[fila][columna], valor);
+
+		if (valor_previo != 0)
+		{
+			celdas_vacias = candidatos_actualizar_all(cuadricula);
+		}
+		else
+		{
+			candidatos_propagar_arm(cuadricula, fila, columna);
+		}
+
+		Sudoku_Actualizar_Tablero_Completo(cuadricula);
+		estado_juego = INTRODUCIR_FILA;
+		int_count = 9;
+		D8Led_symbol(15);
+		return;
+	}
+
+	celda_poner_valor(&cuadricula[fila][columna], valor);
+
+	if (valor_previo != 0)
+	{
+		celdas_vacias = candidatos_actualizar_all(cuadricula);
+	}
+	else
+	{
+		candidatos_propagar_arm(cuadricula, fila, columna);
+	}
+
+	marcar_celdas_en_conflicto(fila, columna, valor);
+	Sudoku_Actualizar_Tablero_Completo(cuadricula);
+	D8Led_symbol(14);
+	estado_juego = INTRODUCIR_FILA;
+	int_count = 9;
+	D8Led_symbol(15);
 }
 
 /* Función para obtener el tiempo de inicio de la partida */
