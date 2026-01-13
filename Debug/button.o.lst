@@ -3223,7 +3223,7 @@
  5668 1094 002092E5 		ldr	r2, [r2, #0]
  5669 1098 022682E3 		orr	r2, r2, #2097152
  5670 109c 002083E5 		str	r2, [r3, #0]
- 435:../button.c   **** }
+ 435:../button.c   **** }...
  5671              		.loc 1 435 0
  5672 10a0 0CD04BE2 		sub	sp, fp, #12
  5673 10a4 00689DE8 		ldmfd	sp, {fp, sp, lr}
@@ -3248,57 +3248,57 @@
  5693              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 button.c
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:2987   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:2989   .text:00000000 celda_poner_valor
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3040   .text:00000078 celda_leer_valor
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3075   .text:000000b0 celda_es_candidato
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3116   .text:00000100 celda_es_pista
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3152   .text:0000013c celda_marcar_error
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3188   .text:00000178 celda_limpiar_error
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3223   .bss:00000000 estado_juego
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3224   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3225   .bss:00000001 int_count
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3227   .bss:00000002 fila
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3229   .bss:00000003 columna
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3231   .bss:00000004 valor
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3233   .bss:00000005 valor_previo
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3235   .bss:00000006 pantalla_mostrada
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3238   .bss:00000008 tiempo_inicio
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3241   .bss:0000000c tiempo_final
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3244   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3247   .data:00000000 cuadricula_C_C
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3395   .data:00000120 cuadricula_C_ARM
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3543   .data:00000240 cuadricula_ARM_C
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3691   .data:00000360 cuadricula_ARM_ARM
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3837   .rodata:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3840   .rodata:00000000 cuadricula_Respaldo
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:3989   .data:00000480 cuadricula_ARM_ARM_ALL
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4137   .data:000005a0 solucion
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4285   .text:000001b4 restaurar_cuadricula_original
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4356   .text:0000025c $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4361   .text:00000264 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4363   .text:00000264 marcar_celdas_en_conflicto
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4634   .text:00000598 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4639   .text:000005a0 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4641   .text:000005a0 boton_confirmado
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4680   .text:000005f8 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:4690   .text:00000618 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5374   .text:00000e5c $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5388   .text:00000e88 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5391   .text:00000e88 Eint4567_ISR
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5468   .text:00000f30 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5473   .text:00000f38 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5476   .text:00000f38 Sudoku_Partida_Terminada
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5508   .text:00000f6c $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5512   .text:00000f70 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5515   .text:00000f70 Sudoku_Juego_En_Progreso
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5558   .text:00000fc0 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5562   .text:00000fc4 $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5565   .text:00000fc4 Sudoku_Obtener_Tiempo_Inicio
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5593   .text:00000fe8 $d
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5597   .text:00000fec $a
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5600   .text:00000fec Eint4567_init
-C:\Users\jaime\AppData\Local\Temp\ccypbsrh.s:5678   .text:000010ac $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:2987   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:2989   .text:00000000 celda_poner_valor
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3040   .text:00000078 celda_leer_valor
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3075   .text:000000b0 celda_es_candidato
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3116   .text:00000100 celda_es_pista
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3152   .text:0000013c celda_marcar_error
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3188   .text:00000178 celda_limpiar_error
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3223   .bss:00000000 estado_juego
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3224   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3225   .bss:00000001 int_count
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3227   .bss:00000002 fila
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3229   .bss:00000003 columna
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3231   .bss:00000004 valor
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3233   .bss:00000005 valor_previo
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3235   .bss:00000006 pantalla_mostrada
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3238   .bss:00000008 tiempo_inicio
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3241   .bss:0000000c tiempo_final
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3244   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3247   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3395   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3543   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3691   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3837   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3840   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:3989   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4137   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4285   .text:000001b4 restaurar_cuadricula_original
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4356   .text:0000025c $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4361   .text:00000264 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4363   .text:00000264 marcar_celdas_en_conflicto
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4634   .text:00000598 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4639   .text:000005a0 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4641   .text:000005a0 boton_confirmado
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4680   .text:000005f8 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:4690   .text:00000618 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5374   .text:00000e5c $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5388   .text:00000e88 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5391   .text:00000e88 Eint4567_ISR
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5468   .text:00000f30 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5473   .text:00000f38 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5476   .text:00000f38 Sudoku_Partida_Terminada
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5508   .text:00000f6c $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5512   .text:00000f70 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5515   .text:00000f70 Sudoku_Juego_En_Progreso
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5558   .text:00000fc0 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5562   .text:00000fc4 $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5565   .text:00000fc4 Sudoku_Obtener_Tiempo_Inicio
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5593   .text:00000fe8 $d
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5597   .text:00000fec $a
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5600   .text:00000fec Eint4567_init
+C:\Users\jaime\AppData\Local\Temp\ccBkb17J.s:5678   .text:000010ac $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

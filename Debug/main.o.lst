@@ -1334,21 +1334,21 @@ DEFINED SYMBOLS
                             *COM*:00000004 Xmin
                             *COM*:00000004 Ymin
                             *COM*:00000001 yn
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3020   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3023   .data:00000000 cuadricula_C_C
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3171   .data:00000120 cuadricula_C_ARM
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3319   .data:00000240 cuadricula_ARM_C
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3467   .data:00000360 cuadricula_ARM_ARM
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3613   .rodata:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3616   .rodata:00000000 cuadricula_Respaldo
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3765   .data:00000480 cuadricula_ARM_ARM_ALL
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3913   .data:000005a0 solucion
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4062   .data:000006c0 cuadricula
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4069   .bss:00000000 celdas_vacias
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4066   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4072   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4075   .text:00000000 Main
-C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4187   .text:00000100 $d
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3020   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3023   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3171   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3319   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3467   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3613   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3616   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3765   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:3913   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4062   .data:000006c0 cuadricula
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4069   .bss:00000000 celdas_vacias
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4066   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4072   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4075   .text:00000000 Main
+C:\Users\jaime\AppData\Local\Temp\ccTgFU2l.s:4187   .text:00000100 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

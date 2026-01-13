@@ -2203,28 +2203,28 @@
  3934              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 sudoku_2025.c
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2010   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2012   .text:00000000 celda_eliminar_candidato
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2060   .text:0000006c celda_leer_valor
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2094   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2097   .data:00000000 cuadricula_C_C
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2245   .data:00000120 cuadricula_C_ARM
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2393   .data:00000240 cuadricula_ARM_C
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2541   .data:00000360 cuadricula_ARM_ARM
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2687   .rodata:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2690   .rodata:00000000 cuadricula_Respaldo
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2839   .data:00000480 cuadricula_ARM_ARM_ALL
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:2987   .data:000005a0 solucion
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3136   .text:000000a4 candidatos_propagar_c
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3297   .text:00000274 $d
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3923   .rodata:00000120 C.0.4986
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3301   .text:00000278 $a
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3304   .text:00000278 candidatos_actualizar_c
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3456   .text:00000410 candidatos_actualizar_c_arm
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3607   .text:000005a8 cuadricula_candidatos_verificar
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3712   .text:0000069c sudoku9x9
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3870   .text:00000830 main
-C:\Users\jaime\AppData\Local\Temp\cc44JPl7.s:3910   .text:00000880 $d
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2010   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2012   .text:00000000 celda_eliminar_candidato
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2060   .text:0000006c celda_leer_valor
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2094   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2097   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2245   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2393   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2541   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2687   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2690   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2839   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:2987   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3136   .text:000000a4 candidatos_propagar_c
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3297   .text:00000274 $d
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3923   .rodata:00000120 C.0.4986
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3301   .text:00000278 $a
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3304   .text:00000278 candidatos_actualizar_c
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3456   .text:00000410 candidatos_actualizar_c_arm
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3607   .text:000005a8 cuadricula_candidatos_verificar
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3712   .text:0000069c sudoku9x9
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3870   .text:00000830 main
+C:\Users\jaime\AppData\Local\Temp\cc1wk0hY.s:3910   .text:00000880 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
