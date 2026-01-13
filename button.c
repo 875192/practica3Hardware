@@ -33,33 +33,30 @@ static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la parti
 extern CELDA (*cuadricula)[NUM_COLUMNAS];
 extern int celdas_vacias;
 
+/* Declaración externa de la cuadrícula original (para reiniciar) */
+#include "tableros.h"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* Función auxiliar para restaurar la cuadrícula al estado original */
+static void restaurar_cuadricula_original(void)
+{
+	uint8_t f, c, k;
+	
+	/* Copiar toda la cuadrícula original (incluye todas las columnas del array) */
+	for (f = 0; f < NUM_FILAS; f++)
+	{
+		for (c = 0; c < NUM_COLUMNAS; c++)
+		{
+			cuadricula[f][c] = cuadricula_Respaldo[f][c];
+		}
+	}
+}
 
 /* Función auxiliar para marcar todas las celdas en conflicto con un valor */
 static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, uint8_t valor_error)
 {
 	uint8_t i, f, c;
 	uint8_t region_fila_inicio, region_col_inicio;
-
+	
 	/* Primero limpiar todos los errores previos */
 	for (f = 0; f < NUM_FILAS; f++)
 	{
@@ -68,10 +65,10 @@ static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, ui
 			celda_limpiar_error(&cuadricula[f][c]);
 		}
 	}
-
+	
 	/* Marcar la celda donde intentamos poner el valor */
 	celda_marcar_error(&cuadricula[fila_error][col_error]);
-
+	
 	/* Buscar y marcar todas las celdas con el mismo valor en la misma fila */
 	for (i = 0; i < NUM_COLUMNAS; i++)
 	{
@@ -80,7 +77,7 @@ static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, ui
 			celda_marcar_error(&cuadricula[fila_error][i]);
 		}
 	}
-
+	
 	/* Buscar y marcar todas las celdas con el mismo valor en la misma columna */
 	for (i = 0; i < NUM_FILAS; i++)
 	{
@@ -89,11 +86,11 @@ static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, ui
 			celda_marcar_error(&cuadricula[i][col_error]);
 		}
 	}
-
+	
 	/* Buscar y marcar todas las celdas con el mismo valor en la misma región 3x3 */
 	region_fila_inicio = (fila_error / 3) * 3;
 	region_col_inicio = (col_error / 3) * 3;
-
+	
 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
 	{
 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
@@ -110,7 +107,7 @@ static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, ui
 static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR Y PROPAGAR SEGUN LA VERSIÓN A PROBAR
 {
         cola_depuracion(timer2_count(), boton_id, estado_juego);
-
+        
         switch (estado_juego)
         {
                 case ESPERANDO_INICIO:
@@ -133,7 +130,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
                         pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
                         break;
-
+                
                 case INTRODUCIR_FILA:
                         if (boton_id == EVENTO_BOTON_DERECHO)
                         {
@@ -166,7 +163,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 }
                         }
                         break;
-
+                
                 case INTRODUCIR_COLUMNA:
                         if (boton_id == EVENTO_BOTON_DERECHO)
                         {
@@ -187,7 +184,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 D8Led_symbol(int_count & 0x000f);
                         }
                         break;
-
+                
                 case VERIFICAR_CELDA:
                         /* Primero se verifica si la celda[fila][columna] no es una pista */
                         if (celda_es_pista(cuadricula[fila][columna]))
@@ -204,7 +201,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 int_count = 0;
                         }
                         break;
-
+                
                 case INTRODUCIR_VALOR:
                         if (boton_id == EVENTO_BOTON_DERECHO)
                         {
@@ -220,20 +217,20 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                         {
                                 /* Confirmar valor e intentar escribir en la celda */
                                 valor = int_count;  /* Valor a escribir (0-9) */
-
+                                
                                 estado_juego = VERIFICAR_VALOR;
                                 int_count = 0;
                         }
                         break;
-
+                
                 case VERIFICAR_VALOR:
                         /* Guardar valor previo de la celda */
                         valor_previo = celda_leer_valor(cuadricula[fila][columna]);
-
+                        
                         if (valor == 0)
                         {
                                 uint8_t f, c;
-
+                                
                                 /* Valor 0 = borrar -> pasar a BORRAR_VALOR */
                                 /* Limpiar todos los errores previos */
                                 for (f = 0; f < NUM_FILAS; f++)
@@ -243,16 +240,16 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                                 celda_limpiar_error(&cuadricula[f][c]);
                                         }
                                 }
-
+                                
                                 /* Borrar el valor de la celda */
                                 celda_poner_valor(&cuadricula[fila][columna], 0);
-
+                                
                                 /* Al borrar un valor, hay que recalcular todos los candidatos */
                                 celdas_vacias = candidatos_actualizar_all(cuadricula);
-
+                                
                                 /* Actualizar la visualización del tablero */
                                 Sudoku_Actualizar_Tablero_Completo(cuadricula);
-
+                                
                                 /* Volver a introducir fila */
                                 estado_juego = INTRODUCIR_FILA;
                                 int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
@@ -265,7 +262,7 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 if (celda_es_candidato(cuadricula[fila][columna], valor))
                                 {
                                         uint8_t f, c;
-
+                                        
                                         /* Es candidato: escribir el valor en la celda */
                                         /* Primero limpiar todos los errores previos */
                                         for (f = 0; f < NUM_FILAS; f++)
@@ -275,9 +272,9 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                                         celda_limpiar_error(&cuadricula[f][c]);
                                                 }
                                         }
-
+                                        
                                         celda_poner_valor(&cuadricula[fila][columna], valor);
-
+                                        
                                         /* Decidir si propagar o actualizar según el caso */
                                         if (valor_previo != 0)
                                         {
@@ -289,10 +286,10 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                                 /* Celda vacía -> solo propagar el nuevo valor */
                                                 candidatos_propagar_arm(cuadricula, fila, columna);
                                         }
-
+                                        
                                         /* Actualizar la visualización del tablero */
                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
-
+                                        
                                         /* Volver a introducir fila */
                                         estado_juego = INTRODUCIR_FILA;
                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
@@ -301,9 +298,15 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 else
                                 {
                                         /* No es candidato: es un error */
+                                        celda_marcar_error(&cuadricula[fila][columna]);
+                                        D8Led_symbol(14);  /* Mostrar 'E' de Error */
+                                        
+                                        /* Esperar 2 segundos para que la 'E' sea visible */
+                                        Delay(200);
+                                        
                                         /* Poner el valor incorrecto en la celda para visualizarlo */
                                         celda_poner_valor(&cuadricula[fila][columna], valor);
-
+                                        
                                         /* Actualizar candidatos para reflejar el cambio */
                                         if (valor_previo != 0)
                                         {
@@ -315,15 +318,13 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                                 /* Celda vacía -> propagar el nuevo valor */
                                                 candidatos_propagar_arm(cuadricula, fila, columna);
                                         }
-
+                                        
                                         /* Marcar TODAS las celdas involucradas en el conflicto */
                                         marcar_celdas_en_conflicto(fila, columna, valor);
-
+                                        
                                         /* Actualizar la visualización del tablero */
                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
-
-                                        D8Led_symbol(14);  /* Mostrar 'E' de Error */
-
+                                        
                                         /* Volver a introducir fila */
                                         estado_juego = INTRODUCIR_FILA;
                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
@@ -331,22 +332,25 @@ static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR
                                 }
                         }
                         break;
-
+                
                 case PARTIDA_TERMINADA:
                         /* Mostrar pantalla de despedida solo una vez */
                         if (!pantalla_mostrada)
                         {
                                 /* Usar la función existente de lcd.c */
                                 Sudoku_Pantalla_Final(tiempo_final);
-
+                                
                                 pantalla_mostrada = 1;
                         }
                         else
                         {
                                 /* Cualquier botón después de mostrar pantalla final reinicia el juego */
+                                /* Restaurar la cuadrícula al estado original */
+                                restaurar_cuadricula_original();
+                                
                                 /* Mostrar pantalla inicial */
                                 Sudoku_Pantalla_Inicial();
-
+                                
                                 /* Volver al estado inicial */
                                 estado_juego = ESPERANDO_INICIO;
                                 int_count = 0;
@@ -399,135 +403,6 @@ int Sudoku_Juego_En_Progreso(void)
 {
 	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* Función para obtener el tiempo de inicio de la partida */
 unsigned int Sudoku_Obtener_Tiempo_Inicio(void)

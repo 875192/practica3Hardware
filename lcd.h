@@ -151,6 +151,8 @@ void Sudoku_Dibujar_Candidatos_En_Celda(INT16U fila, INT16U col, INT16U candidat
 void Sudoku_Actualizar_Tablero_Completo(void* cuadricula);
 void Sudoku_Actualizar_Tiempo(INT32U tiempo_us);
 void Sudoku_Pantalla_Final(INT32U tiempo_us);
+void Sudoku_Procesar_Touch(int x, int y);
+void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col);
 
 #ifdef __cplusplus
 }

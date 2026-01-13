@@ -191,14 +191,14 @@
  2025              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 timer.c
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1894   .bss:00000000 switch_leds
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1891   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1897   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1900   .text:00000000 timer_ISR
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1938   .text:00000040 $d
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1943   .text:00000048 $a
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:1946   .text:00000048 timer_init
-C:\Users\jaime\AppData\Local\Temp\ccBDJvof.s:2012   .text:000000e0 $d
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1894   .bss:00000000 switch_leds
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1891   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1897   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1900   .text:00000000 timer_ISR
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1938   .text:00000040 $d
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1943   .text:00000048 $a
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:1946   .text:00000048 timer_init
+C:\Users\jaime\AppData\Local\Temp\ccX0SdbT.s:2012   .text:000000e0 $d
                      .debug_frame:00000010 $d
 
 NO UNDEFINED SYMBOLS

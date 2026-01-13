@@ -36,90 +36,6 @@ int celdas_vacias = 0;
 /*--- function declare ---*/
 void Main(void);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*--- extern function ---*/
 extern void Lcd_Test();
 
@@ -136,11 +52,16 @@ void Main(void)
 {
     sys_init();        /* Initial 44B0X's Interrupt, Port and UART */
     //_Link();           /* Print Misc info */
-
+    
     /* ======================================================================
      * OPCIÓN 1: CÓDIGO TOUCHSCREEN Y LCD (ORIGINAL)
      * Descomenta este bloque para ejecutar el código del touchscreen
      * ====================================================================== */
+    /*
+    // Test de calibración con dos números
+    ts_test_numeros();
+    */
+    
     /*
     Lcd_Test();
     TS_Test();
@@ -155,15 +76,15 @@ void Main(void)
     
     TS_close();
     */
-
+    
     /* ======================================================================
      * OPCIÓN 2: CÓDIGO SUDOKU (desde main_sudoku.c)
      * Este bloque está activo por defecto
      * ====================================================================== */
-
+    
     /* Variables para observar la cola durante la depuración */
-    ColaDebug* p_cola;              // Puntero a la estructura completa de la cola
-
+    ColaDebug* p_cola;              // Puntador a la estructura completa de la cola
+    
     /* Inicializa controladores del Sudoku */
     timer2_init();      // Inicializacion del timer2 para medicion de tiempo
     timer1_init();      // Inicializacion del timer1 para latido (heartbeat) - Paso 6
@@ -173,41 +94,43 @@ void Main(void)
 
     /* Inicializar LCD y mostrar pantalla inicial */
     Lcd_Init();
-
-    /* Inicializar y calibrar el touchscreen */
     TS_init();
-    TS_Calibrar();
-
+    
+    /* Calibrar touchscreen */
+    ts_calibrate_5pt(SCR_XSIZE, SCR_YSIZE, 30);
+    
     Sudoku_Pantalla_Inicial();
 
     /* Valor inicial de los leds */
     leds_off();
-
+    
     /* Apuntar a la cola para poder observarla en el depurador */
     p_cola = cola_global;
-
+    
     /* Variable para controlar actualización del tiempo */
     unsigned int tiempo_anterior = 0;
     unsigned int tiempo_actual = 0;
-
+    
+    /* Variables para touchscreen */
+    int touch_x, touch_y;
+    
     /* Bucle principal */
     while (1)
     {
-
-
-
-
-
-
-
-
-
         /* El latido (LED2 parpadeando) se gestiona automáticamente por timer1 */
         /* El programa está vivo mientras el LED2 parpadee a 6 Hz */
-
+        
+        /* Comprobar si hay toque en la pantalla */
+        if (ts_read_calibrated(&touch_x, &touch_y) == 0)
+        {
+            /* Procesar toque en el Sudoku */
+            Sudoku_Procesar_Touch(touch_x, touch_y);
+            Delay(30);  // Evitar múltiples detecciones
+        }
+        
         /* Actualizar el tiempo en pantalla cada segundo */
         tiempo_actual = timer2_count();
-
+        
         /* Actualizar cada 1 segundo (1000000 microsegundos) */
         if ((tiempo_actual - tiempo_anterior) >= 1000000)
         {

@@ -1,10 +1,7 @@
 /*********************************************************************************************
-* File£º	tp.H
-
-
-
+* File��	tp.H
 * Author:	embest	
-* Desc£º	Touch Screen define file
+* Desc��	Touch Screen define file
 * History:	
 *********************************************************************************************/
 #include "def.h"
@@ -31,5 +28,11 @@ void Lcd_TC(void);
 void DesignREC(ULONG tx, ULONG ty);
 void Check_Sel(void);
 
-/*--- Función de calibración simple ---*/
-void TS_Calibrar(void);
+// Funciones de calibración de 5 puntos
+void ts_calibrate_5pt(int XRES, int YRES, int M);
+int ts_read_calibrated(int *x, int *y);
+void report_touch_data(int x, int y);
+void ts_test_calibracion(void);
+void ts_test_numeros(void);
+
+//void user_irq1(void);

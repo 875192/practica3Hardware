@@ -595,316 +595,464 @@
  3609 047a 0000     		.short	0
  3610 047c 0000     		.short	0
  3611 047e 0000     		.short	0
- 3612              		.align	5
- 3615              	cuadricula_ARM_ARM_ALL:
- 3616 0480 1500     		.short	21
- 3617 0482 0000     		.short	0
- 3618 0484 0000     		.short	0
- 3619 0486 1300     		.short	19
- 3620 0488 0000     		.short	0
- 3621 048a 0000     		.short	0
- 3622 048c 0000     		.short	0
- 3623 048e 0000     		.short	0
- 3624 0490 0000     		.short	0
- 3625 0492 0000     		.short	0
- 3626 0494 0000     		.short	0
- 3627 0496 0000     		.short	0
- 3628 0498 0000     		.short	0
- 3629 049a 0000     		.short	0
- 3630 049c 0000     		.short	0
- 3631 049e 0000     		.short	0
- 3632 04a0 0000     		.short	0
- 3633 04a2 0000     		.short	0
- 3634 04a4 0000     		.short	0
- 3635 04a6 0000     		.short	0
- 3636 04a8 1900     		.short	25
- 3637 04aa 0000     		.short	0
- 3638 04ac 0000     		.short	0
- 3639 04ae 0000     		.short	0
- 3640 04b0 1500     		.short	21
- 3641 04b2 0000     		.short	0
- 3642 04b4 0000     		.short	0
- 3643 04b6 0000     		.short	0
- 3644 04b8 0000     		.short	0
- 3645 04ba 0000     		.short	0
- 3646 04bc 0000     		.short	0
- 3647 04be 0000     		.short	0
- 3648 04c0 0000     		.short	0
- 3649 04c2 1900     		.short	25
- 3650 04c4 1600     		.short	22
- 3651 04c6 1700     		.short	23
- 3652 04c8 0000     		.short	0
- 3653 04ca 1500     		.short	21
- 3654 04cc 0000     		.short	0
- 3655 04ce 1300     		.short	19
- 3656 04d0 0000     		.short	0
- 3657 04d2 0000     		.short	0
- 3658 04d4 0000     		.short	0
- 3659 04d6 0000     		.short	0
- 3660 04d8 0000     		.short	0
- 3661 04da 0000     		.short	0
- 3662 04dc 0000     		.short	0
- 3663 04de 0000     		.short	0
- 3664 04e0 0000     		.short	0
- 3665 04e2 1800     		.short	24
- 3666 04e4 0000     		.short	0
- 3667 04e6 1900     		.short	25
- 3668 04e8 0000     		.short	0
- 3669 04ea 0000     		.short	0
- 3670 04ec 1600     		.short	22
- 3671 04ee 0000     		.short	0
- 3672 04f0 0000     		.short	0
- 3673 04f2 0000     		.short	0
- 3674 04f4 0000     		.short	0
- 3675 04f6 0000     		.short	0
- 3676 04f8 0000     		.short	0
- 3677 04fa 0000     		.short	0
- 3678 04fc 0000     		.short	0
- 3679 04fe 0000     		.short	0
- 3680 0500 0000     		.short	0
- 3681 0502 0000     		.short	0
- 3682 0504 1500     		.short	21
- 3683 0506 1800     		.short	24
- 3684 0508 1600     		.short	22
- 3685 050a 1100     		.short	17
- 3686 050c 1400     		.short	20
- 3687 050e 0000     		.short	0
- 3688 0510 0000     		.short	0
- 3689 0512 0000     		.short	0
- 3690 0514 0000     		.short	0
- 3691 0516 0000     		.short	0
- 3692 0518 0000     		.short	0
- 3693 051a 0000     		.short	0
- 3694 051c 0000     		.short	0
- 3695 051e 0000     		.short	0
- 3696 0520 0000     		.short	0
- 3697 0522 0000     		.short	0
- 3698 0524 1400     		.short	20
- 3699 0526 1200     		.short	18
- 3700 0528 0000     		.short	0
- 3701 052a 1300     		.short	19
- 3702 052c 0000     		.short	0
- 3703 052e 1700     		.short	23
- 3704 0530 0000     		.short	0
- 3705 0532 0000     		.short	0
- 3706 0534 0000     		.short	0
- 3707 0536 0000     		.short	0
- 3708 0538 0000     		.short	0
- 3709 053a 0000     		.short	0
- 3710 053c 0000     		.short	0
- 3711 053e 0000     		.short	0
- 3712 0540 0000     		.short	0
- 3713 0542 1700     		.short	23
- 3714 0544 0000     		.short	0
- 3715 0546 1500     		.short	21
- 3716 0548 0000     		.short	0
- 3717 054a 1900     		.short	25
- 3718 054c 1200     		.short	18
- 3719 054e 1600     		.short	22
- 3720 0550 0000     		.short	0
- 3721 0552 0000     		.short	0
- 3722 0554 0000     		.short	0
- 3723 0556 0000     		.short	0
- 3724 0558 0000     		.short	0
- 3725 055a 0000     		.short	0
- 3726 055c 0000     		.short	0
- 3727 055e 0000     		.short	0
- 3728 0560 1600     		.short	22
- 3729 0562 0000     		.short	0
- 3730 0564 0000     		.short	0
- 3731 0566 0000     		.short	0
- 3732 0568 1800     		.short	24
- 3733 056a 0000     		.short	0
- 3734 056c 0000     		.short	0
- 3735 056e 0000     		.short	0
- 3736 0570 0000     		.short	0
- 3737 0572 0000     		.short	0
- 3738 0574 0000     		.short	0
- 3739 0576 0000     		.short	0
- 3740 0578 0000     		.short	0
- 3741 057a 0000     		.short	0
- 3742 057c 0000     		.short	0
- 3743 057e 0000     		.short	0
- 3744 0580 0000     		.short	0
- 3745 0582 0000     		.short	0
- 3746 0584 0000     		.short	0
- 3747 0586 0000     		.short	0
- 3748 0588 0000     		.short	0
- 3749 058a 1200     		.short	18
- 3750 058c 0000     		.short	0
- 3751 058e 0000     		.short	0
- 3752 0590 1100     		.short	17
- 3753 0592 0000     		.short	0
- 3754 0594 0000     		.short	0
- 3755 0596 0000     		.short	0
- 3756 0598 0000     		.short	0
- 3757 059a 0000     		.short	0
- 3758 059c 0000     		.short	0
- 3759 059e 0000     		.short	0
- 3760              		.align	5
- 3763              	solucion:
- 3764 05a0 159A     		.short	-26091
- 3765 05a2 00FA     		.short	-1536
- 3766 05a4 009E     		.short	-25088
- 3767 05a6 13EB     		.short	-5357
- 3768 05a8 00FA     		.short	-1536
- 3769 05aa 80AB     		.short	-21632
- 3770 05ac 001F     		.short	7936
- 3771 05ae 003A     		.short	14848
- 3772 05b0 800A     		.short	2688
- 3773 05b2 0000     		.short	0
- 3774 05b4 0000     		.short	0
- 3775 05b6 0000     		.short	0
- 3776 05b8 0000     		.short	0
- 3777 05ba 0000     		.short	0
- 3778 05bc 0000     		.short	0
- 3779 05be 0000     		.short	0
- 3780 05c0 0098     		.short	-26624
- 3781 05c2 00F8     		.short	-2048
- 3782 05c4 009C     		.short	-25600
- 3783 05c6 00EB     		.short	-5376
- 3784 05c8 19FA     		.short	-1511
- 3785 05ca 80AB     		.short	-21632
- 3786 05cc 009F     		.short	-24832
- 3787 05ce 00BA     		.short	-17920
- 3788 05d0 958A     		.short	-30059
- 3789 05d2 0000     		.short	0
- 3790 05d4 0000     		.short	0
- 3791 05d6 0000     		.short	0
- 3792 05d8 0000     		.short	0
- 3793 05da 0000     		.short	0
- 3794 05dc 0000     		.short	0
- 3795 05de 0000     		.short	0
- 3796 05e0 00BA     		.short	-17920
- 3797 05e2 19FA     		.short	-1511
- 3798 05e4 16BE     		.short	-16874
- 3799 05e6 17FB     		.short	-1257
- 3800 05e8 00FA     		.short	-1536
- 3801 05ea 95BB     		.short	-17515
- 3802 05ec 00BF     		.short	-16640
- 3803 05ee 13BA     		.short	-17901
- 3804 05f0 80BA     		.short	-17792
- 3805 05f2 0000     		.short	0
- 3806 05f4 0000     		.short	0
- 3807 05f6 0000     		.short	0
- 3808 05f8 0000     		.short	0
- 3809 05fa 0000     		.short	0
- 3810 05fc 0000     		.short	0
- 3811 05fe 0000     		.short	0
- 3812 0600 00DC     		.short	-9216
- 3813 0602 18FC     		.short	-1000
- 3814 0604 00DC     		.short	-9216
- 3815 0606 99FB     		.short	-1127
- 3816 0608 80D3     		.short	-11392
- 3817 060a 80DB     		.short	-9344
- 3818 060c 16F5     		.short	-2794
- 3819 060e 00F6     		.short	-2560
- 3820 0610 80FC     		.short	-896
- 3821 0612 0000     		.short	0
- 3822 0614 0000     		.short	0
- 3823 0616 0000     		.short	0
- 3824 0618 0000     		.short	0
- 3825 061a 0000     		.short	0
- 3826 061c 0000     		.short	0
- 3827 061e 0000     		.short	0
- 3828 0620 805C     		.short	23680
- 3829 0622 80FC     		.short	-896
- 3830 0624 955C     		.short	23701
- 3831 0626 98FF     		.short	-104
- 3832 0628 96DF     		.short	-8298
- 3833 062a 91DF     		.short	-8303
- 3834 062c 947D     		.short	32148
- 3835 062e 807E     		.short	32384
- 3836 0630 807C     		.short	31872
- 3837 0632 0000     		.short	0
- 3838 0634 0000     		.short	0
- 3839 0636 0000     		.short	0
- 3840 0638 0000     		.short	0
- 3841 063a 0000     		.short	0
- 3842 063c 0000     		.short	0
- 3843 063e 0000     		.short	0
- 3844 0640 007F     		.short	32512
- 3845 0642 00EF     		.short	-4352
- 3846 0644 147F     		.short	32532
- 3847 0646 92FF     		.short	-110
- 3848 0648 80F7     		.short	-2176
- 3849 064a 93FF     		.short	-109
- 3850 064c 0037     		.short	14080
- 3851 064e 1737     		.short	14103
- 3852 0650 803F     		.short	16256
- 3853 0652 0000     		.short	0
- 3854 0654 0000     		.short	0
- 3855 0656 0000     		.short	0
- 3856 0658 0000     		.short	0
- 3857 065a 0000     		.short	0
- 3858 065c 0000     		.short	0
- 3859 065e 0000     		.short	0
- 3860 0660 00B9     		.short	-18176
- 3861 0662 17F9     		.short	-1769
- 3862 0664 00BD     		.short	-17152
- 3863 0666 15FB     		.short	-1259
- 3864 0668 00F9     		.short	-1792
- 3865 066a 99FB     		.short	-1127
- 3866 066c 92BD     		.short	-17006
- 3867 066e 96BB     		.short	-17514
- 3868 0670 80B9     		.short	-18048
- 3869 0672 0000     		.short	0
- 3870 0674 0000     		.short	0
- 3871 0676 0000     		.short	0
- 3872 0678 0000     		.short	0
- 3873 067a 0000     		.short	0
- 3874 067c 0000     		.short	0
- 3875 067e 0000     		.short	0
- 3876 0680 1678     		.short	30742
- 3877 0682 00F0     		.short	-4096
- 3878 0684 007C     		.short	31744
- 3879 0686 00FB     		.short	-1280
- 3880 0688 18D9     		.short	-9960
- 3881 068a 80DB     		.short	-9344
- 3882 068c 8055     		.short	21888
- 3883 068e 8073     		.short	29568
- 3884 0690 8059     		.short	22912
- 3885 0692 0000     		.short	0
- 3886 0694 0000     		.short	0
- 3887 0696 0000     		.short	0
- 3888 0698 0000     		.short	0
- 3889 069a 0000     		.short	0
- 3890 069c 0000     		.short	0
- 3891 069e 0000     		.short	0
- 3892 06a0 8039     		.short	14720
- 3893 06a2 80F1     		.short	-3712
- 3894 06a4 803D     		.short	15744
- 3895 06a6 80EB     		.short	-5248
- 3896 06a8 80D9     		.short	-9856
- 3897 06aa 92CB     		.short	-13422
- 3898 06ac 8015     		.short	5504
- 3899 06ae 8033     		.short	13184
- 3900 06b0 9119     		.short	6545
- 3901 06b2 0000     		.short	0
- 3902 06b4 0000     		.short	0
- 3903 06b6 0000     		.short	0
- 3904 06b8 0000     		.short	0
- 3905 06ba 0000     		.short	0
- 3906 06bc 0000     		.short	0
- 3907 06be 0000     		.short	0
- 3908              		.global	cuadricula
- 3909              		.align	2
- 3912              	cuadricula:
- 3913 06c0 60030000 		.word	cuadricula_ARM_ARM
- 3914              		.global	celdas_vacias
- 3915 06c4 00000000 		.bss
- 3915      00000000 
- 3915      00000000 
- 3915      00000000 
- 3915      00000000 
- 3916              		.align	2
- 3919              	celdas_vacias:
- 3920 0000 00000000 		.space	4
- 3921              		.text
- 3922              		.align	2
- 3923              		.global	Main
- 3925              	Main:
- 3926              	.LFB7:
+ 3612              		.section	.rodata
+ 3613              		.align	5
+ 3616              	cuadricula_Respaldo:
+ 3617 0000 1500     		.short	21
+ 3618 0002 0000     		.short	0
+ 3619 0004 0000     		.short	0
+ 3620 0006 1300     		.short	19
+ 3621 0008 0000     		.short	0
+ 3622 000a 0000     		.short	0
+ 3623 000c 0000     		.short	0
+ 3624 000e 0000     		.short	0
+ 3625 0010 0000     		.short	0
+ 3626 0012 0000     		.short	0
+ 3627 0014 0000     		.short	0
+ 3628 0016 0000     		.short	0
+ 3629 0018 0000     		.short	0
+ 3630 001a 0000     		.short	0
+ 3631 001c 0000     		.short	0
+ 3632 001e 0000     		.short	0
+ 3633 0020 0000     		.short	0
+ 3634 0022 0000     		.short	0
+ 3635 0024 0000     		.short	0
+ 3636 0026 0000     		.short	0
+ 3637 0028 1900     		.short	25
+ 3638 002a 0000     		.short	0
+ 3639 002c 0000     		.short	0
+ 3640 002e 0000     		.short	0
+ 3641 0030 1500     		.short	21
+ 3642 0032 0000     		.short	0
+ 3643 0034 0000     		.short	0
+ 3644 0036 0000     		.short	0
+ 3645 0038 0000     		.short	0
+ 3646 003a 0000     		.short	0
+ 3647 003c 0000     		.short	0
+ 3648 003e 0000     		.short	0
+ 3649 0040 0000     		.short	0
+ 3650 0042 1900     		.short	25
+ 3651 0044 1600     		.short	22
+ 3652 0046 1700     		.short	23
+ 3653 0048 0000     		.short	0
+ 3654 004a 1500     		.short	21
+ 3655 004c 0000     		.short	0
+ 3656 004e 1300     		.short	19
+ 3657 0050 0000     		.short	0
+ 3658 0052 0000     		.short	0
+ 3659 0054 0000     		.short	0
+ 3660 0056 0000     		.short	0
+ 3661 0058 0000     		.short	0
+ 3662 005a 0000     		.short	0
+ 3663 005c 0000     		.short	0
+ 3664 005e 0000     		.short	0
+ 3665 0060 0000     		.short	0
+ 3666 0062 1800     		.short	24
+ 3667 0064 0000     		.short	0
+ 3668 0066 1900     		.short	25
+ 3669 0068 0000     		.short	0
+ 3670 006a 0000     		.short	0
+ 3671 006c 1600     		.short	22
+ 3672 006e 0000     		.short	0
+ 3673 0070 0000     		.short	0
+ 3674 0072 0000     		.short	0
+ 3675 0074 0000     		.short	0
+ 3676 0076 0000     		.short	0
+ 3677 0078 0000     		.short	0
+ 3678 007a 0000     		.short	0
+ 3679 007c 0000     		.short	0
+ 3680 007e 0000     		.short	0
+ 3681 0080 0000     		.short	0
+ 3682 0082 0000     		.short	0
+ 3683 0084 1500     		.short	21
+ 3684 0086 1800     		.short	24
+ 3685 0088 1600     		.short	22
+ 3686 008a 1100     		.short	17
+ 3687 008c 1400     		.short	20
+ 3688 008e 0000     		.short	0
+ 3689 0090 0000     		.short	0
+ 3690 0092 0000     		.short	0
+ 3691 0094 0000     		.short	0
+ 3692 0096 0000     		.short	0
+ 3693 0098 0000     		.short	0
+ 3694 009a 0000     		.short	0
+ 3695 009c 0000     		.short	0
+ 3696 009e 0000     		.short	0
+ 3697 00a0 0000     		.short	0
+ 3698 00a2 0000     		.short	0
+ 3699 00a4 1400     		.short	20
+ 3700 00a6 1200     		.short	18
+ 3701 00a8 0000     		.short	0
+ 3702 00aa 1300     		.short	19
+ 3703 00ac 0000     		.short	0
+ 3704 00ae 1700     		.short	23
+ 3705 00b0 0000     		.short	0
+ 3706 00b2 0000     		.short	0
+ 3707 00b4 0000     		.short	0
+ 3708 00b6 0000     		.short	0
+ 3709 00b8 0000     		.short	0
+ 3710 00ba 0000     		.short	0
+ 3711 00bc 0000     		.short	0
+ 3712 00be 0000     		.short	0
+ 3713 00c0 0000     		.short	0
+ 3714 00c2 1700     		.short	23
+ 3715 00c4 0000     		.short	0
+ 3716 00c6 1500     		.short	21
+ 3717 00c8 0000     		.short	0
+ 3718 00ca 1900     		.short	25
+ 3719 00cc 1200     		.short	18
+ 3720 00ce 1600     		.short	22
+ 3721 00d0 0000     		.short	0
+ 3722 00d2 0000     		.short	0
+ 3723 00d4 0000     		.short	0
+ 3724 00d6 0000     		.short	0
+ 3725 00d8 0000     		.short	0
+ 3726 00da 0000     		.short	0
+ 3727 00dc 0000     		.short	0
+ 3728 00de 0000     		.short	0
+ 3729 00e0 1600     		.short	22
+ 3730 00e2 0000     		.short	0
+ 3731 00e4 0000     		.short	0
+ 3732 00e6 0000     		.short	0
+ 3733 00e8 1800     		.short	24
+ 3734 00ea 0000     		.short	0
+ 3735 00ec 0000     		.short	0
+ 3736 00ee 0000     		.short	0
+ 3737 00f0 0000     		.short	0
+ 3738 00f2 0000     		.short	0
+ 3739 00f4 0000     		.short	0
+ 3740 00f6 0000     		.short	0
+ 3741 00f8 0000     		.short	0
+ 3742 00fa 0000     		.short	0
+ 3743 00fc 0000     		.short	0
+ 3744 00fe 0000     		.short	0
+ 3745 0100 0000     		.short	0
+ 3746 0102 0000     		.short	0
+ 3747 0104 0000     		.short	0
+ 3748 0106 0000     		.short	0
+ 3749 0108 0000     		.short	0
+ 3750 010a 1200     		.short	18
+ 3751 010c 0000     		.short	0
+ 3752 010e 0000     		.short	0
+ 3753 0110 1100     		.short	17
+ 3754 0112 0000     		.short	0
+ 3755 0114 0000     		.short	0
+ 3756 0116 0000     		.short	0
+ 3757 0118 0000     		.short	0
+ 3758 011a 0000     		.short	0
+ 3759 011c 0000     		.short	0
+ 3760 011e 0000     		.short	0
+ 3761              		.data
+ 3762              		.align	5
+ 3765              	cuadricula_ARM_ARM_ALL:
+ 3766 0480 1500     		.short	21
+ 3767 0482 0000     		.short	0
+ 3768 0484 0000     		.short	0
+ 3769 0486 1300     		.short	19
+ 3770 0488 0000     		.short	0
+ 3771 048a 0000     		.short	0
+ 3772 048c 0000     		.short	0
+ 3773 048e 0000     		.short	0
+ 3774 0490 0000     		.short	0
+ 3775 0492 0000     		.short	0
+ 3776 0494 0000     		.short	0
+ 3777 0496 0000     		.short	0
+ 3778 0498 0000     		.short	0
+ 3779 049a 0000     		.short	0
+ 3780 049c 0000     		.short	0
+ 3781 049e 0000     		.short	0
+ 3782 04a0 0000     		.short	0
+ 3783 04a2 0000     		.short	0
+ 3784 04a4 0000     		.short	0
+ 3785 04a6 0000     		.short	0
+ 3786 04a8 1900     		.short	25
+ 3787 04aa 0000     		.short	0
+ 3788 04ac 0000     		.short	0
+ 3789 04ae 0000     		.short	0
+ 3790 04b0 1500     		.short	21
+ 3791 04b2 0000     		.short	0
+ 3792 04b4 0000     		.short	0
+ 3793 04b6 0000     		.short	0
+ 3794 04b8 0000     		.short	0
+ 3795 04ba 0000     		.short	0
+ 3796 04bc 0000     		.short	0
+ 3797 04be 0000     		.short	0
+ 3798 04c0 0000     		.short	0
+ 3799 04c2 1900     		.short	25
+ 3800 04c4 1600     		.short	22
+ 3801 04c6 1700     		.short	23
+ 3802 04c8 0000     		.short	0
+ 3803 04ca 1500     		.short	21
+ 3804 04cc 0000     		.short	0
+ 3805 04ce 1300     		.short	19
+ 3806 04d0 0000     		.short	0
+ 3807 04d2 0000     		.short	0
+ 3808 04d4 0000     		.short	0
+ 3809 04d6 0000     		.short	0
+ 3810 04d8 0000     		.short	0
+ 3811 04da 0000     		.short	0
+ 3812 04dc 0000     		.short	0
+ 3813 04de 0000     		.short	0
+ 3814 04e0 0000     		.short	0
+ 3815 04e2 1800     		.short	24
+ 3816 04e4 0000     		.short	0
+ 3817 04e6 1900     		.short	25
+ 3818 04e8 0000     		.short	0
+ 3819 04ea 0000     		.short	0
+ 3820 04ec 1600     		.short	22
+ 3821 04ee 0000     		.short	0
+ 3822 04f0 0000     		.short	0
+ 3823 04f2 0000     		.short	0
+ 3824 04f4 0000     		.short	0
+ 3825 04f6 0000     		.short	0
+ 3826 04f8 0000     		.short	0
+ 3827 04fa 0000     		.short	0
+ 3828 04fc 0000     		.short	0
+ 3829 04fe 0000     		.short	0
+ 3830 0500 0000     		.short	0
+ 3831 0502 0000     		.short	0
+ 3832 0504 1500     		.short	21
+ 3833 0506 1800     		.short	24
+ 3834 0508 1600     		.short	22
+ 3835 050a 1100     		.short	17
+ 3836 050c 1400     		.short	20
+ 3837 050e 0000     		.short	0
+ 3838 0510 0000     		.short	0
+ 3839 0512 0000     		.short	0
+ 3840 0514 0000     		.short	0
+ 3841 0516 0000     		.short	0
+ 3842 0518 0000     		.short	0
+ 3843 051a 0000     		.short	0
+ 3844 051c 0000     		.short	0
+ 3845 051e 0000     		.short	0
+ 3846 0520 0000     		.short	0
+ 3847 0522 0000     		.short	0
+ 3848 0524 1400     		.short	20
+ 3849 0526 1200     		.short	18
+ 3850 0528 0000     		.short	0
+ 3851 052a 1300     		.short	19
+ 3852 052c 0000     		.short	0
+ 3853 052e 1700     		.short	23
+ 3854 0530 0000     		.short	0
+ 3855 0532 0000     		.short	0
+ 3856 0534 0000     		.short	0
+ 3857 0536 0000     		.short	0
+ 3858 0538 0000     		.short	0
+ 3859 053a 0000     		.short	0
+ 3860 053c 0000     		.short	0
+ 3861 053e 0000     		.short	0
+ 3862 0540 0000     		.short	0
+ 3863 0542 1700     		.short	23
+ 3864 0544 0000     		.short	0
+ 3865 0546 1500     		.short	21
+ 3866 0548 0000     		.short	0
+ 3867 054a 1900     		.short	25
+ 3868 054c 1200     		.short	18
+ 3869 054e 1600     		.short	22
+ 3870 0550 0000     		.short	0
+ 3871 0552 0000     		.short	0
+ 3872 0554 0000     		.short	0
+ 3873 0556 0000     		.short	0
+ 3874 0558 0000     		.short	0
+ 3875 055a 0000     		.short	0
+ 3876 055c 0000     		.short	0
+ 3877 055e 0000     		.short	0
+ 3878 0560 1600     		.short	22
+ 3879 0562 0000     		.short	0
+ 3880 0564 0000     		.short	0
+ 3881 0566 0000     		.short	0
+ 3882 0568 1800     		.short	24
+ 3883 056a 0000     		.short	0
+ 3884 056c 0000     		.short	0
+ 3885 056e 0000     		.short	0
+ 3886 0570 0000     		.short	0
+ 3887 0572 0000     		.short	0
+ 3888 0574 0000     		.short	0
+ 3889 0576 0000     		.short	0
+ 3890 0578 0000     		.short	0
+ 3891 057a 0000     		.short	0
+ 3892 057c 0000     		.short	0
+ 3893 057e 0000     		.short	0
+ 3894 0580 0000     		.short	0
+ 3895 0582 0000     		.short	0
+ 3896 0584 0000     		.short	0
+ 3897 0586 0000     		.short	0
+ 3898 0588 0000     		.short	0
+ 3899 058a 1200     		.short	18
+ 3900 058c 0000     		.short	0
+ 3901 058e 0000     		.short	0
+ 3902 0590 1100     		.short	17
+ 3903 0592 0000     		.short	0
+ 3904 0594 0000     		.short	0
+ 3905 0596 0000     		.short	0
+ 3906 0598 0000     		.short	0
+ 3907 059a 0000     		.short	0
+ 3908 059c 0000     		.short	0
+ 3909 059e 0000     		.short	0
+ 3910              		.align	5
+ 3913              	solucion:
+ 3914 05a0 159A     		.short	-26091
+ 3915 05a2 00FA     		.short	-1536
+ 3916 05a4 009E     		.short	-25088
+ 3917 05a6 13EB     		.short	-5357
+ 3918 05a8 00FA     		.short	-1536
+ 3919 05aa 80AB     		.short	-21632
+ 3920 05ac 001F     		.short	7936
+ 3921 05ae 003A     		.short	14848
+ 3922 05b0 800A     		.short	2688
+ 3923 05b2 0000     		.short	0
+ 3924 05b4 0000     		.short	0
+ 3925 05b6 0000     		.short	0
+ 3926 05b8 0000     		.short	0
+ 3927 05ba 0000     		.short	0
+ 3928 05bc 0000     		.short	0
+ 3929 05be 0000     		.short	0
+ 3930 05c0 0098     		.short	-26624
+ 3931 05c2 00F8     		.short	-2048
+ 3932 05c4 009C     		.short	-25600
+ 3933 05c6 00EB     		.short	-5376
+ 3934 05c8 19FA     		.short	-1511
+ 3935 05ca 80AB     		.short	-21632
+ 3936 05cc 009F     		.short	-24832
+ 3937 05ce 00BA     		.short	-17920
+ 3938 05d0 958A     		.short	-30059
+ 3939 05d2 0000     		.short	0
+ 3940 05d4 0000     		.short	0
+ 3941 05d6 0000     		.short	0
+ 3942 05d8 0000     		.short	0
+ 3943 05da 0000     		.short	0
+ 3944 05dc 0000     		.short	0
+ 3945 05de 0000     		.short	0
+ 3946 05e0 00BA     		.short	-17920
+ 3947 05e2 19FA     		.short	-1511
+ 3948 05e4 16BE     		.short	-16874
+ 3949 05e6 17FB     		.short	-1257
+ 3950 05e8 00FA     		.short	-1536
+ 3951 05ea 95BB     		.short	-17515
+ 3952 05ec 00BF     		.short	-16640
+ 3953 05ee 13BA     		.short	-17901
+ 3954 05f0 80BA     		.short	-17792
+ 3955 05f2 0000     		.short	0
+ 3956 05f4 0000     		.short	0
+ 3957 05f6 0000     		.short	0
+ 3958 05f8 0000     		.short	0
+ 3959 05fa 0000     		.short	0
+ 3960 05fc 0000     		.short	0
+ 3961 05fe 0000     		.short	0
+ 3962 0600 00DC     		.short	-9216
+ 3963 0602 18FC     		.short	-1000
+ 3964 0604 00DC     		.short	-9216
+ 3965 0606 99FB     		.short	-1127
+ 3966 0608 80D3     		.short	-11392
+ 3967 060a 80DB     		.short	-9344
+ 3968 060c 16F5     		.short	-2794
+ 3969 060e 00F6     		.short	-2560
+ 3970 0610 80FC     		.short	-896
+ 3971 0612 0000     		.short	0
+ 3972 0614 0000     		.short	0
+ 3973 0616 0000     		.short	0
+ 3974 0618 0000     		.short	0
+ 3975 061a 0000     		.short	0
+ 3976 061c 0000     		.short	0
+ 3977 061e 0000     		.short	0
+ 3978 0620 805C     		.short	23680
+ 3979 0622 80FC     		.short	-896
+ 3980 0624 955C     		.short	23701
+ 3981 0626 98FF     		.short	-104
+ 3982 0628 96DF     		.short	-8298
+ 3983 062a 91DF     		.short	-8303
+ 3984 062c 947D     		.short	32148
+ 3985 062e 807E     		.short	32384
+ 3986 0630 807C     		.short	31872
+ 3987 0632 0000     		.short	0
+ 3988 0634 0000     		.short	0
+ 3989 0636 0000     		.short	0
+ 3990 0638 0000     		.short	0
+ 3991 063a 0000     		.short	0
+ 3992 063c 0000     		.short	0
+ 3993 063e 0000     		.short	0
+ 3994 0640 007F     		.short	32512
+ 3995 0642 00EF     		.short	-4352
+ 3996 0644 147F     		.short	32532
+ 3997 0646 92FF     		.short	-110
+ 3998 0648 80F7     		.short	-2176
+ 3999 064a 93FF     		.short	-109
+ 4000 064c 0037     		.short	14080
+ 4001 064e 1737     		.short	14103
+ 4002 0650 803F     		.short	16256
+ 4003 0652 0000     		.short	0
+ 4004 0654 0000     		.short	0
+ 4005 0656 0000     		.short	0
+ 4006 0658 0000     		.short	0
+ 4007 065a 0000     		.short	0
+ 4008 065c 0000     		.short	0
+ 4009 065e 0000     		.short	0
+ 4010 0660 00B9     		.short	-18176
+ 4011 0662 17F9     		.short	-1769
+ 4012 0664 00BD     		.short	-17152
+ 4013 0666 15FB     		.short	-1259
+ 4014 0668 00F9     		.short	-1792
+ 4015 066a 99FB     		.short	-1127
+ 4016 066c 92BD     		.short	-17006
+ 4017 066e 96BB     		.short	-17514
+ 4018 0670 80B9     		.short	-18048
+ 4019 0672 0000     		.short	0
+ 4020 0674 0000     		.short	0
+ 4021 0676 0000     		.short	0
+ 4022 0678 0000     		.short	0
+ 4023 067a 0000     		.short	0
+ 4024 067c 0000     		.short	0
+ 4025 067e 0000     		.short	0
+ 4026 0680 1678     		.short	30742
+ 4027 0682 00F0     		.short	-4096
+ 4028 0684 007C     		.short	31744
+ 4029 0686 00FB     		.short	-1280
+ 4030 0688 18D9     		.short	-9960
+ 4031 068a 80DB     		.short	-9344
+ 4032 068c 8055     		.short	21888
+ 4033 068e 8073     		.short	29568
+ 4034 0690 8059     		.short	22912
+ 4035 0692 0000     		.short	0
+ 4036 0694 0000     		.short	0
+ 4037 0696 0000     		.short	0
+ 4038 0698 0000     		.short	0
+ 4039 069a 0000     		.short	0
+ 4040 069c 0000     		.short	0
+ 4041 069e 0000     		.short	0
+ 4042 06a0 8039     		.short	14720
+ 4043 06a2 80F1     		.short	-3712
+ 4044 06a4 803D     		.short	15744
+ 4045 06a6 80EB     		.short	-5248
+ 4046 06a8 80D9     		.short	-9856
+ 4047 06aa 92CB     		.short	-13422
+ 4048 06ac 8015     		.short	5504
+ 4049 06ae 8033     		.short	13184
+ 4050 06b0 9119     		.short	6545
+ 4051 06b2 0000     		.short	0
+ 4052 06b4 0000     		.short	0
+ 4053 06b6 0000     		.short	0
+ 4054 06b8 0000     		.short	0
+ 4055 06ba 0000     		.short	0
+ 4056 06bc 0000     		.short	0
+ 4057 06be 0000     		.short	0
+ 4058              		.global	cuadricula
+ 4059              		.align	2
+ 4062              	cuadricula:
+ 4063 06c0 60030000 		.word	cuadricula_ARM_ARM
+ 4064              		.global	celdas_vacias
+ 4065 06c4 00000000 		.bss
+ 4065      00000000 
+ 4065      00000000 
+ 4065      00000000 
+ 4065      00000000 
+ 4066              		.align	2
+ 4069              	celdas_vacias:
+ 4070 0000 00000000 		.space	4
+ 4071              		.text
+ 4072              		.align	2
+ 4073              		.global	Main
+ 4075              	Main:
+ 4076              	.LFB7:
    1:../main.c     **** /*********************************************************************************************
    2:../main.c     **** * File	main.c
    3:../main.c     **** * Author: embest
@@ -943,290 +1091,238 @@
   36:../main.c     **** /*--- function declare ---*/
   37:../main.c     **** void Main(void);
   38:../main.c     **** 
-  39:../main.c     **** 
-  40:../main.c     **** 
+  39:../main.c     **** /*--- extern function ---*/
+  40:../main.c     **** extern void Lcd_Test();
   41:../main.c     **** 
-  42:../main.c     **** 
-  43:../main.c     **** 
-  44:../main.c     **** 
-  45:../main.c     **** 
-  46:../main.c     **** 
-  47:../main.c     **** 
-  48:../main.c     **** 
-  49:../main.c     **** 
-  50:../main.c     **** 
-  51:../main.c     **** 
-  52:../main.c     **** 
-  53:../main.c     **** 
-  54:../main.c     **** 
-  55:../main.c     **** 
-  56:../main.c     **** 
-  57:../main.c     **** 
-  58:../main.c     **** 
-  59:../main.c     **** 
-  60:../main.c     **** 
-  61:../main.c     **** 
-  62:../main.c     **** 
-  63:../main.c     **** 
-  64:../main.c     **** 
-  65:../main.c     **** 
-  66:../main.c     **** 
-  67:../main.c     **** 
-  68:../main.c     **** 
-  69:../main.c     **** 
-  70:../main.c     **** 
-  71:../main.c     **** 
-  72:../main.c     **** 
-  73:../main.c     **** 
-  74:../main.c     **** 
-  75:../main.c     **** 
-  76:../main.c     **** 
-  77:../main.c     **** 
-  78:../main.c     **** 
-  79:../main.c     **** 
-  80:../main.c     **** 
-  81:../main.c     **** 
-  82:../main.c     **** 
-  83:../main.c     **** 
-  84:../main.c     **** 
-  85:../main.c     **** 
-  86:../main.c     **** 
-  87:../main.c     **** 
-  88:../main.c     **** 
-  89:../main.c     **** 
-  90:../main.c     **** 
-  91:../main.c     **** 
-  92:../main.c     **** 
-  93:../main.c     **** 
+  42:../main.c     **** /*--- function code ---*/
+  43:../main.c     **** /*********************************************************************************************
+  44:../main.c     **** * name:		Main
+  45:../main.c     **** * func:		c code entry - VERSIÓN INTEGRADA: Touchscreen + Sudoku
+  46:../main.c     **** * para:		none
+  47:../main.c     **** * ret:		none
+  48:../main.c     **** * modify:
+  49:../main.c     **** * comment:	Descomenta el bloque que quieras ejecutar (TOUCHSCREEN o SUDOKU)
+  50:../main.c     **** *********************************************************************************************/
+  51:../main.c     **** void Main(void)
+  52:../main.c     **** {
+ 4077              		.loc 1 52 0
+ 4078              		.cfi_startproc
+ 4079              		@ Function supports interworking.
+ 4080              		@ args = 0, pretend = 0, frame = 24
+ 4081              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4082 0000 0DC0A0E1 		mov	ip, sp
+ 4083              	.LCFI0:
+ 4084              		.cfi_def_cfa_register 12
+ 4085 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4086 0008 04B04CE2 		sub	fp, ip, #4
+ 4087              		.cfi_offset 14, -8
+ 4088              		.cfi_offset 13, -12
+ 4089              		.cfi_offset 11, -16
+ 4090              	.LCFI1:
+ 4091              		.cfi_def_cfa 11, 4
+ 4092 000c 18D04DE2 		sub	sp, sp, #24
+  53:../main.c     ****     sys_init();        /* Initial 44B0X's Interrupt, Port and UART */
+ 4093              		.loc 1 53 0
+ 4094 0010 FEFFFFEB 		bl	sys_init
+  54:../main.c     ****     //_Link();           /* Print Misc info */
+  55:../main.c     ****     
+  56:../main.c     ****     /* ======================================================================
+  57:../main.c     ****      * OPCIÓN 1: CÓDIGO TOUCHSCREEN Y LCD (ORIGINAL)
+  58:../main.c     ****      * Descomenta este bloque para ejecutar el código del touchscreen
+  59:../main.c     ****      * ====================================================================== */
+  60:../main.c     ****     /*
+  61:../main.c     ****     // Test de calibración con dos números
+  62:../main.c     ****     ts_test_numeros();
+  63:../main.c     ****     */
+  64:../main.c     ****     
+  65:../main.c     ****     /*
+  66:../main.c     ****     Lcd_Test();
+  67:../main.c     ****     TS_Test();
+  68:../main.c     ****     
+  69:../main.c     ****     while(1)
+  70:../main.c     ****     {
+  71:../main.c     ****        //yn = Uart_Getch();
+  72:../main.c     ****        
+  73:../main.c     ****        //if(yn == 0x52) TS_Test();// R to reset the XY REC
+  74:../main.c     ****        //else break;
+  75:../main.c     ****     }
+  76:../main.c     ****     
+  77:../main.c     ****     TS_close();
+  78:../main.c     ****     */
+  79:../main.c     ****     
+  80:../main.c     ****     /* ======================================================================
+  81:../main.c     ****      * OPCIÓN 2: CÓDIGO SUDOKU (desde main_sudoku.c)
+  82:../main.c     ****      * Este bloque está activo por defecto
+  83:../main.c     ****      * ====================================================================== */
+  84:../main.c     ****     
+  85:../main.c     ****     /* Variables para observar la cola durante la depuración */
+  86:../main.c     ****     ColaDebug* p_cola;              // Puntador a la estructura completa de la cola
+  87:../main.c     ****     
+  88:../main.c     ****     /* Inicializa controladores del Sudoku */
+  89:../main.c     ****     timer2_init();      // Inicializacion del timer2 para medicion de tiempo
+ 4095              		.loc 1 89 0
+ 4096 0014 FEFFFFEB 		bl	timer2_init
+  90:../main.c     ****     timer1_init();      // Inicializacion del timer1 para latido (heartbeat) - Paso 6
+ 4097              		.loc 1 90 0
+ 4098 0018 FEFFFFEB 		bl	timer1_init
+  91:../main.c     ****     cola_init();        // Inicializacion de la cola de depuracion (Paso 4)
+ 4099              		.loc 1 91 0
+ 4100 001c FEFFFFEB 		bl	cola_init
+  92:../main.c     ****     Eint4567_init();    // inicializamos los pulsadores. Cada vez que se pulse se verá reflejado e
+ 4101              		.loc 1 92 0
+ 4102 0020 FEFFFFEB 		bl	Eint4567_init
+  93:../main.c     ****     D8Led_init();       // inicializamos el 8led
+ 4103              		.loc 1 93 0
+ 4104 0024 FEFFFFEB 		bl	D8Led_init
   94:../main.c     **** 
-  95:../main.c     **** 
-  96:../main.c     **** 
-  97:../main.c     **** 
-  98:../main.c     **** 
-  99:../main.c     **** 
- 100:../main.c     **** 
- 101:../main.c     **** 
- 102:../main.c     **** 
+  95:../main.c     ****     /* Inicializar LCD y mostrar pantalla inicial */
+  96:../main.c     ****     Lcd_Init();
+ 4105              		.loc 1 96 0
+ 4106 0028 FEFFFFEB 		bl	Lcd_Init
+  97:../main.c     ****     TS_init();
+ 4107              		.loc 1 97 0
+ 4108 002c FEFFFFEB 		bl	TS_init
+  98:../main.c     ****     
+  99:../main.c     ****     /* Calibrar touchscreen */
+ 100:../main.c     ****     ts_calibrate_5pt(SCR_XSIZE, SCR_YSIZE, 30);
+ 4109              		.loc 1 100 0
+ 4110 0030 050DA0E3 		mov	r0, #320
+ 4111 0034 F010A0E3 		mov	r1, #240
+ 4112 0038 1E20A0E3 		mov	r2, #30
+ 4113 003c FEFFFFEB 		bl	ts_calibrate_5pt
+ 101:../main.c     ****     
+ 102:../main.c     ****     Sudoku_Pantalla_Inicial();
+ 4114              		.loc 1 102 0
+ 4115 0040 FEFFFFEB 		bl	Sudoku_Pantalla_Inicial
  103:../main.c     **** 
- 104:../main.c     **** 
- 105:../main.c     **** 
- 106:../main.c     **** 
- 107:../main.c     **** 
- 108:../main.c     **** 
- 109:../main.c     **** 
- 110:../main.c     **** 
- 111:../main.c     **** 
- 112:../main.c     **** 
- 113:../main.c     **** 
- 114:../main.c     **** 
- 115:../main.c     **** 
- 116:../main.c     **** 
- 117:../main.c     **** 
- 118:../main.c     **** 
- 119:../main.c     **** 
- 120:../main.c     **** 
- 121:../main.c     **** 
- 122:../main.c     **** 
- 123:../main.c     **** /*--- extern function ---*/
- 124:../main.c     **** extern void Lcd_Test();
- 125:../main.c     **** 
- 126:../main.c     **** /*--- function code ---*/
- 127:../main.c     **** /*********************************************************************************************
- 128:../main.c     **** * name:		Main
- 129:../main.c     **** * func:		c code entry - VERSIÓN INTEGRADA: Touchscreen + Sudoku
- 130:../main.c     **** * para:		none
- 131:../main.c     **** * ret:		none
- 132:../main.c     **** * modify:
- 133:../main.c     **** * comment:	Descomenta el bloque que quieras ejecutar (TOUCHSCREEN o SUDOKU)
- 134:../main.c     **** *********************************************************************************************/
- 135:../main.c     **** void Main(void)
- 136:../main.c     **** {
- 3927              		.loc 1 136 0
- 3928              		.cfi_startproc
- 3929              		@ Function supports interworking.
- 3930              		@ args = 0, pretend = 0, frame = 16
- 3931              		@ frame_needed = 1, uses_anonymous_args = 0
- 3932 0000 0DC0A0E1 		mov	ip, sp
- 3933              	.LCFI0:
- 3934              		.cfi_def_cfa_register 12
- 3935 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
- 3936 0008 04B04CE2 		sub	fp, ip, #4
- 3937              		.cfi_offset 14, -8
- 3938              		.cfi_offset 13, -12
- 3939              		.cfi_offset 11, -16
- 3940              	.LCFI1:
- 3941              		.cfi_def_cfa 11, 4
- 3942 000c 10D04DE2 		sub	sp, sp, #16
- 137:../main.c     ****     sys_init();        /* Initial 44B0X's Interrupt, Port and UART */
- 3943              		.loc 1 137 0
- 3944 0010 FEFFFFEB 		bl	sys_init
- 138:../main.c     ****     //_Link();           /* Print Misc info */
- 139:../main.c     **** 
- 140:../main.c     ****     /* ======================================================================
- 141:../main.c     ****      * OPCIÓN 1: CÓDIGO TOUCHSCREEN Y LCD (ORIGINAL)
- 142:../main.c     ****      * Descomenta este bloque para ejecutar el código del touchscreen
- 143:../main.c     ****      * ====================================================================== */
- 144:../main.c     ****     /*
- 145:../main.c     ****     Lcd_Test();
- 146:../main.c     ****     TS_Test();
- 147:../main.c     ****     
- 148:../main.c     ****     while(1)
- 149:../main.c     ****     {
- 150:../main.c     ****        //yn = Uart_Getch();
- 151:../main.c     ****        
- 152:../main.c     ****        //if(yn == 0x52) TS_Test();// R to reset the XY REC
- 153:../main.c     ****        //else break;
- 154:../main.c     ****     }
- 155:../main.c     ****     
- 156:../main.c     ****     TS_close();
- 157:../main.c     ****     */
- 158:../main.c     **** 
- 159:../main.c     ****     /* ======================================================================
- 160:../main.c     ****      * OPCIÓN 2: CÓDIGO SUDOKU (desde main_sudoku.c)
- 161:../main.c     ****      * Este bloque está activo por defecto
- 162:../main.c     ****      * ====================================================================== */
- 163:../main.c     **** 
- 164:../main.c     ****     /* Variables para observar la cola durante la depuración */
- 165:../main.c     ****     ColaDebug* p_cola;              // Puntero a la estructura completa de la cola
- 166:../main.c     **** 
- 167:../main.c     ****     /* Inicializa controladores del Sudoku */
- 168:../main.c     ****     timer2_init();      // Inicializacion del timer2 para medicion de tiempo
- 3945              		.loc 1 168 0
- 3946 0014 FEFFFFEB 		bl	timer2_init
- 169:../main.c     ****     timer1_init();      // Inicializacion del timer1 para latido (heartbeat) - Paso 6
- 3947              		.loc 1 169 0
- 3948 0018 FEFFFFEB 		bl	timer1_init
- 170:../main.c     ****     cola_init();        // Inicializacion de la cola de depuracion (Paso 4)
- 3949              		.loc 1 170 0
- 3950 001c FEFFFFEB 		bl	cola_init
- 171:../main.c     ****     Eint4567_init();    // inicializamos los pulsadores. Cada vez que se pulse se verá reflejado e
- 3951              		.loc 1 171 0
- 3952 0020 FEFFFFEB 		bl	Eint4567_init
- 172:../main.c     ****     D8Led_init();       // inicializamos el 8led
- 3953              		.loc 1 172 0
- 3954 0024 FEFFFFEB 		bl	D8Led_init
- 173:../main.c     **** 
- 174:../main.c     ****     /* Inicializar LCD y mostrar pantalla inicial */
- 175:../main.c     ****     Lcd_Init();
- 3955              		.loc 1 175 0
- 3956 0028 FEFFFFEB 		bl	Lcd_Init
- 176:../main.c     **** 
- 177:../main.c     ****     /* Inicializar y calibrar el touchscreen */
- 178:../main.c     ****     TS_init();
- 3957              		.loc 1 178 0
- 3958 002c FEFFFFEB 		bl	TS_init
- 179:../main.c     ****     TS_Calibrar();
- 3959              		.loc 1 179 0
- 3960 0030 FEFFFFEB 		bl	TS_Calibrar
- 180:../main.c     **** 
- 181:../main.c     ****     Sudoku_Pantalla_Inicial();
- 3961              		.loc 1 181 0
- 3962 0034 FEFFFFEB 		bl	Sudoku_Pantalla_Inicial
- 182:../main.c     **** 
- 183:../main.c     ****     /* Valor inicial de los leds */
- 184:../main.c     ****     leds_off();
- 3963              		.loc 1 184 0
- 3964 0038 FEFFFFEB 		bl	leds_off
- 185:../main.c     **** 
- 186:../main.c     ****     /* Apuntar a la cola para poder observarla en el depurador */
- 187:../main.c     ****     p_cola = cola_global;
- 3965              		.loc 1 187 0
- 3966 003c 74309FE5 		ldr	r3, .L6
- 3967 0040 003093E5 		ldr	r3, [r3, #0]
- 3968 0044 14300BE5 		str	r3, [fp, #-20]
- 188:../main.c     **** 
- 189:../main.c     ****     /* Variable para controlar actualización del tiempo */
- 190:../main.c     ****     unsigned int tiempo_anterior = 0;
- 3969              		.loc 1 190 0
- 3970 0048 0030A0E3 		mov	r3, #0
- 3971 004c 10300BE5 		str	r3, [fp, #-16]
- 191:../main.c     ****     unsigned int tiempo_actual = 0;
- 3972              		.loc 1 191 0
- 3973 0050 0030A0E3 		mov	r3, #0
- 3974 0054 18300BE5 		str	r3, [fp, #-24]
- 3975 0058 000000EA 		b	.L4
- 3976              	.L5:
- 192:../main.c     **** 
- 193:../main.c     ****     /* Bucle principal */
- 194:../main.c     ****     while (1)
- 195:../main.c     ****     {
- 196:../main.c     **** 
- 197:../main.c     **** 
- 198:../main.c     **** 
- 199:../main.c     **** 
- 200:../main.c     **** 
- 201:../main.c     **** 
- 202:../main.c     **** 
- 203:../main.c     **** 
- 204:../main.c     **** 
- 205:../main.c     ****         /* El latido (LED2 parpadeando) se gestiona automáticamente por timer1 */
- 206:../main.c     ****         /* El programa está vivo mientras el LED2 parpadee a 6 Hz */
- 207:../main.c     **** 
- 208:../main.c     ****         /* Actualizar el tiempo en pantalla cada segundo */
- 209:../main.c     ****         tiempo_actual = timer2_count();
- 210:../main.c     **** 
- 211:../main.c     ****         /* Actualizar cada 1 segundo (1000000 microsegundos) */
- 212:../main.c     ****         if ((tiempo_actual - tiempo_anterior) >= 1000000)
- 213:../main.c     ****         {
- 214:../main.c     ****             /* Solo actualizar si el juego está en progreso (no en pantalla inicial ni terminado) 
- 215:../main.c     ****             if (Sudoku_Juego_En_Progreso())
- 216:../main.c     ****             {
- 217:../main.c     ****                 /* Calcular tiempo transcurrido desde el inicio de la partida */
- 218:../main.c     ****                 unsigned int tiempo_transcurrido = tiempo_actual - Sudoku_Obtener_Tiempo_Inicio();
- 219:../main.c     ****                 Sudoku_Actualizar_Tiempo(tiempo_transcurrido);
- 220:../main.c     ****             }
- 221:../main.c     ****             tiempo_anterior = tiempo_actual;
- 222:../main.c     ****         }
- 223:../main.c     ****     }
- 3977              		.loc 1 223 0
- 3978 005c 0000A0E1 		mov	r0, r0	@ nop
- 3979              	.L4:
- 209:../main.c     ****         tiempo_actual = timer2_count();
- 3980              		.loc 1 209 0
- 3981 0060 FEFFFFEB 		bl	timer2_count
- 3982 0064 18000BE5 		str	r0, [fp, #-24]
- 212:../main.c     ****         if ((tiempo_actual - tiempo_anterior) >= 1000000)
- 3983              		.loc 1 212 0
- 3984 0068 18201BE5 		ldr	r2, [fp, #-24]
- 3985 006c 10301BE5 		ldr	r3, [fp, #-16]
- 3986 0070 022063E0 		rsb	r2, r3, r2
- 3987 0074 40309FE5 		ldr	r3, .L6+4
- 3988 0078 030052E1 		cmp	r2, r3
- 3989 007c F6FFFF9A 		bls	.L5
- 215:../main.c     ****             if (Sudoku_Juego_En_Progreso())
- 3990              		.loc 1 215 0
- 3991 0080 FEFFFFEB 		bl	Sudoku_Juego_En_Progreso
- 3992 0084 0030A0E1 		mov	r3, r0
- 3993 0088 000053E3 		cmp	r3, #0
- 3994 008c 0600000A 		beq	.L3
- 3995              	.LBB2:
- 218:../main.c     ****                 unsigned int tiempo_transcurrido = tiempo_actual - Sudoku_Obtener_Tiempo_Inicio();
- 3996              		.loc 1 218 0
- 3997 0090 FEFFFFEB 		bl	Sudoku_Obtener_Tiempo_Inicio
- 3998 0094 0030A0E1 		mov	r3, r0
- 3999 0098 18201BE5 		ldr	r2, [fp, #-24]
- 4000 009c 023063E0 		rsb	r3, r3, r2
- 4001 00a0 1C300BE5 		str	r3, [fp, #-28]
- 219:../main.c     ****                 Sudoku_Actualizar_Tiempo(tiempo_transcurrido);
- 4002              		.loc 1 219 0
- 4003 00a4 1C001BE5 		ldr	r0, [fp, #-28]
- 4004 00a8 FEFFFFEB 		bl	Sudoku_Actualizar_Tiempo
- 4005              	.L3:
- 4006              	.LBE2:
- 221:../main.c     ****             tiempo_anterior = tiempo_actual;
- 4007              		.loc 1 221 0
- 4008 00ac 18301BE5 		ldr	r3, [fp, #-24]
- 4009 00b0 10300BE5 		str	r3, [fp, #-16]
- 4010              		.loc 1 223 0
- 4011 00b4 E9FFFFEA 		b	.L4
- 4012              	.L7:
- 4013              		.align	2
- 4014              	.L6:
- 4015 00b8 00000000 		.word	cola_global
- 4016 00bc 3F420F00 		.word	999999
- 4017              		.cfi_endproc
- 4018              	.LFE7:
- 4020              	.Letext0:
+ 104:../main.c     ****     /* Valor inicial de los leds */
+ 105:../main.c     ****     leds_off();
+ 4116              		.loc 1 105 0
+ 4117 0044 FEFFFFEB 		bl	leds_off
+ 106:../main.c     ****     
+ 107:../main.c     ****     /* Apuntar a la cola para poder observarla en el depurador */
+ 108:../main.c     ****     p_cola = cola_global;
+ 4118              		.loc 1 108 0
+ 4119 0048 B0309FE5 		ldr	r3, .L7
+ 4120 004c 003093E5 		ldr	r3, [r3, #0]
+ 4121 0050 14300BE5 		str	r3, [fp, #-20]
+ 109:../main.c     ****     
+ 110:../main.c     ****     /* Variable para controlar actualización del tiempo */
+ 111:../main.c     ****     unsigned int tiempo_anterior = 0;
+ 4122              		.loc 1 111 0
+ 4123 0054 0030A0E3 		mov	r3, #0
+ 4124 0058 10300BE5 		str	r3, [fp, #-16]
+ 112:../main.c     ****     unsigned int tiempo_actual = 0;
+ 4125              		.loc 1 112 0
+ 4126 005c 0030A0E3 		mov	r3, #0
+ 4127 0060 18300BE5 		str	r3, [fp, #-24]
+ 4128 0064 000000EA 		b	.L5
+ 4129              	.L6:
+ 113:../main.c     ****     
+ 114:../main.c     ****     /* Variables para touchscreen */
+ 115:../main.c     ****     int touch_x, touch_y;
+ 116:../main.c     ****     
+ 117:../main.c     ****     /* Bucle principal */
+ 118:../main.c     ****     while (1)
+ 119:../main.c     ****     {
+ 120:../main.c     ****         /* El latido (LED2 parpadeando) se gestiona automáticamente por timer1 */
+ 121:../main.c     ****         /* El programa está vivo mientras el LED2 parpadee a 6 Hz */
+ 122:../main.c     ****         
+ 123:../main.c     ****         /* Comprobar si hay toque en la pantalla */
+ 124:../main.c     ****         if (ts_read_calibrated(&touch_x, &touch_y) == 0)
+ 125:../main.c     ****         {
+ 126:../main.c     ****             /* Procesar toque en el Sudoku */
+ 127:../main.c     ****             Sudoku_Procesar_Touch(touch_x, touch_y);
+ 128:../main.c     ****             Delay(30);  // Evitar múltiples detecciones
+ 129:../main.c     ****         }
+ 130:../main.c     ****         
+ 131:../main.c     ****         /* Actualizar el tiempo en pantalla cada segundo */
+ 132:../main.c     ****         tiempo_actual = timer2_count();
+ 133:../main.c     ****         
+ 134:../main.c     ****         /* Actualizar cada 1 segundo (1000000 microsegundos) */
+ 135:../main.c     ****         if ((tiempo_actual - tiempo_anterior) >= 1000000)
+ 136:../main.c     ****         {
+ 137:../main.c     ****             /* Solo actualizar si el juego está en progreso (no en pantalla inicial ni terminado) 
+ 138:../main.c     ****             if (Sudoku_Juego_En_Progreso())
+ 139:../main.c     ****             {
+ 140:../main.c     ****                 /* Calcular tiempo transcurrido desde el inicio de la partida */
+ 141:../main.c     ****                 unsigned int tiempo_transcurrido = tiempo_actual - Sudoku_Obtener_Tiempo_Inicio();
+ 142:../main.c     ****                 Sudoku_Actualizar_Tiempo(tiempo_transcurrido);
+ 143:../main.c     ****             }
+ 144:../main.c     ****             tiempo_anterior = tiempo_actual;
+ 145:../main.c     ****         }
+ 146:../main.c     ****     }
+ 4130              		.loc 1 146 0
+ 4131 0068 0000A0E1 		mov	r0, r0	@ nop
+ 4132              	.L5:
+ 124:../main.c     ****         if (ts_read_calibrated(&touch_x, &touch_y) == 0)
+ 4133              		.loc 1 124 0
+ 4134 006c 20204BE2 		sub	r2, fp, #32
+ 4135 0070 24304BE2 		sub	r3, fp, #36
+ 4136 0074 0200A0E1 		mov	r0, r2
+ 4137 0078 0310A0E1 		mov	r1, r3
+ 4138 007c FEFFFFEB 		bl	ts_read_calibrated
+ 4139 0080 0030A0E1 		mov	r3, r0
+ 4140 0084 000053E3 		cmp	r3, #0
+ 4141 0088 0600001A 		bne	.L2
+ 127:../main.c     ****             Sudoku_Procesar_Touch(touch_x, touch_y);
+ 4142              		.loc 1 127 0
+ 4143 008c 20201BE5 		ldr	r2, [fp, #-32]
+ 4144 0090 24301BE5 		ldr	r3, [fp, #-36]
+ 4145 0094 0200A0E1 		mov	r0, r2
+ 4146 0098 0310A0E1 		mov	r1, r3
+ 4147 009c FEFFFFEB 		bl	Sudoku_Procesar_Touch
+ 128:../main.c     ****             Delay(30);  // Evitar múltiples detecciones
+ 4148              		.loc 1 128 0
+ 4149 00a0 1E00A0E3 		mov	r0, #30
+ 4150 00a4 FEFFFFEB 		bl	Delay
+ 4151              	.L2:
+ 132:../main.c     ****         tiempo_actual = timer2_count();
+ 4152              		.loc 1 132 0
+ 4153 00a8 FEFFFFEB 		bl	timer2_count
+ 4154 00ac 18000BE5 		str	r0, [fp, #-24]
+ 135:../main.c     ****         if ((tiempo_actual - tiempo_anterior) >= 1000000)
+ 4155              		.loc 1 135 0
+ 4156 00b0 18201BE5 		ldr	r2, [fp, #-24]
+ 4157 00b4 10301BE5 		ldr	r3, [fp, #-16]
+ 4158 00b8 022063E0 		rsb	r2, r3, r2
+ 4159 00bc 40309FE5 		ldr	r3, .L7+4
+ 4160 00c0 030052E1 		cmp	r2, r3
+ 4161 00c4 E7FFFF9A 		bls	.L6
+ 138:../main.c     ****             if (Sudoku_Juego_En_Progreso())
+ 4162              		.loc 1 138 0
+ 4163 00c8 FEFFFFEB 		bl	Sudoku_Juego_En_Progreso
+ 4164 00cc 0030A0E1 		mov	r3, r0
+ 4165 00d0 000053E3 		cmp	r3, #0
+ 4166 00d4 0600000A 		beq	.L4
+ 4167              	.LBB2:
+ 141:../main.c     ****                 unsigned int tiempo_transcurrido = tiempo_actual - Sudoku_Obtener_Tiempo_Inicio();
+ 4168              		.loc 1 141 0
+ 4169 00d8 FEFFFFEB 		bl	Sudoku_Obtener_Tiempo_Inicio
+ 4170 00dc 0030A0E1 		mov	r3, r0
+ 4171 00e0 18201BE5 		ldr	r2, [fp, #-24]
+ 4172 00e4 023063E0 		rsb	r3, r3, r2
+ 4173 00e8 1C300BE5 		str	r3, [fp, #-28]
+ 142:../main.c     ****                 Sudoku_Actualizar_Tiempo(tiempo_transcurrido);
+ 4174              		.loc 1 142 0
+ 4175 00ec 1C001BE5 		ldr	r0, [fp, #-28]
+ 4176 00f0 FEFFFFEB 		bl	Sudoku_Actualizar_Tiempo
+ 4177              	.L4:
+ 4178              	.LBE2:
+ 144:../main.c     ****             tiempo_anterior = tiempo_actual;
+ 4179              		.loc 1 144 0
+ 4180 00f4 18301BE5 		ldr	r3, [fp, #-24]
+ 4181 00f8 10300BE5 		str	r3, [fp, #-16]
+ 4182              		.loc 1 146 0
+ 4183 00fc DAFFFFEA 		b	.L5
+ 4184              	.L8:
+ 4185              		.align	2
+ 4186              	.L7:
+ 4187 0100 00000000 		.word	cola_global
+ 4188 0104 3F420F00 		.word	999999
+ 4189              		.cfi_endproc
+ 4190              	.LFE7:
+ 4192              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
                             *COM*:00000004 CheckTSP
@@ -1238,19 +1334,21 @@ DEFINED SYMBOLS
                             *COM*:00000004 Xmin
                             *COM*:00000004 Ymin
                             *COM*:00000001 yn
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3020   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3023   .data:00000000 cuadricula_C_C
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3171   .data:00000120 cuadricula_C_ARM
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3319   .data:00000240 cuadricula_ARM_C
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3467   .data:00000360 cuadricula_ARM_ARM
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3615   .data:00000480 cuadricula_ARM_ARM_ALL
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3763   .data:000005a0 solucion
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3912   .data:000006c0 cuadricula
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3919   .bss:00000000 celdas_vacias
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3916   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3922   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:3925   .text:00000000 Main
-C:\Users\jaime\AppData\Local\Temp\ccoZRmv0.s:4015   .text:000000b8 $d
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3020   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3023   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3171   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3319   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3467   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3613   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3616   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3765   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:3913   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4062   .data:000006c0 cuadricula
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4069   .bss:00000000 celdas_vacias
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4066   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4072   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4075   .text:00000000 Main
+C:\Users\jaime\AppData\Local\Temp\ccsnF7sb.s:4187   .text:00000100 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
@@ -1262,9 +1360,12 @@ Eint4567_init
 D8Led_init
 Lcd_Init
 TS_init
-TS_Calibrar
+ts_calibrate_5pt
 Sudoku_Pantalla_Inicial
 leds_off
+ts_read_calibrated
+Sudoku_Procesar_Touch
+Delay
 timer2_count
 Sudoku_Juego_En_Progreso
 Sudoku_Obtener_Tiempo_Inicio
