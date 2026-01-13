@@ -18,13 +18,9 @@
 #include "led.h"
 #include "timer1.h"
 #include "timer2.h"
-#include "timer3.h"
 #include "cola.h"
 #include "sudoku_2025.h"
 #include "lcd.h"
-
-/*--- variables globales ---*/
-char yn;
 
 /* Variables globales del Sudoku */
 #include "tableros.h"
@@ -36,9 +32,6 @@ int celdas_vacias = 0;
 /*--- function declare ---*/
 void Main(void);
 
-/*--- extern function ---*/
-extern void Lcd_Test();
-
 /*--- function code ---*/
 /*********************************************************************************************
 * name:		Main
@@ -46,44 +39,11 @@ extern void Lcd_Test();
 * para:		none
 * ret:		none
 * modify:
-* comment:	Descomenta el bloque que quieras ejecutar (TOUCHSCREEN o SUDOKU)
 *********************************************************************************************/
 void Main(void)
 {
     sys_init();        /* Initial 44B0X's Interrupt, Port and UART */
     //_Link();           /* Print Misc info */
-    
-    /* ======================================================================
-     * OPCIÓN 1: CÓDIGO TOUCHSCREEN Y LCD (ORIGINAL)
-     * Descomenta este bloque para ejecutar el código del touchscreen
-     * ====================================================================== */
-    /*
-    // Test de calibración con dos números
-    ts_test_numeros();
-    */
-    
-    /*
-    Lcd_Test();
-    TS_Test();
-    
-    while(1)
-    {
-       //yn = Uart_Getch();
-       
-       //if(yn == 0x52) TS_Test();// R to reset the XY REC
-       //else break;
-    }
-    
-    TS_close();
-    */
-    
-    /* ======================================================================
-     * OPCIÓN 2: CÓDIGO SUDOKU (desde main_sudoku.c)
-     * Este bloque está activo por defecto
-     * ====================================================================== */
-    
-    /* Variables para observar la cola durante la depuración */
-    ColaDebug* p_cola;              // Puntador a la estructura completa de la cola
     
     /* Inicializa controladores del Sudoku */
     timer2_init();      // Inicializacion del timer2 para medicion de tiempo
@@ -103,9 +63,6 @@ void Main(void)
 
     /* Valor inicial de los leds */
     leds_off();
-    
-    /* Apuntar a la cola para poder observarla en el depurador */
-    p_cola = cola_global;
     
     /* Variable para controlar actualización del tiempo */
     unsigned int tiempo_anterior = 0;
