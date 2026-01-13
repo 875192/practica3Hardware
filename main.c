@@ -43,7 +43,6 @@ void Main(void);
 void Main(void)
 {
     sys_init();        /* Initial 44B0X's Interrupt, Port and UART */
-    //_Link();           /* Print Misc info */
     
     /* Inicializa controladores del Sudoku */
     timer2_init();      // Inicializacion del timer2 para medicion de tiempo
@@ -74,9 +73,6 @@ void Main(void)
     /* Bucle principal */
     while (1)
     {
-        /* El latido (LED2 parpadeando) se gestiona automáticamente por timer1 */
-        /* El programa está vivo mientras el LED2 parpadee a 6 Hz */
-        
         /* Comprobar si hay toque en la pantalla */
         if (ts_read_calibrated(&touch_x, &touch_y) == 0)
         {
