@@ -6,7 +6,6 @@
 *********************************************************************************************/
 
 /*--- include files ---*/
-#include <string.h>
 #include "tp.h"
 #include "lcd.h"
 #include "timer2.h"
@@ -35,8 +34,6 @@ void TS_Test(void)
 		TS_init();
 		Check_Sel();
 			
-//		Uart_Printf("\n Pixel: 320 X 240. Coordinate Rang in: (0,0) - (320,240)\n");
-//		Uart_Printf("\nLCD TouchScreen Test Example(please touch LCD screen)\n");
 }
 /*--- function code ---*/
 /*********************************************************************************************
@@ -120,10 +117,7 @@ void TSInt(void)
 	if(!(CheckTSP || (tmp < Xmin) || (tmp > Xmax) || (Pt[10] < Ymin) || (Pt[10] > Ymax)))   // Is valid value?
 	  {
 		tmp = 320*(tmp - Xmin)/(Xmax - Xmin);   // X - position
-//		Uart_Printf("X-Posion[AIN1] is %04d   ", tmp);
-			
 		Pt[10] = 240*(Pt[10] - Xmin)/(Ymax - Ymin);
-//		Uart_Printf("  Y-Posion[AIN0] is %04d\n", Pt[10]);
       }
 
     if(CheckTSP)

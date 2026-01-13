@@ -39,7 +39,7 @@ extern int celdas_vacias;
 /* Función auxiliar para restaurar la cuadrícula al estado original */
 static void restaurar_cuadricula_original(void)
 {
-	uint8_t f, c, k;
+	uint8_t f, c;
 	
 	/* Copiar toda la cuadrícula original (incluye todas las columnas del array) */
 	for (f = 0; f < NUM_FILAS; f++)
@@ -104,7 +104,7 @@ static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, ui
 }
 
 /* Callback para recibir la confirmación de pulsaciones filtradas por el timer3 */
-static void boton_confirmado(uint8_t boton_id) // MODIFICAR FUNCIONES ACTUALIZAR Y PROPAGAR SEGUN LA VERSIÓN A PROBAR
+static void boton_confirmado(uint8_t boton_id)
 {
         cola_depuracion(timer2_count(), boton_id, estado_juego);
         
