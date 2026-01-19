@@ -1,0 +1,69 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"celda.c"
+  21              	.Ltext0:
+  22              		.file 1 "../celda.c"
+ 1788              		.align	2
+ 1789              		.global	celda_leer_valor
+ 1791              	celda_leer_valor:
+ 1792              	.LFB2:
+   1:../celda.c    **** /*
+   2:../celda.c    ****  * Asignatura: Proyecto hardware
+   3:../celda.c    ****  * Fecha: 10/11/2025
+   4:../celda.c    ****  * Autores: Claudia Mateo Cuellar 871961
+   5:../celda.c    ****  * Archivo: celda.c
+   6:../celda.c    ****  * Descripción: Implementación de utilidades para manipular una CELDA de Sudoku
+   7:../celda.c    ****  */
+   8:../celda.c    **** 
+   9:../celda.c    **** #include "celda.h"
+  10:../celda.c    **** 
+  11:../celda.c    **** uint8_t celda_leer_valor(CELDA celda)
+  12:../celda.c    **** {
+ 1793              		.loc 1 12 0
+ 1794              		.cfi_startproc
+ 1795              		@ Function supports interworking.
+ 1796              		@ args = 0, pretend = 0, frame = 8
+ 1797              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1798 0000 0DC0A0E1 		mov	ip, sp
+ 1799              	.LCFI0:
+ 1800              		.cfi_def_cfa_register 12
+ 1801 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1802 0008 04B04CE2 		sub	fp, ip, #4
+ 1803              		.cfi_offset 14, -8
+ 1804              		.cfi_offset 13, -12
+ 1805              		.cfi_offset 11, -16
+ 1806              	.LCFI1:
+ 1807              		.cfi_def_cfa 11, 4
+ 1808 000c 08D04DE2 		sub	sp, sp, #8
+ 1809 0010 0030A0E1 		mov	r3, r0
+ 1810 0014 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  13:../celda.c    ****     return (uint8_t)(celda & 0x0Fu);
+ 1811              		.loc 1 13 0
+ 1812 0018 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 1813 001c FF3003E2 		and	r3, r3, #255
+ 1814 0020 0F3003E2 		and	r3, r3, #15
+ 1815 0024 FF3003E2 		and	r3, r3, #255
+  14:../celda.c    **** }...
+ 1816              		.loc 1 14 0
+ 1817 0028 0300A0E1 		mov	r0, r3
+ 1818 002c 0CD04BE2 		sub	sp, fp, #12
+ 1819 0030 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1820 0034 1EFF2FE1 		bx	lr
+ 1821              		.cfi_endproc
+ 1822              	.LFE2:
+ 1824              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 celda.c
+C:\Users\jaime\AppData\Local\Temp\ccfSpLOp.s:1788   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccfSpLOp.s:1791   .text:00000000 celda_leer_valor
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

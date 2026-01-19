@@ -1,0 +1,391 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"EJEMPLO_MAIN_CALIBRACION.c"
+  21              	.Ltext0:
+  22              		.file 1 "../EJEMPLO_MAIN_CALIBRACION.c"
+ 2973              		.align	2
+ 2974              	.LC0:
+ 2975 0000 424F544F 		.ascii	"BOTON 1\000"
+ 2975      4E203100 
+ 2976              		.align	2
+ 2977              	.LC1:
+ 2978 0008 424F544F 		.ascii	"BOTON 2\000"
+ 2978      4E203200 
+ 2979              		.text
+ 2980              		.align	2
+ 2981              		.global	Main
+ 2983              	Main:
+ 2984              	.LFB2:
+   1:../EJEMPLO_MAIN_CALIBRACION.c **** /*
+   2:../EJEMPLO_MAIN_CALIBRACION.c ****  * EJEMPLO: Integración de calibración touchscreen en tu proyecto
+   3:../EJEMPLO_MAIN_CALIBRACION.c ****  * 
+   4:../EJEMPLO_MAIN_CALIBRACION.c ****  * Este archivo muestra cómo integrar la calibración de 5 puntos
+   5:../EJEMPLO_MAIN_CALIBRACION.c ****  * en tu aplicación existente.
+   6:../EJEMPLO_MAIN_CALIBRACION.c ****  */
+   7:../EJEMPLO_MAIN_CALIBRACION.c **** 
+   8:../EJEMPLO_MAIN_CALIBRACION.c **** #include "44blib.h"
+   9:../EJEMPLO_MAIN_CALIBRACION.c **** #include "44b.h"
+  10:../EJEMPLO_MAIN_CALIBRACION.c **** #include "lcd.h"
+  11:../EJEMPLO_MAIN_CALIBRACION.c **** #include "tp.h"
+  12:../EJEMPLO_MAIN_CALIBRACION.c **** #include "timer2.h"
+  13:../EJEMPLO_MAIN_CALIBRACION.c **** #include "8led.h"
+  14:../EJEMPLO_MAIN_CALIBRACION.c **** #include "button.h"
+  15:../EJEMPLO_MAIN_CALIBRACION.c **** #include "led.h"
+  16:../EJEMPLO_MAIN_CALIBRACION.c **** 
+  17:../EJEMPLO_MAIN_CALIBRACION.c **** void Main(void)
+  18:../EJEMPLO_MAIN_CALIBRACION.c **** {
+ 2985              		.loc 1 18 0
+ 2986              		.cfi_startproc
+ 2987              		@ Function supports interworking.
+ 2988              		@ args = 0, pretend = 0, frame = 8
+ 2989              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2990 0000 0DC0A0E1 		mov	ip, sp
+ 2991              	.LCFI0:
+ 2992              		.cfi_def_cfa_register 12
+ 2993 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2994 0008 04B04CE2 		sub	fp, ip, #4
+ 2995              		.cfi_offset 14, -8
+ 2996              		.cfi_offset 13, -12
+ 2997              		.cfi_offset 11, -16
+ 2998              	.LCFI1:
+ 2999              		.cfi_def_cfa 11, 4
+ 3000 000c 10D04DE2 		sub	sp, sp, #16
+  19:../EJEMPLO_MAIN_CALIBRACION.c ****     int x, y;
+  20:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  21:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  22:../EJEMPLO_MAIN_CALIBRACION.c ****     // 1. INICIALIZACIONES BÁSICAS
+  23:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  24:../EJEMPLO_MAIN_CALIBRACION.c ****     sys_init();         // Sistema
+ 3001              		.loc 1 24 0
+ 3002 0010 FEFFFFEB 		bl	sys_init
+  25:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Init();         // LCD
+ 3003              		.loc 1 25 0
+ 3004 0014 FEFFFFEB 		bl	Lcd_Init
+  26:../EJEMPLO_MAIN_CALIBRACION.c ****     TS_init();          // Touchscreen
+ 3005              		.loc 1 26 0
+ 3006 0018 FEFFFFEB 		bl	TS_init
+  27:../EJEMPLO_MAIN_CALIBRACION.c ****     timer2_init();      // Timer para timestamps
+ 3007              		.loc 1 27 0
+ 3008 001c FEFFFFEB 		bl	timer2_init
+  28:../EJEMPLO_MAIN_CALIBRACION.c ****     timer2_start();     // Iniciar conteo
+ 3009              		.loc 1 28 0
+ 3010 0020 FEFFFFEB 		bl	timer2_start
+  29:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  30:../EJEMPLO_MAIN_CALIBRACION.c ****     // Otras inicializaciones de tu proyecto
+  31:../EJEMPLO_MAIN_CALIBRACION.c ****     D8Led_init();
+ 3011              		.loc 1 31 0
+ 3012 0024 FEFFFFEB 		bl	D8Led_init
+  32:../EJEMPLO_MAIN_CALIBRACION.c ****     Eint4567_init();
+ 3013              		.loc 1 32 0
+ 3014 0028 FEFFFFEB 		bl	Eint4567_init
+  33:../EJEMPLO_MAIN_CALIBRACION.c ****     // ... más inicializaciones ...
+  34:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  35:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  36:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  37:../EJEMPLO_MAIN_CALIBRACION.c ****     // 2. CALIBRACIÓN (solo una vez al inicio)
+  38:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  39:../EJEMPLO_MAIN_CALIBRACION.c ****     // Margen de 40 píxeles desde los bordes
+  40:../EJEMPLO_MAIN_CALIBRACION.c ****     ts_calibrate_5pt(320, 240, 40);
+ 3015              		.loc 1 40 0
+ 3016 002c 050DA0E3 		mov	r0, #320
+ 3017 0030 F010A0E3 		mov	r1, #240
+ 3018 0034 2820A0E3 		mov	r2, #40
+ 3019 0038 FEFFFFEB 		bl	ts_calibrate_5pt
+  41:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  42:../EJEMPLO_MAIN_CALIBRACION.c ****     // Después de calibrar, puedes usar ts_read_calibrated()
+  43:../EJEMPLO_MAIN_CALIBRACION.c ****     // tantas veces como quieras
+  44:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  45:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  46:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  47:../EJEMPLO_MAIN_CALIBRACION.c ****     // 3. DIBUJAR TU INTERFAZ
+  48:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  49:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Clr();
+ 3020              		.loc 1 49 0
+ 3021 003c FEFFFFEB 		bl	Lcd_Clr
+  50:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Active_Clr();
+ 3022              		.loc 1 50 0
+ 3023 0040 FEFFFFEB 		bl	Lcd_Active_Clr
+  51:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  52:../EJEMPLO_MAIN_CALIBRACION.c ****     // Ejemplo: dibujar un botón
+  53:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Draw_Box(50, 50, 150, 100, 0xf);
+ 3024              		.loc 1 53 0
+ 3025 0044 0F30A0E3 		mov	r3, #15
+ 3026 0048 00308DE5 		str	r3, [sp, #0]
+ 3027 004c 3200A0E3 		mov	r0, #50
+ 3028 0050 3210A0E3 		mov	r1, #50
+ 3029 0054 9620A0E3 		mov	r2, #150
+ 3030 0058 6430A0E3 		mov	r3, #100
+ 3031 005c FEFFFFEB 		bl	Lcd_Draw_Box
+  54:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_DspAscII8x16(70, 65, 0xf, "BOTON 1");
+ 3032              		.loc 1 54 0
+ 3033 0060 4600A0E3 		mov	r0, #70
+ 3034 0064 4110A0E3 		mov	r1, #65
+ 3035 0068 0F20A0E3 		mov	r2, #15
+ 3036 006c 08329FE5 		ldr	r3, .L7
+ 3037 0070 FEFFFFEB 		bl	Lcd_DspAscII8x16
+  55:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  56:../EJEMPLO_MAIN_CALIBRACION.c ****     // Otro botón
+  57:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Draw_Box(170, 50, 270, 100, 0xf);
+ 3038              		.loc 1 57 0
+ 3039 0074 0F30A0E3 		mov	r3, #15
+ 3040 0078 00308DE5 		str	r3, [sp, #0]
+ 3041 007c AA00A0E3 		mov	r0, #170
+ 3042 0080 3210A0E3 		mov	r1, #50
+ 3043 0084 F4219FE5 		ldr	r2, .L7+4
+ 3044 0088 6430A0E3 		mov	r3, #100
+ 3045 008c FEFFFFEB 		bl	Lcd_Draw_Box
+  58:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_DspAscII8x16(190, 65, 0xf, "BOTON 2");
+ 3046              		.loc 1 58 0
+ 3047 0090 BE00A0E3 		mov	r0, #190
+ 3048 0094 4110A0E3 		mov	r1, #65
+ 3049 0098 0F20A0E3 		mov	r2, #15
+ 3050 009c E0319FE5 		ldr	r3, .L7+8
+ 3051 00a0 FEFFFFEB 		bl	Lcd_DspAscII8x16
+  59:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  60:../EJEMPLO_MAIN_CALIBRACION.c ****     Lcd_Dma_Trans();
+ 3052              		.loc 1 60 0
+ 3053 00a4 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 3054 00a8 000000EA 		b	.L5
+ 3055              	.L6:
+  61:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  62:../EJEMPLO_MAIN_CALIBRACION.c ****     
+  63:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  64:../EJEMPLO_MAIN_CALIBRACION.c ****     // 4. BUCLE PRINCIPAL
+  65:../EJEMPLO_MAIN_CALIBRACION.c ****     // ========================================
+  66:../EJEMPLO_MAIN_CALIBRACION.c ****     while (1)
+  67:../EJEMPLO_MAIN_CALIBRACION.c ****     {
+  68:../EJEMPLO_MAIN_CALIBRACION.c ****         // Leer touchscreen (NO bloqueante)
+  69:../EJEMPLO_MAIN_CALIBRACION.c ****         if (ts_read_calibrated(&x, &y) == 0)
+  70:../EJEMPLO_MAIN_CALIBRACION.c ****         {
+  71:../EJEMPLO_MAIN_CALIBRACION.c ****             // ¡Toque detectado!
+  72:../EJEMPLO_MAIN_CALIBRACION.c ****             // x, y contienen las coordenadas calibradas
+  73:../EJEMPLO_MAIN_CALIBRACION.c ****             
+  74:../EJEMPLO_MAIN_CALIBRACION.c ****             // Verificar qué se tocó
+  75:../EJEMPLO_MAIN_CALIBRACION.c ****             if (x >= 50 && x <= 150 && y >= 50 && y <= 100)
+  76:../EJEMPLO_MAIN_CALIBRACION.c ****             {
+  77:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Se tocó BOTÓN 1
+  78:../EJEMPLO_MAIN_CALIBRACION.c ****                 led1_on();  // Ejemplo de acción
+  79:../EJEMPLO_MAIN_CALIBRACION.c ****                 
+  80:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Feedback visual
+  81:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Draw_Box(50, 50, 150, 100, 0xa);
+  82:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+  83:../EJEMPLO_MAIN_CALIBRACION.c ****             }
+  84:../EJEMPLO_MAIN_CALIBRACION.c ****             else if (x >= 170 && x <= 270 && y >= 50 && y <= 100)
+  85:../EJEMPLO_MAIN_CALIBRACION.c ****             {
+  86:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Se tocó BOTÓN 2
+  87:../EJEMPLO_MAIN_CALIBRACION.c ****                 led2_on();  // Ejemplo de acción
+  88:../EJEMPLO_MAIN_CALIBRACION.c ****                 
+  89:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Feedback visual
+  90:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Draw_Box(170, 50, 270, 100, 0xa);
+  91:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+  92:../EJEMPLO_MAIN_CALIBRACION.c ****             }
+  93:../EJEMPLO_MAIN_CALIBRACION.c ****             else
+  94:../EJEMPLO_MAIN_CALIBRACION.c ****             {
+  95:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Toque fuera de botones
+  96:../EJEMPLO_MAIN_CALIBRACION.c ****                 // Opcional: dibujar donde se toca
+  97:../EJEMPLO_MAIN_CALIBRACION.c ****                 LCD_PutPixel(x, y, 0xf);
+  98:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+  99:../EJEMPLO_MAIN_CALIBRACION.c ****             }
+ 100:../EJEMPLO_MAIN_CALIBRACION.c ****         }
+ 101:../EJEMPLO_MAIN_CALIBRACION.c ****         
+ 102:../EJEMPLO_MAIN_CALIBRACION.c ****         // Resto de tu lógica de aplicación
+ 103:../EJEMPLO_MAIN_CALIBRACION.c ****         // ... tu código existente ...
+ 104:../EJEMPLO_MAIN_CALIBRACION.c ****     }
+ 3056              		.loc 1 104 0
+ 3057 00ac 0000A0E1 		mov	r0, r0	@ nop
+ 3058              	.L5:
+  69:../EJEMPLO_MAIN_CALIBRACION.c ****         if (ts_read_calibrated(&x, &y) == 0)
+ 3059              		.loc 1 69 0
+ 3060 00b0 10204BE2 		sub	r2, fp, #16
+ 3061 00b4 14304BE2 		sub	r3, fp, #20
+ 3062 00b8 0200A0E1 		mov	r0, r2
+ 3063 00bc 0310A0E1 		mov	r1, r3
+ 3064 00c0 FEFFFFEB 		bl	ts_read_calibrated
+ 3065 00c4 0030A0E1 		mov	r3, r0
+ 3066 00c8 000053E3 		cmp	r3, #0
+ 3067 00cc F6FFFF1A 		bne	.L6
+  75:../EJEMPLO_MAIN_CALIBRACION.c ****             if (x >= 50 && x <= 150 && y >= 50 && y <= 100)
+ 3068              		.loc 1 75 0
+ 3069 00d0 10301BE5 		ldr	r3, [fp, #-16]
+ 3070 00d4 310053E3 		cmp	r3, #49
+ 3071 00d8 120000DA 		ble	.L3
+  75:../EJEMPLO_MAIN_CALIBRACION.c ****             if (x >= 50 && x <= 150 && y >= 50 && y <= 100)
+ 3072              		.loc 1 75 0 is_stmt 0 discriminator 1
+ 3073 00dc 10301BE5 		ldr	r3, [fp, #-16]
+ 3074 00e0 960053E3 		cmp	r3, #150
+ 3075 00e4 0F0000CA 		bgt	.L3
+ 3076 00e8 14301BE5 		ldr	r3, [fp, #-20]
+ 3077 00ec 310053E3 		cmp	r3, #49
+ 3078 00f0 0C0000DA 		ble	.L3
+ 3079 00f4 14301BE5 		ldr	r3, [fp, #-20]
+ 3080 00f8 640053E3 		cmp	r3, #100
+ 3081 00fc 090000CA 		bgt	.L3
+  78:../EJEMPLO_MAIN_CALIBRACION.c ****                 led1_on();  // Ejemplo de acción
+ 3082              		.loc 1 78 0 is_stmt 1
+ 3083 0100 FEFFFFEB 		bl	led1_on
+  81:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Draw_Box(50, 50, 150, 100, 0xa);
+ 3084              		.loc 1 81 0
+ 3085 0104 0A30A0E3 		mov	r3, #10
+ 3086 0108 00308DE5 		str	r3, [sp, #0]
+ 3087 010c 3200A0E3 		mov	r0, #50
+ 3088 0110 3210A0E3 		mov	r1, #50
+ 3089 0114 9620A0E3 		mov	r2, #150
+ 3090 0118 6430A0E3 		mov	r3, #100
+ 3091 011c FEFFFFEB 		bl	Lcd_Draw_Box
+  82:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+ 3092              		.loc 1 82 0
+ 3093 0120 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 3094 0124 530000EA 		b	.L2
+ 3095              	.L3:
+  84:../EJEMPLO_MAIN_CALIBRACION.c ****             else if (x >= 170 && x <= 270 && y >= 50 && y <= 100)
+ 3096              		.loc 1 84 0
+ 3097 0128 10301BE5 		ldr	r3, [fp, #-16]
+ 3098 012c A90053E3 		cmp	r3, #169
+ 3099 0130 130000DA 		ble	.L4
+  84:../EJEMPLO_MAIN_CALIBRACION.c ****             else if (x >= 170 && x <= 270 && y >= 50 && y <= 100)
+ 3100              		.loc 1 84 0 is_stmt 0 discriminator 1
+ 3101 0134 10201BE5 		ldr	r2, [fp, #-16]
+ 3102 0138 40319FE5 		ldr	r3, .L7+4
+ 3103 013c 030052E1 		cmp	r2, r3
+ 3104 0140 0F0000CA 		bgt	.L4
+ 3105 0144 14301BE5 		ldr	r3, [fp, #-20]
+ 3106 0148 310053E3 		cmp	r3, #49
+ 3107 014c 0C0000DA 		ble	.L4
+ 3108 0150 14301BE5 		ldr	r3, [fp, #-20]
+ 3109 0154 640053E3 		cmp	r3, #100
+ 3110 0158 090000CA 		bgt	.L4
+  87:../EJEMPLO_MAIN_CALIBRACION.c ****                 led2_on();  // Ejemplo de acción
+ 3111              		.loc 1 87 0 is_stmt 1
+ 3112 015c FEFFFFEB 		bl	led2_on
+  90:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Draw_Box(170, 50, 270, 100, 0xa);
+ 3113              		.loc 1 90 0
+ 3114 0160 0A30A0E3 		mov	r3, #10
+ 3115 0164 00308DE5 		str	r3, [sp, #0]
+ 3116 0168 AA00A0E3 		mov	r0, #170
+ 3117 016c 3210A0E3 		mov	r1, #50
+ 3118 0170 08219FE5 		ldr	r2, .L7+4
+ 3119 0174 6430A0E3 		mov	r3, #100
+ 3120 0178 FEFFFFEB 		bl	Lcd_Draw_Box
+  91:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+ 3121              		.loc 1 91 0
+ 3122 017c FEFFFFEB 		bl	Lcd_Dma_Trans
+ 3123 0180 3C0000EA 		b	.L2
+ 3124              	.L4:
+  97:../EJEMPLO_MAIN_CALIBRACION.c ****                 LCD_PutPixel(x, y, 0xf);
+ 3125              		.loc 1 97 0
+ 3126 0184 14201BE5 		ldr	r2, [fp, #-20]
+ 3127 0188 0230A0E1 		mov	r3, r2
+ 3128 018c 0331A0E1 		mov	r3, r3, asl #2
+ 3129 0190 023083E0 		add	r3, r3, r2
+ 3130 0194 0333A0E1 		mov	r3, r3, asl #6
+ 3131 0198 A32FA0E1 		mov	r2, r3, lsr #31
+ 3132 019c 033082E0 		add	r3, r2, r3
+ 3133 01a0 C330A0E1 		mov	r3, r3, asr #1
+ 3134 01a4 C32683E2 		add	r2, r3, #204472320
+ 3135 01a8 962C82E2 		add	r2, r2, #38400
+ 3136 01ac 10301BE5 		ldr	r3, [fp, #-16]
+ 3137 01b0 071083E2 		add	r1, r3, #7
+ 3138 01b4 000053E3 		cmp	r3, #0
+ 3139 01b8 0130A0B1 		movlt	r3, r1
+ 3140 01bc C331A0E1 		mov	r3, r3, asr #3
+ 3141 01c0 0331A0E1 		mov	r3, r3, asl #2
+ 3142 01c4 033082E0 		add	r3, r2, r3
+ 3143 01c8 0310A0E1 		mov	r1, r3
+ 3144 01cc 14201BE5 		ldr	r2, [fp, #-20]
+ 3145 01d0 0230A0E1 		mov	r3, r2
+ 3146 01d4 0331A0E1 		mov	r3, r3, asl #2
+ 3147 01d8 023083E0 		add	r3, r3, r2
+ 3148 01dc 0333A0E1 		mov	r3, r3, asl #6
+ 3149 01e0 A32FA0E1 		mov	r2, r3, lsr #31
+ 3150 01e4 033082E0 		add	r3, r2, r3
+ 3151 01e8 C330A0E1 		mov	r3, r3, asr #1
+ 3152 01ec C32683E2 		add	r2, r3, #204472320
+ 3153 01f0 962C82E2 		add	r2, r2, #38400
+ 3154 01f4 10301BE5 		ldr	r3, [fp, #-16]
+ 3155 01f8 070083E2 		add	r0, r3, #7
+ 3156 01fc 000053E3 		cmp	r3, #0
+ 3157 0200 0030A0B1 		movlt	r3, r0
+ 3158 0204 C331A0E1 		mov	r3, r3, asr #3
+ 3159 0208 0331A0E1 		mov	r3, r3, asl #2
+ 3160 020c 033082E0 		add	r3, r2, r3
+ 3161 0210 000093E5 		ldr	r0, [r3, #0]
+ 3162 0214 10201BE5 		ldr	r2, [fp, #-16]
+ 3163 0218 C23FA0E1 		mov	r3, r2, asr #31
+ 3164 021c A33EA0E1 		mov	r3, r3, lsr #29
+ 3165 0220 032082E0 		add	r2, r2, r3
+ 3166 0224 072002E2 		and	r2, r2, #7
+ 3167 0228 023063E0 		rsb	r3, r3, r2
+ 3168 022c 0331A0E1 		mov	r3, r3, asl #2
+ 3169 0230 0F22A0E3 		mov	r2, #-268435456
+ 3170 0234 3233A0E1 		mov	r3, r2, lsr r3
+ 3171 0238 0330E0E1 		mvn	r3, r3
+ 3172 023c 030000E0 		and	r0, r0, r3
+ 3173 0240 10201BE5 		ldr	r2, [fp, #-16]
+ 3174 0244 C23FA0E1 		mov	r3, r2, asr #31
+ 3175 0248 A33EA0E1 		mov	r3, r3, lsr #29
+ 3176 024c 032082E0 		add	r2, r2, r3
+ 3177 0250 072002E2 		and	r2, r2, #7
+ 3178 0254 023063E0 		rsb	r3, r3, r2
+ 3179 0258 073063E2 		rsb	r3, r3, #7
+ 3180 025c 0331A0E1 		mov	r3, r3, asl #2
+ 3181 0260 0F20A0E3 		mov	r2, #15
+ 3182 0264 1233A0E1 		mov	r3, r2, asl r3
+ 3183 0268 033080E1 		orr	r3, r0, r3
+ 3184 026c 003081E5 		str	r3, [r1, #0]
+  98:../EJEMPLO_MAIN_CALIBRACION.c ****                 Lcd_Dma_Trans();
+ 3185              		.loc 1 98 0
+ 3186 0270 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 3187              		.loc 1 104 0
+ 3188 0274 8DFFFFEA 		b	.L5
+ 3189              	.L2:
+ 3190 0278 8CFFFFEA 		b	.L5
+ 3191              	.L8:
+ 3192              		.align	2
+ 3193              	.L7:
+ 3194 027c 00000000 		.word	.LC0
+ 3195 0280 0E010000 		.word	270
+ 3196 0284 08000000 		.word	.LC1
+ 3197              		.cfi_endproc
+ 3198              	.LFE2:
+ 3200              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 EJEMPLO_MAIN_CALIBRACION.c
+                            *COM*:00000004 CheckTSP
+                            *COM*:00000004 oneTouch
+                            *COM*:00000004 Vx
+                            *COM*:00000004 Vy
+                            *COM*:00000004 Xmax
+                            *COM*:00000004 Ymax
+                            *COM*:00000004 Xmin
+                            *COM*:00000004 Ymin
+C:\Users\jaime\AppData\Local\Temp\cc4oIlRC.s:2973   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc4oIlRC.s:2980   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cc4oIlRC.s:2983   .text:00000000 Main
+C:\Users\jaime\AppData\Local\Temp\cc4oIlRC.s:3194   .text:0000027c $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+sys_init
+Lcd_Init
+TS_init
+timer2_init
+timer2_start
+D8Led_init
+Eint4567_init
+ts_calibrate_5pt
+Lcd_Clr
+Lcd_Active_Clr
+Lcd_Draw_Box
+Lcd_DspAscII8x16
+Lcd_Dma_Trans
+ts_read_calibrated
+led1_on
+led2_on

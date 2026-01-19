@@ -1,0 +1,770 @@
+   1              	# 1 "../Jaime/init_b.asm"
+   1              	################################################################################
+   0              	
+   0              	
+   0              	
+   2              	# IMPLEMENTACIONES ARM PARA SUDOKU
+   3              	# Archivo: init_b.asm
+   4              	# 
+   5              	# Este archivo contiene las implementaciones en ensamblador ARM de las
+   6              	# funciones del sudoku optimizadas a nivel de instrucciones.
+   7              	# El código de arranque se gestiona desde main.c
+   8              	################################################################################
+   9              	
+  10              	.text
+  11              	.arm    /* indicates that we are using the ARM instruction set */
+  12              	
+  13              	################################################################################
+  14              	# IMPLEMENTACIÓN ARM DE candidatos_propagar_arm
+  15              	#
+  16              	# Función: candidatos_propagar_arm
+  17              	# Parámetros:
+  18              	#   r0: CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] - puntero base cuadrícula
+  19              	#   r1: uint8_t fila - fila de la celda a propagar (0-8)
+  20              	#   r2: uint8_t columna - columna de la celda a propagar (0-8)
+  21              	#
+  22              	# La función lee el valor de la celda y propaga eliminando ese candidato
+  23              	# de todas las celdas en:
+  24              	# - La misma fila
+  25              	# - La misma columna
+  26              	# - La misma región 3x3
+  27              	################################################################################
+  28              	.global candidatos_propagar_arm
+  29              	
+  30              	candidatos_propagar_arm:
+  31              	    # Preservar registros
+  32 0000 F04F2DE9 	    STMDB   SP!, {r4-r10, fp, LR}
+  33 0004 18B08DE2 	    ADD     fp, SP, #(4*7-4)    @ FP ← dirección base del marco (7 registros: r4-r10)
+  34              	
+  35              	    # ========== ASIGNACIÓN DE REGISTROS ==========
+  36              	    # REGISTROS CRÍTICOS (no reutilizables):
+  37              	    # r0 = puntero base cuadrícula (INMUTABLE)
+  38              	    # r1 = fila (parámetro)
+  39              	    # r2 = columna (parámetro)
+  40              	    # r3 = valor a propagar (calculado)
+  41              	    # r4 = NUM_FILAS = 9 (constante)
+  42              	    # r5 = NUM_COLUMNAS = 16 (constante)
+  43              	    # r10 = máscara para eliminar candidato (calculada)
+  44              	    #
+  45              	    # REGISTROS REUTILIZABLES:
+  46              	    # r6 = contador j (bucle fila / región)
+  47              	    # r7 = contador i (bucle columna / región)
+  48              	    # r8 = dirección de celda temporal
+  49              	    # r9 = valor de celda temporal
+  50              	
+  51              	    # Inicializar constantes
+  52 0008 0940A0E3 	    MOV     r4, #9          // NUM_FILAS
+  53 000c 1050A0E3 	    MOV     r5, #16         // NUM_COLUMNAS (9 + 7 padding)
+  54              	
+  55              	    # Leer valor de la celda actual: cuadricula[fila][columna]
+  56 0010 912528E0 	    MLA     r8, r1, r5, r2  // r8 = fila * NUM_COLUMNAS + columna
+  57 0014 8880A0E1 	    MOV     r8, r8, LSL #1  // r8 *= 2 (sizeof CELDA)
+  58 0018 088080E0 	    ADD     r8, r0, r8      // r8 = dirección de cuadricula[fila][columna]
+  59 001c B030D8E1 	    LDRH    r3, [r8]        // r3 = cuadricula[fila][columna]
+  60 0020 0F3003E2 	    AND     r3, r3, #0x0F   // r3 = valor (bits 3-0)
+  61              	
+  62              	    # Si valor es 0, no hay nada que propagar
+  63 0024 000053E3 	    CMP     r3, #0
+  64 0028 3800000A 	    BEQ     propagar_fin
+  65              	
+  66              	    # Calcular máscara para eliminar candidato: (1 << (7 + valor - 1))
+  67 002c 079083E2 	    ADD     r9, r3, #7      // r9 = 7 + valor (BIT_CANDIDATOS = 7)
+  68 0030 019049E2 	    SUB     r9, r9, #1      // r9 = 7 + valor - 1
+  69 0034 01A0A0E3 	    MOV     r10, #1         // r10 = 1
+  70 0038 1AA9A0E1 	    MOV     r10, r10, LSL r9 // r10 = máscara para eliminar candidato
+  71              	
+  72              	    # ===== RECORRER FILA =====
+  73 003c 0060A0E3 	    MOV     r6, #0          // j = 0
+  74              	
+  75              	bucle_fila:
+  76 0040 040056E1 	    CMP     r6, r4          // comparar j con NUM_FILAS
+  77 0044 070000AA 	    BGE     fin_fila        // si j >= NUM_FILAS, terminar
+  78              	
+  79              	    # Calcular dirección: cuadricula[fila][j]
+  80 0048 916528E0 	    MLA     r8, r1, r5, r6  // r8 = fila * NUM_COLUMNAS + j
+  81 004c 8880A0E1 	    MOV     r8, r8, LSL #1  // r8 *= 2 (sizeof CELDA)
+  82 0050 088080E0 	    ADD     r8, r0, r8      // r8 = dirección de cuadricula[fila][j]
+  83              	
+  84              	    # Leer valor de la celda
+  85 0054 B090D8E1 	    LDRH    r9, [r8]        // r9 = cuadricula[fila][j]
+  86              	
+  87              	    # Eliminar candidato: celda |= máscara
+  88 0058 0A9089E1 	    ORR     r9, r9, r10     // r9 |= máscara
+  89 005c B090C8E1 	    STRH    r9, [r8]        // guardar celda modificada
+  90              	
+  91              	siguiente_fila:
+  92 0060 016086E2 	    ADD     r6, r6, #1      // j++
+  93 0064 F5FFFFEA 	    B       bucle_fila
+  94              	
+  95              	fin_fila:
+  96              	    # ===== RECORRER COLUMNA =====
+  97 0068 0070A0E3 	    MOV     r7, #0          // i = 0
+  98              	
+  99              	bucle_columna:
+ 100 006c 040057E1 	    CMP     r7, r4          // comparar i con NUM_FILAS, evitamos padding
+ 101 0070 070000AA 	    BGE     fin_columna     // si i >= NUM_FILAS, terminar
+ 102              	
+ 103              	    # Calcular dirección: cuadricula[i][columna]
+ 104 0074 972528E0 	    MLA     r8, r7, r5, r2  // r8 = i * NUM_COLUMNAS + columna
+ 105 0078 8880A0E1 	    MOV     r8, r8, LSL #1  // r8 *= 2 (sizeof CELDA)
+ 106 007c 088080E0 	    ADD     r8, r0, r8      // r8 = dirección de cuadricula[i][columna]
+ 107              	
+ 108              	    # Leer valor de la celda
+ 109 0080 B090D8E1 	    LDRH    r9, [r8]        // r9 = cuadricula[i][columna]
+ 110              	
+ 111              	    # Eliminar candidato: celda |= máscara
+ 112 0084 0A9089E1 	    ORR     r9, r9, r10     // r9 |= máscara
+ 113 0088 B090C8E1 	    STRH    r9, [r8]        // guardar celda modificada
+ 114              	
+ 115              	siguiente_columna:
+ 116 008c 017087E2 	    ADD     r7, r7, #1      // i++
+ 117 0090 F5FFFFEA 	    B       bucle_columna
+ 118              	
+ 119              	fin_columna:
+ 120              	    # ===== RECORRER REGIÓN 3x3 =====
+ 121              	    # Implementar lookup table: init_region[9] = {0, 0, 0, 3, 3, 3, 6, 6, 6}
+ 122              	    # Calcular init_i usando lookup table
+ 123 0094 030051E3 	    CMP     r1, #3
+ 124 0098 0070A0B3 	    MOVLT   r7, #0          // si fila < 3, init_i = 0
+ 125 009c 0370A0A3 	    MOVGE   r7, #3          // si fila >= 3, init_i = 3
+ 126 00a0 060051E3 	    CMP     r1, #6
+ 127 00a4 0670A0A3 	    MOVGE   r7, #6          // si fila >= 6, init_i = 6
+ 128              	
+ 129              	    # Calcular init_j usando lookup table
+ 130 00a8 030052E3 	    CMP     r2, #3
+ 131 00ac 0060A0B3 	    MOVLT   r6, #0          // si columna < 3, init_j = 0
+ 132 00b0 0360A0A3 	    MOVGE   r6, #3          // si columna >= 3, init_j = 3
+ 133 00b4 060052E3 	    CMP     r2, #6
+ 134 00b8 0660A0A3 	    MOVGE   r6, #6          // si columna >= 6, init_j = 6
+ 135              	
+ 136              	    # r7 = init_i, r6 = init_j
+ 137              	    # Bucle región: for (i = init_i; i < init_i + 3; i++)
+ 138 00bc 033087E2 	    ADD     r3, r7, #3      // r3 = init_i + 3 (reutilizar r3)
+ 139              	
+ 140              	bucle_region_i:
+ 141 00c0 030057E1 	    CMP     r7, r3          // comparar i con init_i + 3
+ 142 00c4 110000AA 	    BGE     fin_region      // si i >= init_i + 3, terminar
+ 143              	
+ 144              	    # Bucle región: for (j = init_j; j < init_j + 3; j++)
+ 145              	    # Recalcular init_j para bucle interno
+ 146 00c8 030052E3 	    CMP     r2, #3
+ 147 00cc 0060A0B3 	    MOVLT   r6, #0
+ 148 00d0 0360A0A3 	    MOVGE   r6, #3
+ 149 00d4 060052E3 	    CMP     r2, #6
+ 150 00d8 0660A0A3 	    MOVGE   r6, #6
+ 151              	    
+ 152 00dc 039086E2 	    ADD     r9, r6, #3      // r9 = init_j + 3
+ 153              	
+ 154              	bucle_region_j:
+ 155 00e0 090056E1 	    CMP     r6, r9          // comparar j con init_j + 3
+ 156 00e4 070000AA 	    BGE     fin_region_j    // si j >= init_j + 3, terminar bucle j
+ 157              	
+ 158              	    # Calcular dirección: cuadricula[i][j]
+ 159 00e8 976528E0 	    MLA     r8, r7, r5, r6  // r8 = i * NUM_COLUMNAS + j
+ 160 00ec 8880A0E1 	    MOV     r8, r8, LSL #1  // r8 *= 2 (sizeof CELDA)
+ 161 00f0 088080E0 	    ADD     r8, r0, r8      // r8 = dirección de cuadricula[i][j]
+ 162              	
+ 163              	    # Leer valor de la celda
+ 164 00f4 B040D8E1 	    LDRH    r4, [r8]        // r4 = cuadricula[i][j] (reutilizar r4)
+ 165              	
+ 166              	    # Eliminar candidato: celda |= máscara
+ 167 00f8 0A4084E1 	    ORR     r4, r4, r10     // r4 |= máscara
+ 168 00fc B040C8E1 	    STRH    r4, [r8]        // guardar celda modificada
+ 169              	
+ 170              	siguiente_region_j:
+ 171 0100 016086E2 	    ADD     r6, r6, #1      // j++
+ 172 0104 F5FFFFEA 	    B       bucle_region_j
+ 173              	
+ 174              	fin_region_j:
+ 175 0108 017087E2 	    ADD     r7, r7, #1      // i++
+ 176 010c EBFFFFEA 	    B       bucle_region_i
+ 177              	
+ 178              	fin_region:
+ 179              	propagar_fin:
+ 180              	    # Restaurar registros y retornar
+ 181 0110 F04FBDE8 	    LDMIA   SP!, {r4-r10, fp, LR}
+ 182 0114 1EFF2FE1 	    BX      LR
+ 183              	
+ 184              	
+ 185              	################################################################################
+ 186              	# IMPLEMENTACIÓN ARM DE candidatos_actualizar_arm_arm
+ 187              	#
+ 188              	# Función: candidatos_actualizar_arm_arm
+ 189              	# Parámetros:
+ 190              	#   r0: CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] - puntero base cuadrícula
+ 191              	#
+ 192              	# Comportamiento:
+ 193              	# FASE 1: Recorre toda la cuadrícula y para cada celda:
+ 194              	#         - Limpia bits candidatos [15,7] poniendo todos a 0
+ 195              	#         - Si valor=0, incrementa contador de celdas vacías
+ 196              	# FASE 2: Recorre toda la cuadrícula y para cada celda con valor (valor≠0):
+ 197              	#         - Llama a candidatos_propagar_arm para eliminar candidatos
+ 198              	#
+ 199              	# Retorna: número de celdas vacías (en r0)
+ 200              	################################################################################
+ 201              	.global candidatos_actualizar_arm_arm
+ 202              	
+ 203              	candidatos_actualizar_arm_arm:
+ 204              	    # Preservar registros y configurar frame pointer
+ 205 0118 F04F2DE9 	    STMDB   SP!, {r4-r10, fp, LR}
+ 206 011c 18B08DE2 	    ADD     fp, SP, #(4*7-4)    @ FP ← dirección base del marco (7 registros: r4-r10)
+ 207 0120 08D04DE2 	    SUB     SP, SP, #8      // Reservar espacio para 2 variables locales (i, j)
+ 208              	
+ 209              	    # ========== ASIGNACIÓN DE REGISTROS ==========
+ 210              	    # REGISTROS CRÍTICOS (no reutilizables):
+ 211              	    # r4 = puntero base cuadrícula (INMUTABLE)
+ 212              	    # r5 = NUM_FILAS = 9 (constante)
+ 213              	    # r6 = NUM_COLUMNAS = 16 (constante)
+ 214              	    # r7 = máscara para limpiar candidatos = 0x007F (constante)
+ 215              	    # r8 = contador de celdas vacías
+ 216              	    # 
+ 217              	    # REGISTROS REUTILIZABLES:
+ 218              	    # r9 = contador i (filas)
+ 219              	    # r10 = contador j (columnas)
+ 220              	    # r0,r1,r2,r3 = direcciones, valores temporales
+ 221              	
+ 222              	    # Inicializar constantes
+ 223 0124 0040A0E1 	    MOV     r4, r0          // r4 = puntero base cuadrícula
+ 224 0128 0950A0E3 	    MOV     r5, #9          // r5 = NUM_FILAS
+ 225 012c 1060A0E3 	    MOV     r6, #16         // r6 = NUM_COLUMNAS (9 + 7 padding)
+ 226 0130 7F70A0E3 	    MOV     r7, #0x007F     // r7 = máscara para limpiar candidatos (preservar bits 6-0)
+ 227 0134 0080A0E3 	    MOV     r8, #0          // r8 = contador celdas vacías
+ 228              	
+ 229              	    # ===== FASE 1: LIMPIAR CANDIDATOS DE TODAS LAS CELDAS Y CONTAR CELDAS VACÍAS =====
+ 230 0138 0090A0E3 	    MOV     r9, #0          // r9 = i (contador filas)
+ 231              	
+ 232              	fase1_arm_arm_bucle_i:
+ 233 013c 050059E1 	    CMP     r9, r5          // comparar i con NUM_FILAS
+ 234 0140 0F0000AA 	    BGE     fase1_arm_arm_fin // si i >= NUM_FILAS, terminar fase 1
+ 235              	
+ 236 0144 00A0A0E3 	    MOV     r10, #0         // r10 = j (contador columnas)
+ 237              	
+ 238              	fase1_arm_arm_bucle_j:
+ 239 0148 05005AE1 	    CMP     r10, r5         // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 240 014c 0A0000AA 	    BGE     fase1_arm_arm_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 241              	
+ 242              	    # Calcular dirección: cuadricula[i][j]
+ 243 0150 99A620E0 	    MLA     r0, r9, r6, r10 // r0 = i * NUM_COLUMNAS + j
+ 244 0154 8000A0E1 	    MOV     r0, r0, LSL #1  // r0 *= 2 (sizeof CELDA)
+ 245 0158 000084E0 	    ADD     r0, r4, r0      // r0 = dirección de cuadricula[i][j]
+ 246              	
+ 247              	    # Leer celda y limpiar candidatos de TODAS las celdas
+ 248 015c B010D0E1 	    LDRH    r1, [r0]        // r1 = cuadricula[i][j]
+ 249 0160 071001E0 	    AND     r1, r1, r7      // r1 &= 0x007F (limpiar bits candidatos 15-7)
+ 250 0164 B010C0E1 	    STRH    r1, [r0]        // guardar celda modificada
+ 251              	    
+ 252              	    # Si valor es 0, incrementar contador de celdas vacías
+ 253 0168 0F2001E2 	    AND     r2, r1, #0x0F   // r2 = valor de la celda (bits 3-0)
+ 254 016c 000052E3 	    CMP     r2, #0          // ¿valor == 0?
+ 255 0170 01808802 	    ADDEQ   r8, r8, #1      // si sí, celdas_vacias++
+ 256              	
+ 257              	fase1_arm_arm_siguiente_j:
+ 258 0174 01A08AE2 	    ADD     r10, r10, #1    // j++
+ 259 0178 F2FFFFEA 	    B       fase1_arm_arm_bucle_j
+ 260              	
+ 261              	fase1_arm_arm_fin_j:
+ 262 017c 019089E2 	    ADD     r9, r9, #1      // i++
+ 263 0180 EDFFFFEA 	    B       fase1_arm_arm_bucle_i
+ 264              	
+ 265              	fase1_arm_arm_fin:
+ 266              	    # ===== FASE 2: PROPAGAR VALORES DE CELDAS NO VACÍAS =====
+ 267 0184 0090A0E3 	    MOV     r9, #0          // r9 = i (contador filas)
+ 268              	
+ 269              	fase2_arm_arm_bucle_i:
+ 270 0188 050059E1 	    CMP     r9, r5          // comparar i con NUM_FILAS
+ 271 018c 150000AA 	    BGE     fase2_arm_arm_fin // si i >= NUM_FILAS, terminar fase 2
+ 272              	
+ 273 0190 00A0A0E3 	    MOV     r10, #0         // r10 = j (contador columnas)
+ 274              	
+ 275              	fase2_arm_arm_bucle_j:
+ 276 0194 05005AE1 	    CMP     r10, r5         // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 277 0198 100000AA 	    BGE     fase2_arm_arm_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 278              	
+ 279              	    # Calcular dirección: cuadricula[i][j]
+ 280 019c 99A620E0 	    MLA     r0, r9, r6, r10 // r0 = i * NUM_COLUMNAS + j
+ 281 01a0 8000A0E1 	    MOV     r0, r0, LSL #1  // r0 *= 2 (sizeof CELDA)
+ 282 01a4 000084E0 	    ADD     r0, r4, r0      // r0 = dirección de cuadricula[i][j]
+ 283              	
+ 284              	    # Procesar celda
+ 285 01a8 B010D0E1 	    LDRH    r1, [r0]        // r1 = cuadricula[i][j]
+ 286 01ac 0F2001E2 	    AND     r2, r1, #0x0F   // r2 = valor de la celda (bits 3-0)
+ 287              	
+ 288              	    # Si celda está vacía (valor == 0), saltar
+ 289 01b0 000052E3 	    CMP     r2, #0
+ 290 01b4 0700000A 	    BEQ     fase2_arm_arm_siguiente_j
+ 291              	
+ 292              	    # Celda con valor: llamar a candidatos_propagar_arm
+ 293              	    # Guardar estado actual usando frame pointer
+ 294 01b8 04900BE5 	    STR     r9, [fp, #-4]   // guardar i (fila)
+ 295 01bc 08A00BE5 	    STR     r10, [fp, #-8]  // guardar j (columna)
+ 296              	    
+ 297              	    # Preparar parámetros para la llamada
+ 298 01c0 0400A0E1 	    MOV     r0, r4          // r0 = puntero base cuadrícula
+ 299 01c4 0910A0E1 	    MOV     r1, r9          // r1 = fila (i)
+ 300 01c8 0A20A0E1 	    MOV     r2, r10         // r2 = columna (j)
+ 301              	
+ 302              	    # Llamar a candidatos_propagar_arm
+ 303 01cc FEFFFFEB 	    BL      candidatos_propagar_arm
+ 304              	
+ 305              	    # Restaurar estado desde frame pointer
+ 306 01d0 04901BE5 	    LDR     r9, [fp, #-4]   // restaurar i (fila)
+ 307 01d4 08A01BE5 	    LDR     r10, [fp, #-8]  // restaurar j (columna)
+ 308              	
+ 309              	fase2_arm_arm_siguiente_j:
+ 310 01d8 01A08AE2 	    ADD     r10, r10, #1    // j++
+ 311 01dc ECFFFFEA 	    B       fase2_arm_arm_bucle_j
+ 312              	
+ 313              	fase2_arm_arm_fin_j:
+ 314 01e0 019089E2 	    ADD     r9, r9, #1      // i++
+ 315 01e4 E7FFFFEA 	    B       fase2_arm_arm_bucle_i
+ 316              	
+ 317              	fase2_arm_arm_fin:
+ 318              	    # Preparar valor de retorno
+ 319 01e8 0800A0E1 	    MOV     r0, r8          // r0 = celdas_vacias (valor de retorno)
+ 320              	
+ 321              	    # Restaurar pila y registros, luego retornar
+ 322 01ec 08D08DE2 	    ADD     SP, SP, #8      // Liberar espacio de variables locales
+ 323 01f0 F04FBDE8 	    LDMIA   SP!, {r4-r10, fp, LR}
+ 324 01f4 1EFF2FE1 	    BX      LR
+ 325              	
+ 326              	################################################################################
+ 327              	# IMPLEMENTACIÓN ARM DE candidatos_actualizar_arm_c
+ 328              	#
+ 329              	# Función: candidatos_actualizar_arm_c
+ 330              	# Parámetros:
+ 331              	#   r0: CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] - puntero base cuadrícula
+ 332              	#
+ 333              	# Comportamiento:
+ 334              	# FASE 1: Recorre toda la cuadrícula y para cada celda:
+ 335              	#         - Limpia bits candidatos [15,7] poniendo todos a 0
+ 336              	#         - Si valor=0, incrementa contador de celdas vacías
+ 337              	# FASE 2: Recorre toda la cuadrícula y para cada celda con valor (valor≠0):
+ 338              	#         - Llama a candidatos_propagar_c (función C) para eliminar candidatos
+ 339              	#
+ 340              	# Retorna: número de celdas vacías (en r0)
+ 341              	################################################################################
+ 342              	.global candidatos_actualizar_arm_c
+ 343              	
+ 344              	candidatos_actualizar_arm_c:
+ 345              	    # Preservar registros y configurar frame pointer
+ 346 01f8 F04F2DE9 	    STMDB   SP!, {r4-r10, fp, LR}
+ 347 01fc 18B08DE2 	    ADD     fp, SP, #(4*7-4)    @ FP ← dirección base del marco (7 registros: r4-r10)
+ 348 0200 08D04DE2 	    SUB     SP, SP, #8      // Reservar espacio para 2 variables locales (i, j)
+ 349              	
+ 350              	    # ========== ASIGNACIÓN DE REGISTROS ==========
+ 351              	    # REGISTROS CRÍTICOS (no reutilizables):
+ 352              	    # r4 = puntero base cuadrícula (INMUTABLE)
+ 353              	    # r5 = NUM_FILAS = 9 (constante)
+ 354              	    # r6 = NUM_COLUMNAS = 16 (constante)
+ 355              	    # r7 = máscara para limpiar candidatos = 0x007F (constante)
+ 356              	    # r8 = contador de celdas vacías
+ 357              	    # 
+ 358              	    # REGISTROS REUTILIZABLES:
+ 359              	    # r9 = contador i (filas)
+ 360              	    # r10 = contador j (columnas)
+ 361              	    # r0,r1,r2,r3 = direcciones, valores temporales
+ 362              	
+ 363              	    # Inicializar constantes
+ 364 0204 0040A0E1 	    MOV     r4, r0          // r4 = puntero base cuadrícula
+ 365 0208 0950A0E3 	    MOV     r5, #9          // r5 = NUM_FILAS
+ 366 020c 1060A0E3 	    MOV     r6, #16         // r6 = NUM_COLUMNAS (9 + 7 padding)
+ 367 0210 7F70A0E3 	    MOV     r7, #0x007F     // r7 = máscara para limpiar candidatos (preservar bits 6-0)
+ 368 0214 0080A0E3 	    MOV     r8, #0          // r8 = contador celdas vacías
+ 369              	
+ 370              	    # ===== FASE 1: LIMPIAR CANDIDATOS DE TODAS LAS CELDAS Y CONTAR CELDAS VACÍAS =====
+ 371 0218 0090A0E3 	    MOV     r9, #0          // r9 = i (contador filas)
+ 372              	
+ 373              	fase1_arm_c_bucle_i:
+ 374 021c 050059E1 	    CMP     r9, r5          // comparar i con NUM_FILAS
+ 375 0220 0F0000AA 	    BGE     fase1_arm_c_fin // si i >= NUM_FILAS, terminar fase 1
+ 376              	
+ 377 0224 00A0A0E3 	    MOV     r10, #0         // r10 = j (contador columnas)
+ 378              	
+ 379              	fase1_arm_c_bucle_j:
+ 380 0228 05005AE1 	    CMP     r10, r5         // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 381 022c 0A0000AA 	    BGE     fase1_arm_c_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 382              	
+ 383              	    # Calcular dirección: cuadricula[i][j]
+ 384 0230 99A620E0 	    MLA     r0, r9, r6, r10 // r0 = i * NUM_COLUMNAS + j
+ 385 0234 8000A0E1 	    MOV     r0, r0, LSL #1  // r0 *= 2 (sizeof CELDA)
+ 386 0238 000084E0 	    ADD     r0, r4, r0      // r0 = dirección de cuadricula[i][j]
+ 387              	
+ 388              	    # Leer celda y limpiar candidatos de TODAS las celdas
+ 389 023c B010D0E1 	    LDRH    r1, [r0]        // r1 = cuadricula[i][j]
+ 390 0240 071001E0 	    AND     r1, r1, r7      // r1 &= 0x007F (limpiar bits candidatos 15-7)
+ 391 0244 B010C0E1 	    STRH    r1, [r0]        // guardar celda modificada
+ 392              	    
+ 393              	    # Si valor es 0, incrementar contador de celdas vacías
+ 394 0248 0F2001E2 	    AND     r2, r1, #0x0F   // r2 = valor de la celda (bits 3-0)
+ 395 024c 000052E3 	    CMP     r2, #0          // ¿valor == 0?
+ 396 0250 01808802 	    ADDEQ   r8, r8, #1      // si sí, celdas_vacias++
+ 397              	
+ 398              	fase1_arm_c_siguiente_j:
+ 399 0254 01A08AE2 	    ADD     r10, r10, #1    // j++
+ 400 0258 F2FFFFEA 	    B       fase1_arm_c_bucle_j
+ 401              	
+ 402              	fase1_arm_c_fin_j:
+ 403 025c 019089E2 	    ADD     r9, r9, #1      // i++
+ 404 0260 EDFFFFEA 	    B       fase1_arm_c_bucle_i
+ 405              	
+ 406              	fase1_arm_c_fin:
+ 407              	    # ===== FASE 2: PROPAGAR VALORES DE CELDAS NO VACÍAS =====
+ 408 0264 0090A0E3 	    MOV     r9, #0          // r9 = i (contador filas)
+ 409              	
+ 410              	fase2_arm_c_bucle_i:
+ 411 0268 050059E1 	    CMP     r9, r5          // comparar i con NUM_FILAS
+ 412 026c 150000AA 	    BGE     fase2_arm_c_fin // si i >= NUM_FILAS, terminar fase 2
+ 413              	
+ 414 0270 00A0A0E3 	    MOV     r10, #0         // r10 = j (contador columnas)
+ 415              	
+ 416              	fase2_arm_c_bucle_j:
+ 417 0274 05005AE1 	    CMP     r10, r5         // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 418 0278 100000AA 	    BGE     fase2_arm_c_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 419              	
+ 420              	    # Calcular dirección: cuadricula[i][j]
+ 421 027c 99A620E0 	    MLA     r0, r9, r6, r10 // r0 = i * NUM_COLUMNAS + j
+ 422 0280 8000A0E1 	    MOV     r0, r0, LSL #1  // r0 *= 2 (sizeof CELDA)
+ 423 0284 000084E0 	    ADD     r0, r4, r0      // r0 = dirección de cuadricula[i][j]
+ 424              	
+ 425              	    # Procesar celda
+ 426 0288 B010D0E1 	    LDRH    r1, [r0]        // r1 = cuadricula[i][j]
+ 427 028c 0F2001E2 	    AND     r2, r1, #0x0F   // r2 = valor de la celda (bits 3-0)
+ 428              	
+ 429              	    # Si celda está vacía (valor == 0), saltar
+ 430 0290 000052E3 	    CMP     r2, #0
+ 431 0294 0700000A 	    BEQ     fase2_arm_c_siguiente_j
+ 432              	
+ 433              	    # Celda con valor: llamar a candidatos_propagar_c
+ 434              	    # Guardar estado actual usando frame pointer
+ 435 0298 04900BE5 	    STR     r9, [fp, #-4]   // guardar i (fila)
+ 436 029c 08A00BE5 	    STR     r10, [fp, #-8]  // guardar j (columna)
+ 437              	    
+ 438              	    # Preparar parámetros para la llamada
+ 439 02a0 0400A0E1 	    MOV     r0, r4          // r0 = puntero base cuadrícula
+ 440 02a4 0910A0E1 	    MOV     r1, r9          // r1 = fila (i)
+ 441 02a8 0A20A0E1 	    MOV     r2, r10         // r2 = columna (j)
+ 442              	
+ 443              	    # Llamar a candidatos_propagar_c (función C)
+ 444 02ac FEFFFFEB 	    BL      candidatos_propagar_c
+ 445              	
+ 446              	    # Restaurar estado desde frame pointer
+ 447 02b0 04901BE5 	    LDR     r9, [fp, #-4]   // restaurar i (fila)
+ 448 02b4 08A01BE5 	    LDR     r10, [fp, #-8]  // restaurar j (columna)
+ 449              	
+ 450              	fase2_arm_c_siguiente_j:
+ 451 02b8 01A08AE2 	    ADD     r10, r10, #1    // j++
+ 452 02bc ECFFFFEA 	    B       fase2_arm_c_bucle_j
+ 453              	
+ 454              	fase2_arm_c_fin_j:
+ 455 02c0 019089E2 	    ADD     r9, r9, #1      // i++
+ 456 02c4 E7FFFFEA 	    B       fase2_arm_c_bucle_i
+ 457              	
+ 458              	fase2_arm_c_fin:
+ 459              	    # Preparar valor de retorno
+ 460 02c8 0800A0E1 	    MOV     r0, r8          // r0 = celdas_vacias (valor de retorno)
+ 461              	
+ 462              	    # Restaurar pila y registros, luego retornar
+ 463 02cc 08D08DE2 	    ADD     SP, SP, #8      // Liberar espacio de variables locales
+ 464 02d0 F04FBDE8 	    LDMIA   SP!, {r4-r10, fp, LR}
+ 465 02d4 1EFF2FE1 	    BX      LR
+ 466              	
+ 467              	################################################################################
+ 468              	# IMPLEMENTACIÓN ARM DE candidatos_actualizar_all
+ 469              	#
+ 470              	# Función: candidatos_actualizar_all
+ 471              	# Parámetros:
+ 472              	#   r0: CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS] - puntero base cuadrícula
+ 473              	#
+ 474              	# Comportamiento:
+ 475              	# FASE 1: Recorre toda la cuadrícula y para cada celda:
+ 476              	#         - Limpia bits candidatos [15,7] poniendo todos a 0
+ 477              	#         - Si valor=0, incrementa contador de celdas vacías
+ 478              	# FASE 2: Recorre toda la cuadrícula y para cada celda con valor (valor≠0):
+ 479              	#         - Ejecuta código inlineado de candidatos_propagar_arm para eliminar candidatos
+ 480              	#           (evitando la sobrecarga de llamadas a subrutina)
+ 481              	#
+ 482              	# Retorna: número de celdas vacías (en r0)
+ 483              	################################################################################
+ 484              	.global candidatos_actualizar_all
+ 485              	
+ 486              	candidatos_actualizar_all:
+ 487              	    # Preservar registros y configurar frame pointer
+ 488 02d8 F04F2DE9 	    STMDB   SP!, {r4-r10, fp, LR}
+ 489 02dc 18B08DE2 	    ADD     fp, SP, #(4*7-4)    @ FP ← dirección base del marco (7 registros: r4-r10)
+ 490 02e0 08D04DE2 	    SUB     SP, SP, #8      // Reservar espacio para 2 variables locales (i, j)
+ 491              	
+ 492              	    # ========== ASIGNACIÓN DE REGISTROS ==========
+ 493              	    # REGISTROS CRÍTICOS (no reutilizables):
+ 494              	    # r4 = puntero base cuadrícula (INMUTABLE)
+ 495              	    # r5 = NUM_FILAS = 9 (constante)
+ 496              	    # r6 = NUM_COLUMNAS = 16 (constante)  
+ 497              	    # r7 = contador de celdas vacías (CRÍTICO para retorno)
+ 498              	    # 
+ 499              	    # REGISTROS REUTILIZABLES:
+ 500              	    # r8 = contador i principal / contador bucles internos
+ 501              	    # r9 = contador j principal / direcciones temporales
+ 502              	    # r10 = dirección celda actual / máscaras temporales / valores temporales
+ 503              	
+ 504              	    # Inicializar registros críticos
+ 505 02e4 0040A0E1 	    MOV     r4, r0          // r4 = puntero base cuadrícula (inmutable)
+ 506 02e8 0950A0E3 	    MOV     r5, #9          // r5 = NUM_FILAS
+ 507 02ec 1060A0E3 	    MOV     r6, #16         // r6 = NUM_COLUMNAS (9 + 7 padding)
+ 508 02f0 0070A0E3 	    MOV     r7, #0          // r7 = contador celdas vacías
+ 509              	
+ 510              	    # ===== FASE 1: LIMPIAR CANDIDATOS Y CONTAR CELDAS VACÍAS =====
+ 511 02f4 0080A0E3 	    MOV     r8, #0          // r8 = i (contador filas)
+ 512              	
+ 513              	fase1_all_bucle_i:
+ 514 02f8 050058E1 	    CMP     r8, r5          // comparar i con NUM_FILAS
+ 515 02fc 0F0000AA 	    BGE     fase1_all_fin   // si i >= NUM_FILAS, terminar fase 1
+ 516              	
+ 517 0300 0090A0E3 	    MOV     r9, #0          // r9 = j (contador columnas)
+ 518              	
+ 519              	fase1_all_bucle_j:
+ 520 0304 050059E1 	    CMP     r9, r5          // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 521 0308 0A0000AA 	    BGE     fase1_all_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 522              	
+ 523              	    # Calcular dirección: cuadricula[i][j]
+ 524 030c 98962AE0 	    MLA     r10, r8, r6, r9 // r10 = i * NUM_COLUMNAS + j
+ 525 0310 8AA0A0E1 	    MOV     r10, r10, LSL #1 // r10 *= 2 (sizeof CELDA)
+ 526 0314 0AA084E0 	    ADD     r10, r4, r10    // r10 = dirección de cuadricula[i][j]
+ 527              	
+ 528              	    # Leer celda y procesar
+ 529 0318 B000DAE1 	    LDRH    r0, [r10]       // r0 = cuadricula[i][j]
+ 530              	    
+ 531              	    # Limpiar bits candidatos [15,7] manteniendo [6,0]
+ 532 031c 7F0000E2 	    AND     r0, r0, #0x007F // r0 &= 0x007F (limpiar candidatos)
+ 533 0320 B000CAE1 	    STRH    r0, [r10]       // guardar celda modificada
+ 534              	    
+ 535              	    # Si valor es 0, incrementar contador de celdas vacías
+ 536 0324 0F0000E2 	    AND     r0, r0, #0x0F   // r0 = valor de la celda (bits 3-0)
+ 537 0328 000050E3 	    CMP     r0, #0          // ¿valor == 0?
+ 538 032c 01708702 	    ADDEQ   r7, r7, #1      // si sí, celdas_vacias++
+ 539              	
+ 540              	fase1_all_siguiente_j:
+ 541 0330 019089E2 	    ADD     r9, r9, #1      // j++
+ 542 0334 F2FFFFEA 	    B       fase1_all_bucle_j
+ 543              	
+ 544              	fase1_all_fin_j:
+ 545 0338 018088E2 	    ADD     r8, r8, #1      // i++
+ 546 033c EDFFFFEA 	    B       fase1_all_bucle_i
+ 547              	
+ 548              	fase1_all_fin:
+ 549              	    # ===== FASE 2: PROPAGAR VALORES DE CELDAS NO VACÍAS =====
+ 550 0340 0080A0E3 	    MOV     r8, #0          // r8 = i (contador filas principales)
+ 551              	
+ 552              	fase2_all_bucle_i:
+ 553 0344 050058E1 	    CMP     r8, r5          // comparar i con NUM_FILAS
+ 554 0348 4B0000AA 	    BGE     fase2_all_fin   // si i >= NUM_FILAS, terminar fase 2
+ 555              	
+ 556 034c 0090A0E3 	    MOV     r9, #0          // r9 = j (contador columnas principales)
+ 557              	
+ 558              	fase2_all_bucle_j:
+ 559 0350 050059E1 	    CMP     r9, r5          // comparar j con NUM_FILAS (solo primeras 9 columnas)
+ 560 0354 460000AA 	    BGE     fase2_all_fin_j // si j >= NUM_FILAS, terminar bucle j
+ 561              	
+ 562              	    # Calcular dirección: cuadricula[i][j]
+ 563 0358 98962AE0 	    MLA     r10, r8, r6, r9 // r10 = i * NUM_COLUMNAS + j
+ 564 035c 8AA0A0E1 	    MOV     r10, r10, LSL #1 // r10 *= 2 (sizeof CELDA)
+ 565 0360 0AA084E0 	    ADD     r10, r4, r10    // r10 = dirección de cuadricula[i][j]
+ 566              	
+ 567              	    # Leer valor de la celda
+ 568 0364 B000DAE1 	    LDRH    r0, [r10]       // r0 = cuadricula[i][j]
+ 569 0368 0F0000E2 	    AND     r0, r0, #0x0F   // r0 = valor de la celda (bits 3-0)
+ 570              	
+ 571              	    # Si celda está vacía (valor == 0), saltar propagación
+ 572 036c 000050E3 	    CMP     r0, #0
+ 573 0370 3D00000A 	    BEQ     fase2_all_siguiente_j
+ 574              	
+ 575              	    # ===== CÓDIGO INLINEADO DE CANDIDATOS_PROPAGAR =====
+ 576              	    # Variables actuales: r8=fila, r9=columna, r0=valor
+ 577              	    # Registros disponibles para reutilizar: r1,r2,r3
+ 578              	    
+ 579              	    # Calcular máscara para eliminar candidato: (1 << (7 + valor - 1))
+ 580 0374 061080E2 	    ADD     r1, r0, #6      // r1 = valor + 6 (7 + valor - 1)
+ 581 0378 0120A0E3 	    MOV     r2, #1          // r2 = 1
+ 582 037c 1221A0E1 	    MOV     r2, r2, LSL r1  // r2 = máscara para eliminar candidato
+ 583              	
+ 584              	    # ===== PROPAGAR EN FILA (i=r8 fijo, j variable) =====
+ 585 0380 0010A0E3 	    MOV     r1, #0          // r1 = j_prop (contador columnas para propagación)
+ 586              	
+ 587              	propagar_fila:
+ 588 0384 050051E1 	    CMP     r1, r5          // comparar j_prop con NUM_FILAS
+ 589 0388 070000AA 	    BGE     fin_propagar_fila
+ 590              	
+ 591              	    # Calcular dirección: cuadricula[fila][j_prop]
+ 592 038c 981623E0 	    MLA     r3, r8, r6, r1  // r3 = fila * NUM_COLUMNAS + j_prop
+ 593 0390 8330A0E1 	    MOV     r3, r3, LSL #1  // r3 *= 2 (sizeof CELDA)
+ 594 0394 033084E0 	    ADD     r3, r4, r3      // r3 = dirección de cuadricula[fila][j_prop]
+ 595              	
+ 596              	    # Eliminar candidato: celda |= máscara
+ 597 0398 B000D3E1 	    LDRH    r0, [r3]        // r0 = celda actual
+ 598 039c 020080E1 	    ORR     r0, r0, r2      // r0 |= máscara
+ 599 03a0 B000C3E1 	    STRH    r0, [r3]        // guardar celda modificada
+ 600              	
+ 601 03a4 011081E2 	    ADD     r1, r1, #1      // j_prop++
+ 602 03a8 F5FFFFEA 	    B       propagar_fila
+ 603              	
+ 604              	fin_propagar_fila:
+ 605              	    # ===== PROPAGAR EN COLUMNA (j=r9 fijo, i variable) =====
+ 606 03ac 0010A0E3 	    MOV     r1, #0          // r1 = i_prop (contador filas para propagación)
+ 607              	
+ 608              	propagar_columna:
+ 609 03b0 050051E1 	    CMP     r1, r5          // comparar i_prop con NUM_FILAS
+ 610 03b4 070000AA 	    BGE     fin_propagar_columna
+ 611              	
+ 612              	    # Calcular dirección: cuadricula[i_prop][columna]
+ 613 03b8 919623E0 	    MLA     r3, r1, r6, r9  // r3 = i_prop * NUM_COLUMNAS + columna
+ 614 03bc 8330A0E1 	    MOV     r3, r3, LSL #1  // r3 *= 2 (sizeof CELDA)
+ 615 03c0 033084E0 	    ADD     r3, r4, r3      // r3 = dirección de cuadricula[i_prop][columna]
+ 616              	
+ 617              	    # Eliminar candidato: celda |= máscara
+ 618 03c4 B000D3E1 	    LDRH    r0, [r3]        // r0 = celda actual
+ 619 03c8 020080E1 	    ORR     r0, r0, r2      // r0 |= máscara
+ 620 03cc B000C3E1 	    STRH    r0, [r3]        // guardar celda modificada
+ 621              	
+ 622 03d0 011081E2 	    ADD     r1, r1, #1      // i_prop++
+ 623 03d4 F5FFFFEA 	    B       propagar_columna
+ 624              	
+ 625              	fin_propagar_columna:
+ 626              	    # ===== PROPAGAR EN REGIÓN 3x3 =====
+ 627              	    # Calcular init_i = (fila / 3) * 3
+ 628 03d8 030058E3 	    CMP     r8, #3
+ 629 03dc 0010A0B3 	    MOVLT   r1, #0          // si fila < 3, init_i = 0
+ 630 03e0 0310A0A3 	    MOVGE   r1, #3          // si fila >= 3, init_i = 3
+ 631 03e4 060058E3 	    CMP     r8, #6
+ 632 03e8 0610A0A3 	    MOVGE   r1, #6          // si fila >= 6, init_i = 6
+ 633              	
+ 634              	    # Calcular init_j = (columna / 3) * 3
+ 635 03ec 030059E3 	    CMP     r9, #3
+ 636 03f0 0030A0B3 	    MOVLT   r3, #0          // si columna < 3, init_j = 0
+ 637 03f4 0330A0A3 	    MOVGE   r3, #3          // si columna >= 3, init_j = 3
+ 638 03f8 060059E3 	    CMP     r9, #6
+ 639 03fc 0630A0A3 	    MOVGE   r3, #6          // si columna >= 6, init_j = 6
+ 640              	
+ 641              	    # Guardar variables en pila usando frame pointer
+ 642              	    # fp-4 = init_i, fp-8 = init_j, fp-12 = end_i, fp-16 = end_j, fp-20 = máscara
+ 643 0400 04100BE5 	    STR     r1, [fp, #-4]   // guardar init_i
+ 644 0404 08300BE5 	    STR     r3, [fp, #-8]   // guardar init_j
+ 645 0408 030081E2 	    ADD     r0, r1, #3      // r0 = end_i
+ 646 040c 0C000BE5 	    STR     r0, [fp, #-12]  // guardar end_i
+ 647 0410 030083E2 	    ADD     r0, r3, #3      // r0 = end_j
+ 648 0414 10000BE5 	    STR     r0, [fp, #-16]  // guardar end_j
+ 649 0418 14200BE5 	    STR     r2, [fp, #-20]  // guardar máscara (r2 contiene la máscara)
+ 650              	
+ 651              	    # Bucle región: for (i_reg = init_i; i_reg < end_i; i_reg++)
+ 652 041c 0110A0E1 	    MOV     r1, r1          // r1 = i_reg = init_i
+ 653              	
+ 654              	all_bucle_region_i:
+ 655 0420 0C001BE5 	    LDR     r0, [fp, #-12]  // cargar end_i
+ 656 0424 000051E1 	    CMP     r1, r0          // comparar i_reg con end_i
+ 657 0428 0F0000AA 	    BGE     all_fin_region
+ 658              	
+ 659              	    # Bucle región: for (j_reg = init_j; j_reg < end_j; j_reg++)
+ 660 042c 08301BE5 	    LDR     r3, [fp, #-8]   // cargar init_j
+ 661 0430 0330A0E1 	    MOV     r3, r3          // r3 = j_reg = init_j
+ 662              	
+ 663              	all_bucle_region_j:
+ 664 0434 10001BE5 	    LDR     r0, [fp, #-16]  // cargar end_j
+ 665 0438 000053E1 	    CMP     r3, r0          // comparar j_reg con end_j
+ 666 043c 080000AA 	    BGE     all_fin_region_j
+ 667              	
+ 668              	    # Calcular dirección: cuadricula[i_reg][j_reg]
+ 669 0440 913620E0 	    MLA     r0, r1, r6, r3  // r0 = i_reg * NUM_COLUMNAS + j_reg
+ 670 0444 8000A0E1 	    MOV     r0, r0, LSL #1  // r0 *= 2 (sizeof CELDA)
+ 671 0448 000084E0 	    ADD     r0, r4, r0      // r0 = dirección de cuadricula[i_reg][j_reg]
+ 672              	
+ 673              	    # Eliminar candidato: celda |= máscara
+ 674 044c B0A0D0E1 	    LDRH    r10, [r0]       // r10 = celda actual
+ 675 0450 14201BE5 	    LDR     r2, [fp, #-20]  // cargar máscara
+ 676 0454 02A08AE1 	    ORR     r10, r10, r2    // r10 |= máscara
+ 677 0458 B0A0C0E1 	    STRH    r10, [r0]       // guardar celda modificada
+ 678              	
+ 679 045c 013083E2 	    ADD     r3, r3, #1      // j_reg++
+ 680 0460 F3FFFFEA 	    B       all_bucle_region_j
+ 681              	
+ 682              	all_fin_region_j:
+ 683 0464 011081E2 	    ADD     r1, r1, #1      // i_reg++
+ 684 0468 ECFFFFEA 	    B       all_bucle_region_i
+ 685              	
+ 686              	all_fin_region:
+ 687              	    # ===== FIN CÓDIGO INLINEADO DE CANDIDATOS_PROPAGAR =====
+ 688              	
+ 689              	fase2_all_siguiente_j:
+ 690 046c 019089E2 	    ADD     r9, r9, #1      // j++
+ 691 0470 B6FFFFEA 	    B       fase2_all_bucle_j
+ 692              	
+ 693              	fase2_all_fin_j:
+ 694 0474 018088E2 	    ADD     r8, r8, #1      // i++
+ 695 0478 B1FFFFEA 	    B       fase2_all_bucle_i
+ 696              	
+ 697              	fase2_all_fin:
+ 698              	    # Preparar valor de retorno
+ 699 047c 0700A0E1 	    MOV     r0, r7          // r0 = celdas_vacias (valor de retorno)
+ 700              	
+ 701              	    # Restaurar pila y registros, luego retornar
+ 702 0480 08D08DE2 	    ADD     SP, SP, #8      // Liberar espacio de variables locales
+ 703 0484 F04FBDE8 	    LDMIA   SP!, {r4-r10, fp, LR}
+ 704 0488 1EFF2FE1 	    BX      LR
+ 705              	
+ 706              	#        END
+DEFINED SYMBOLS
+ ../Jaime/init_b.asm:30     .text:00000000 candidatos_propagar_arm
+ ../Jaime/init_b.asm:32     .text:00000000 $a
+ ../Jaime/init_b.asm:179    .text:00000110 propagar_fin
+ ../Jaime/init_b.asm:75     .text:00000040 bucle_fila
+ ../Jaime/init_b.asm:95     .text:00000068 fin_fila
+ ../Jaime/init_b.asm:91     .text:00000060 siguiente_fila
+ ../Jaime/init_b.asm:99     .text:0000006c bucle_columna
+ ../Jaime/init_b.asm:119    .text:00000094 fin_columna
+ ../Jaime/init_b.asm:115    .text:0000008c siguiente_columna
+ ../Jaime/init_b.asm:140    .text:000000c0 bucle_region_i
+ ../Jaime/init_b.asm:178    .text:00000110 fin_region
+ ../Jaime/init_b.asm:154    .text:000000e0 bucle_region_j
+ ../Jaime/init_b.asm:174    .text:00000108 fin_region_j
+ ../Jaime/init_b.asm:170    .text:00000100 siguiente_region_j
+ ../Jaime/init_b.asm:203    .text:00000118 candidatos_actualizar_arm_arm
+ ../Jaime/init_b.asm:232    .text:0000013c fase1_arm_arm_bucle_i
+ ../Jaime/init_b.asm:265    .text:00000184 fase1_arm_arm_fin
+ ../Jaime/init_b.asm:238    .text:00000148 fase1_arm_arm_bucle_j
+ ../Jaime/init_b.asm:261    .text:0000017c fase1_arm_arm_fin_j
+ ../Jaime/init_b.asm:257    .text:00000174 fase1_arm_arm_siguiente_j
+ ../Jaime/init_b.asm:269    .text:00000188 fase2_arm_arm_bucle_i
+ ../Jaime/init_b.asm:317    .text:000001e8 fase2_arm_arm_fin
+ ../Jaime/init_b.asm:275    .text:00000194 fase2_arm_arm_bucle_j
+ ../Jaime/init_b.asm:313    .text:000001e0 fase2_arm_arm_fin_j
+ ../Jaime/init_b.asm:309    .text:000001d8 fase2_arm_arm_siguiente_j
+ ../Jaime/init_b.asm:344    .text:000001f8 candidatos_actualizar_arm_c
+ ../Jaime/init_b.asm:373    .text:0000021c fase1_arm_c_bucle_i
+ ../Jaime/init_b.asm:406    .text:00000264 fase1_arm_c_fin
+ ../Jaime/init_b.asm:379    .text:00000228 fase1_arm_c_bucle_j
+ ../Jaime/init_b.asm:402    .text:0000025c fase1_arm_c_fin_j
+ ../Jaime/init_b.asm:398    .text:00000254 fase1_arm_c_siguiente_j
+ ../Jaime/init_b.asm:410    .text:00000268 fase2_arm_c_bucle_i
+ ../Jaime/init_b.asm:458    .text:000002c8 fase2_arm_c_fin
+ ../Jaime/init_b.asm:416    .text:00000274 fase2_arm_c_bucle_j
+ ../Jaime/init_b.asm:454    .text:000002c0 fase2_arm_c_fin_j
+ ../Jaime/init_b.asm:450    .text:000002b8 fase2_arm_c_siguiente_j
+ ../Jaime/init_b.asm:486    .text:000002d8 candidatos_actualizar_all
+ ../Jaime/init_b.asm:513    .text:000002f8 fase1_all_bucle_i
+ ../Jaime/init_b.asm:548    .text:00000340 fase1_all_fin
+ ../Jaime/init_b.asm:519    .text:00000304 fase1_all_bucle_j
+ ../Jaime/init_b.asm:544    .text:00000338 fase1_all_fin_j
+ ../Jaime/init_b.asm:540    .text:00000330 fase1_all_siguiente_j
+ ../Jaime/init_b.asm:552    .text:00000344 fase2_all_bucle_i
+ ../Jaime/init_b.asm:697    .text:0000047c fase2_all_fin
+ ../Jaime/init_b.asm:558    .text:00000350 fase2_all_bucle_j
+ ../Jaime/init_b.asm:693    .text:00000474 fase2_all_fin_j
+ ../Jaime/init_b.asm:689    .text:0000046c fase2_all_siguiente_j
+ ../Jaime/init_b.asm:587    .text:00000384 propagar_fila
+ ../Jaime/init_b.asm:604    .text:000003ac fin_propagar_fila
+ ../Jaime/init_b.asm:608    .text:000003b0 propagar_columna
+ ../Jaime/init_b.asm:625    .text:000003d8 fin_propagar_columna
+ ../Jaime/init_b.asm:654    .text:00000420 all_bucle_region_i
+ ../Jaime/init_b.asm:686    .text:0000046c all_fin_region
+ ../Jaime/init_b.asm:663    .text:00000434 all_bucle_region_j
+ ../Jaime/init_b.asm:682    .text:00000464 all_fin_region_j
+                   .debug_aranges:0000000c $d
+
+UNDEFINED SYMBOLS
+candidatos_propagar_c

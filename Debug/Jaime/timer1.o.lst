@@ -1,0 +1,335 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"timer1.c"
+  21              	.Ltext0:
+  22              		.file 1 "../Jaime/timer1.c"
+ 1899              		.align	2
+ 1900              	timer1_contador:
+ 1901 0000 00000000 		.space	4
+ 1902              		.align	2
+ 1903              	led2_encendido:
+ 1904 0004 00000000 		.space	4
+ 1905              		.text
+ 1906              		.align	2
+ 1907              		.global	timer1_ISR
+ 1909              	timer1_ISR:
+ 1910              	.LFB0:
+   1:../Jaime/timer1.c **** /*********************************************************************************************
+   2:../Jaime/timer1.c **** * Fichero:		timer1.c
+   3:../Jaime/timer1.c **** * Autor:
+   4:../Jaime/timer1.c **** * Descrip:		Control del timer1 para latido (heartbeat) con LED
+   5:../Jaime/timer1.c **** * Version:		1.0
+   6:../Jaime/timer1.c **** *********************************************************************************************/
+   7:../Jaime/timer1.c **** 
+   8:../Jaime/timer1.c **** /*--- Ficheros de cabecera ---*/
+   9:../Jaime/timer1.c **** #include "timer1.h"
+  10:../Jaime/timer1.c **** #include "led.h"
+  11:../Jaime/timer1.c **** #include "44b.h"
+  12:../Jaime/timer1.c **** #include "44blib.h"
+  13:../Jaime/timer1.c **** 
+  14:../Jaime/timer1.c **** /*--- Constantes ---*/
+  15:../Jaime/timer1.c **** /* Timer1 debe generar 60 eventos por segundo
+  16:../Jaime/timer1.c ****  * Reloj: 64 MHz
+  17:../Jaime/timer1.c ****  * Prescaler: 255 (divisor: 255+1 = 256)
+  18:../Jaime/timer1.c ****  * Divisor MUX: 1/16
+  19:../Jaime/timer1.c ****  * Frecuencia del timer: 64MHz / 256 / 16 = 15625 Hz
+  20:../Jaime/timer1.c ****  * Para 60 eventos/segundo: 15625 / 60 = 260.4 ≈ 260 ticks
+  21:../Jaime/timer1.c ****  * 
+  22:../Jaime/timer1.c ****  * IMPORTANTE: El enunciado dice "reducir el número de interrupciones a una por evento"
+  23:../Jaime/timer1.c ****  * Por tanto, configuramos el timer para generar exactamente 60 interrupciones/segundo
+  24:../Jaime/timer1.c ****  */
+  25:../Jaime/timer1.c **** #define TIMER1_PRESCALER        255
+  26:../Jaime/timer1.c **** #define TIMER1_MUX_DIV          0x3     // 1/16
+  27:../Jaime/timer1.c **** #define TIMER1_COUNT            260     // Para 60 interrupciones por segundo
+  28:../Jaime/timer1.c **** 
+  29:../Jaime/timer1.c **** /*--- Variables internas ---*/
+  30:../Jaime/timer1.c **** static volatile unsigned int timer1_contador = 0;
+  31:../Jaime/timer1.c **** static volatile unsigned int led2_encendido = 0;  // Estado del LED2
+  32:../Jaime/timer1.c **** 
+  33:../Jaime/timer1.c **** /* Declaración de función que es rutina de servicio de interrupción */
+  34:../Jaime/timer1.c **** void timer1_ISR(void) __attribute__((interrupt("IRQ")));
+  35:../Jaime/timer1.c **** 
+  36:../Jaime/timer1.c **** /*--- Código de las funciones de interrupción ---*/
+  37:../Jaime/timer1.c **** 
+  38:../Jaime/timer1.c **** /**
+  39:../Jaime/timer1.c ****  * Rutina de servicio de interrupción del Timer1.
+  40:../Jaime/timer1.c ****  * Se ejecuta 60 veces por segundo (1 interrupción por evento).
+  41:../Jaime/timer1.c ****  * El LED parpadea a 6 Hz: enciende/apaga 3 veces por segundo.
+  42:../Jaime/timer1.c ****  * 
+  43:../Jaime/timer1.c ****  * Frecuencia de parpadeo: 6 Hz
+  44:../Jaime/timer1.c ****  * Interrupciones por segundo: 60
+  45:../Jaime/timer1.c ****  * Interrupciones por ciclo de parpadeo: 60 / 6 = 10
+  46:../Jaime/timer1.c ****  * Por tanto, alternamos el LED cada 10 interrupciones.
+  47:../Jaime/timer1.c ****  */
+  48:../Jaime/timer1.c **** void timer1_ISR(void)
+  49:../Jaime/timer1.c **** {
+ 1911              		.loc 1 49 0
+ 1912              		.cfi_startproc
+ 1913              		@ Interrupt Service Routine.
+ 1914              		@ args = 0, pretend = 0, frame = 0
+ 1915              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1916 0000 04C02DE5 		str	ip, [sp, #-4]!
+ 1917 0004 0DC0A0E1 		mov	ip, sp
+ 1918              	.LCFI0:
+ 1919              		.cfi_def_cfa_register 12
+ 1920 0008 0FD82DE9 		stmfd	sp!, {r0, r1, r2, r3, fp, ip, lr, pc}
+ 1921 000c 04B04CE2 		sub	fp, ip, #4
+ 1922              		.cfi_offset 14, -8
+ 1923              		.cfi_offset 13, -12
+ 1924              		.cfi_offset 11, -16
+ 1925              		.cfi_offset 3, -20
+ 1926              		.cfi_offset 2, -24
+ 1927              		.cfi_offset 1, -28
+ 1928              		.cfi_offset 0, -32
+ 1929              	.LCFI1:
+ 1930              		.cfi_def_cfa 11, 4
+  50:../Jaime/timer1.c **** 	timer1_contador++;
+ 1931              		.loc 1 50 0
+ 1932 0010 80309FE5 		ldr	r3, .L5
+ 1933 0014 003093E5 		ldr	r3, [r3, #0]
+ 1934 0018 012083E2 		add	r2, r3, #1
+ 1935 001c 74309FE5 		ldr	r3, .L5
+ 1936 0020 002083E5 		str	r2, [r3, #0]
+  51:../Jaime/timer1.c **** 	
+  52:../Jaime/timer1.c **** 	/* Cambiar estado del LED cada 10 interrupciones */
+  53:../Jaime/timer1.c **** 	/* 60 interrupciones/seg ÷ 6 Hz = 10 interrupciones por ciclo completo */
+  54:../Jaime/timer1.c **** 	if (timer1_contador >= 10)
+ 1937              		.loc 1 54 0
+ 1938 0024 6C309FE5 		ldr	r3, .L5
+ 1939 0028 003093E5 		ldr	r3, [r3, #0]
+ 1940 002c 090053E3 		cmp	r3, #9
+ 1941 0030 0F00009A 		bls	.L2
+  55:../Jaime/timer1.c **** 	{
+  56:../Jaime/timer1.c **** 		if (led2_encendido)
+ 1942              		.loc 1 56 0
+ 1943 0034 60309FE5 		ldr	r3, .L5+4
+ 1944 0038 003093E5 		ldr	r3, [r3, #0]
+ 1945 003c 000053E3 		cmp	r3, #0
+ 1946 0040 0400000A 		beq	.L3
+  57:../Jaime/timer1.c **** 		{
+  58:../Jaime/timer1.c **** 			led2_off();  // Apaga el LED de la derecha
+ 1947              		.loc 1 58 0
+ 1948 0044 FEFFFFEB 		bl	led2_off
+  59:../Jaime/timer1.c **** 			led2_encendido = 0;
+ 1949              		.loc 1 59 0
+ 1950 0048 4C309FE5 		ldr	r3, .L5+4
+ 1951 004c 0020A0E3 		mov	r2, #0
+ 1952 0050 002083E5 		str	r2, [r3, #0]
+ 1953 0054 030000EA 		b	.L4
+ 1954              	.L3:
+  60:../Jaime/timer1.c **** 		}
+  61:../Jaime/timer1.c **** 		else
+  62:../Jaime/timer1.c **** 		{
+  63:../Jaime/timer1.c **** 			led2_on();   // Enciende el LED de la derecha
+ 1955              		.loc 1 63 0
+ 1956 0058 FEFFFFEB 		bl	led2_on
+  64:../Jaime/timer1.c **** 			led2_encendido = 1;
+ 1957              		.loc 1 64 0
+ 1958 005c 38309FE5 		ldr	r3, .L5+4
+ 1959 0060 0120A0E3 		mov	r2, #1
+ 1960 0064 002083E5 		str	r2, [r3, #0]
+ 1961              	.L4:
+  65:../Jaime/timer1.c **** 		}
+  66:../Jaime/timer1.c **** 		timer1_contador = 0;
+ 1962              		.loc 1 66 0
+ 1963 0068 28309FE5 		ldr	r3, .L5
+ 1964 006c 0020A0E3 		mov	r2, #0
+ 1965 0070 002083E5 		str	r2, [r3, #0]
+ 1966              	.L2:
+  67:../Jaime/timer1.c **** 	}
+  68:../Jaime/timer1.c **** 	
+  69:../Jaime/timer1.c **** 	/* Borrar bit en I_ISPC para desactivar la solicitud de interrupción */
+  70:../Jaime/timer1.c **** 	rI_ISPC |= BIT_TIMER1;
+ 1967              		.loc 1 70 0
+ 1968 0074 24309FE5 		ldr	r3, .L5+8
+ 1969 0078 20209FE5 		ldr	r2, .L5+8
+ 1970 007c 002092E5 		ldr	r2, [r2, #0]
+ 1971 0080 012A82E3 		orr	r2, r2, #4096
+ 1972 0084 002083E5 		str	r2, [r3, #0]
+  71:../Jaime/timer1.c **** }
+ 1973              		.loc 1 71 0
+ 1974 0088 1CD04BE2 		sub	sp, fp, #28
+ 1975 008c 0F689DE8 		ldmfd	sp, {r0, r1, r2, r3, fp, sp, lr}
+ 1976 0090 04C09DE4 		ldmfd	sp!, {ip}
+ 1977 0094 04F05EE2 		subs	pc, lr, #4
+ 1978              	.L6:
+ 1979              		.align	2
+ 1980              	.L5:
+ 1981 0098 00000000 		.word	timer1_contador
+ 1982 009c 04000000 		.word	led2_encendido
+ 1983 00a0 2400E001 		.word	31457316
+ 1984              		.cfi_endproc
+ 1985              	.LFE0:
+ 1987              		.align	2
+ 1988              		.global	timer1_init
+ 1990              	timer1_init:
+ 1991              	.LFB1:
+  72:../Jaime/timer1.c **** 
+  73:../Jaime/timer1.c **** /*--- Código de las funciones públicas ---*/
+  74:../Jaime/timer1.c **** 
+  75:../Jaime/timer1.c **** /**
+  76:../Jaime/timer1.c ****  * Inicializa el Timer1 para generar 60 eventos por segundo.
+  77:../Jaime/timer1.c ****  * Configuración:
+  78:../Jaime/timer1.c ****  * - Prescaler: 255 (divisor 256)
+  79:../Jaime/timer1.c ****  * - MUX divisor: 1/16
+  80:../Jaime/timer1.c ****  * - Frecuencia resultante: 64MHz / 256 / 16 = 15625 Hz
+  81:../Jaime/timer1.c ****  * - Cuenta: 260 ticks para obtener 60 interrupciones/segundo
+  82:../Jaime/timer1.c ****  * - Resolución: 1/15625 Hz = 64 µs por tick
+  83:../Jaime/timer1.c ****  * - Rango: 260 ticks × 64 µs ≈ 16.64 ms por interrupción
+  84:../Jaime/timer1.c ****  */
+  85:../Jaime/timer1.c **** void timer1_init(void)
+  86:../Jaime/timer1.c **** {
+ 1992              		.loc 1 86 0
+ 1993              		.cfi_startproc
+ 1994              		@ Function supports interworking.
+ 1995              		@ args = 0, pretend = 0, frame = 0
+ 1996              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1997 00a4 0DC0A0E1 		mov	ip, sp
+ 1998              	.LCFI2:
+ 1999              		.cfi_def_cfa_register 12
+ 2000 00a8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2001 00ac 04B04CE2 		sub	fp, ip, #4
+ 2002              		.cfi_offset 14, -8
+ 2003              		.cfi_offset 13, -12
+ 2004              		.cfi_offset 11, -16
+ 2005              	.LCFI3:
+ 2006              		.cfi_def_cfa 11, 4
+  87:../Jaime/timer1.c **** 	/* Configuración del controlador de interrupciones */
+  88:../Jaime/timer1.c **** 	rINTMOD = 0x0;				// Configura las líneas como de tipo IRQ
+ 2007              		.loc 1 88 0
+ 2008 00b0 C8309FE5 		ldr	r3, .L8
+ 2009 00b4 0020A0E3 		mov	r2, #0
+ 2010 00b8 002083E5 		str	r2, [r3, #0]
+  89:../Jaime/timer1.c **** 	rINTCON = 0x1;				// Habilita int. vectorizadas y la línea IRQ
+ 2011              		.loc 1 89 0
+ 2012 00bc 1E36A0E3 		mov	r3, #31457280
+ 2013 00c0 0120A0E3 		mov	r2, #1
+ 2014 00c4 002083E5 		str	r2, [r3, #0]
+  90:../Jaime/timer1.c **** 	rINTMSK &= ~(BIT_TIMER1);	// Habilita interrupción del Timer1
+ 2015              		.loc 1 90 0
+ 2016 00c8 B4309FE5 		ldr	r3, .L8+4
+ 2017 00cc B0209FE5 		ldr	r2, .L8+4
+ 2018 00d0 002092E5 		ldr	r2, [r2, #0]
+ 2019 00d4 012AC2E3 		bic	r2, r2, #4096
+ 2020 00d8 002083E5 		str	r2, [r3, #0]
+  91:../Jaime/timer1.c **** 	
+  92:../Jaime/timer1.c **** 	/* Establece la rutina de servicio para TIMER1 */
+  93:../Jaime/timer1.c **** 	pISR_TIMER1 = (unsigned) timer1_ISR;
+ 2021              		.loc 1 93 0
+ 2022 00dc A4309FE5 		ldr	r3, .L8+8
+ 2023 00e0 A4209FE5 		ldr	r2, .L8+12
+ 2024 00e4 002083E5 		str	r2, [r3, #0]
+  94:../Jaime/timer1.c **** 	
+  95:../Jaime/timer1.c **** 	/* Configura el Timer1 */
+  96:../Jaime/timer1.c **** 	/* TCFG0[7:0] controla el prescaler del timer1 (compartido con timer0) */
+  97:../Jaime/timer1.c **** 	rTCFG0 = (rTCFG0 & ~(0xFF << 0)) | (TIMER1_PRESCALER << 0);
+ 2025              		.loc 1 97 0
+ 2026 00e8 A0309FE5 		ldr	r3, .L8+16
+ 2027 00ec 9C209FE5 		ldr	r2, .L8+16
+ 2028 00f0 002092E5 		ldr	r2, [r2, #0]
+ 2029 00f4 FF2082E3 		orr	r2, r2, #255
+ 2030 00f8 002083E5 		str	r2, [r3, #0]
+  98:../Jaime/timer1.c **** 	
+  99:../Jaime/timer1.c **** 	/* TCFG1[7:4] controla el divisor MUX del timer1 */
+ 100:../Jaime/timer1.c **** 	rTCFG1 = (rTCFG1 & ~(0xF << 4)) | (TIMER1_MUX_DIV << 4);
+ 2031              		.loc 1 100 0
+ 2032 00fc 90309FE5 		ldr	r3, .L8+20
+ 2033 0100 8C209FE5 		ldr	r2, .L8+20
+ 2034 0104 002092E5 		ldr	r2, [r2, #0]
+ 2035 0108 F020C2E3 		bic	r2, r2, #240
+ 2036 010c 302082E3 		orr	r2, r2, #48
+ 2037 0110 002083E5 		str	r2, [r3, #0]
+ 101:../Jaime/timer1.c **** 	
+ 102:../Jaime/timer1.c **** 	/* Configura el valor de cuenta inicial */
+ 103:../Jaime/timer1.c **** 	rTCNTB1 = TIMER1_COUNT;
+ 2038              		.loc 1 103 0
+ 2039 0114 7C309FE5 		ldr	r3, .L8+24
+ 2040 0118 412FA0E3 		mov	r2, #260
+ 2041 011c 002083E5 		str	r2, [r3, #0]
+ 104:../Jaime/timer1.c **** 	
+ 105:../Jaime/timer1.c **** 	/* Valor de comparación (no se usa para generar señal, solo interrupción) */
+ 106:../Jaime/timer1.c **** 	rTCMPB1 = 0;
+ 2042              		.loc 1 106 0
+ 2043 0120 74309FE5 		ldr	r3, .L8+28
+ 2044 0124 0020A0E3 		mov	r2, #0
+ 2045 0128 002083E5 		str	r2, [r3, #0]
+ 107:../Jaime/timer1.c **** 	
+ 108:../Jaime/timer1.c **** 	/* Manual update (bit 9) para cargar TCNTB1 en TCNT1 */
+ 109:../Jaime/timer1.c **** 	rTCON |= (1 << 9);
+ 2046              		.loc 1 109 0
+ 2047 012c 6C309FE5 		ldr	r3, .L8+32
+ 2048 0130 68209FE5 		ldr	r2, .L8+32
+ 2049 0134 002092E5 		ldr	r2, [r2, #0]
+ 2050 0138 022C82E3 		orr	r2, r2, #512
+ 2051 013c 002083E5 		str	r2, [r3, #0]
+ 110:../Jaime/timer1.c **** 	
+ 111:../Jaime/timer1.c **** 	/* Iniciar timer1 (bit 8) con auto-reload (bit 11), quitar manual update (bit 9) */
+ 112:../Jaime/timer1.c **** 	rTCON = (rTCON & ~(0xF << 8)) | (1 << 11) | (1 << 8);
+ 2052              		.loc 1 112 0
+ 2053 0140 58309FE5 		ldr	r3, .L8+32
+ 2054 0144 54209FE5 		ldr	r2, .L8+32
+ 2055 0148 002092E5 		ldr	r2, [r2, #0]
+ 2056 014c 0F2CC2E3 		bic	r2, r2, #3840
+ 2057 0150 092C82E3 		orr	r2, r2, #2304
+ 2058 0154 002083E5 		str	r2, [r3, #0]
+ 113:../Jaime/timer1.c **** 	
+ 114:../Jaime/timer1.c **** 	/* Inicializar contadores y estado del LED */
+ 115:../Jaime/timer1.c **** 	timer1_contador = 0;
+ 2059              		.loc 1 115 0
+ 2060 0158 44309FE5 		ldr	r3, .L8+36
+ 2061 015c 0020A0E3 		mov	r2, #0
+ 2062 0160 002083E5 		str	r2, [r3, #0]
+ 116:../Jaime/timer1.c **** 	led2_encendido = 0;
+ 2063              		.loc 1 116 0
+ 2064 0164 3C309FE5 		ldr	r3, .L8+40
+ 2065 0168 0020A0E3 		mov	r2, #0
+ 2066 016c 002083E5 		str	r2, [r3, #0]
+ 117:../Jaime/timer1.c **** 	led2_off();  // Asegurar que el LED empieza apagado
+ 2067              		.loc 1 117 0
+ 2068 0170 FEFFFFEB 		bl	led2_off
+ 118:../Jaime/timer1.c **** }...
+ 2069              		.loc 1 118 0
+ 2070 0174 0CD04BE2 		sub	sp, fp, #12
+ 2071 0178 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2072 017c 1EFF2FE1 		bx	lr
+ 2073              	.L9:
+ 2074              		.align	2
+ 2075              	.L8:
+ 2076 0180 0800E001 		.word	31457288
+ 2077 0184 0C00E001 		.word	31457292
+ 2078 0188 50FF7F0C 		.word	209715024
+ 2079 018c 00000000 		.word	timer1_ISR
+ 2080 0190 0000D501 		.word	30736384
+ 2081 0194 0400D501 		.word	30736388
+ 2082 0198 1800D501 		.word	30736408
+ 2083 019c 1C00D501 		.word	30736412
+ 2084 01a0 0800D501 		.word	30736392
+ 2085 01a4 00000000 		.word	timer1_contador
+ 2086 01a8 04000000 		.word	led2_encendido
+ 2087              		.cfi_endproc
+ 2088              	.LFE1:
+ 2090              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 timer1.c
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1899   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1900   .bss:00000000 timer1_contador
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1903   .bss:00000004 led2_encendido
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1906   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1909   .text:00000000 timer1_ISR
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1981   .text:00000098 $d
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1987   .text:000000a4 $a
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:1990   .text:000000a4 timer1_init
+C:\Users\jaime\AppData\Local\Temp\ccoho2Gp.s:2076   .text:00000180 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+led2_off
+led2_on

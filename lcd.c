@@ -14,6 +14,7 @@
 #include "Bmp.h"
 #include "celda.h"
 #include "sudoku_2025.h"
+#include "button.h"  /* Para integración con máquina de estados */
 
 /*--- definici�n de macros ---*/
 #define DMA_Byte  (0)
@@ -1133,6 +1134,13 @@ void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col)
 	g_celda_seleccionada_i = -1;
 	g_celda_seleccionada_j = -1;
 	
+	/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
+	/* Al hacer zoom en una región, cambiar al estado INTRODUCIR_VALOR */
+	if (Sudoku_Juego_En_Progreso())
+	{
+		Sudoku_Cambiar_Estado(4);  /* 4 = INTRODUCIR_VALOR (ver eventos.h) */
+	}
+	
 	/* Dibujar interfaz */
 	Sudoku_Redibujar_Region_Expandida();
 	
@@ -1161,6 +1169,13 @@ void Sudoku_Cerrar_Region_Expandida(void)
 	g_region_expandida_activa = 0;
 	g_celda_seleccionada_i = -1;
 	g_celda_seleccionada_j = -1;
+	
+	/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
+	/* Al volver del zoom, regresar al estado INTRODUCIR_FILA */
+	if (Sudoku_Juego_En_Progreso())
+	{
+		Sudoku_Cambiar_Estado(1);  /* 1 = INTRODUCIR_FILA (ver eventos.h) */
+	}
 	
 	/* Redibujar tablero completo */
 	Sudoku_Dibujar_Tablero();
@@ -1229,115 +1244,12 @@ int Sudoku_Procesar_Touch_Region_Expandida(int x, int y)
 			/* Verificar que no sea una pista */
 			if (!celda_es_pista(cuadricula[fila][col]))
 			{
-				/* Guardar valor previo de la celda */
-				INT8U valor_previo = celda_leer_valor(cuadricula[fila][col]);
+				/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
+				/* Usar la función de button.c que maneja estados */
+				Sudoku_Insertar_Valor_Touch(fila, col, numero);
 				
-				/* Verificar si el valor es candidato */
-				if (celda_es_candidato(cuadricula[fila][col], numero))
-				{
-					INT8U f, c;
-					extern int celdas_vacias;
-					
-					/* Es candidato: escribir el valor en la celda */
-					/* Primero limpiar todos los errores previos */
-					for (f = 0; f < NUM_FILAS; f++)
-					{
-						for (c = 0; c < NUM_COLUMNAS; c++)
-						{
-							celda_limpiar_error(&cuadricula[f][c]);
-						}
-					}
-					
-					celda_poner_valor(&cuadricula[fila][col], numero);
-					
-					/* Decidir si propagar o actualizar según el caso */
-					if (valor_previo != 0)
-					{
-						/* Se modificó un valor previo -> recalcular todo */
-						celdas_vacias = candidatos_actualizar_all(cuadricula);
-					}
-					else
-					{
-						/* Celda vacía -> solo propagar el nuevo valor */
-						candidatos_propagar_arm(cuadricula, fila, col);
-					}
-					
-					/* Redibujar */
-					Sudoku_Redibujar_Region_Expandida();
-				}
-				else
-				{
-					/* No es candidato: es un error */
-					INT8U f, c;
-					extern int celdas_vacias;
-					
-					/* Marcar la celda con error */
-					celda_marcar_error(&cuadricula[fila][col]);
-					
-					/* Poner el valor incorrecto en la celda para visualizarlo */
-					celda_poner_valor(&cuadricula[fila][col], numero);
-					
-					/* Actualizar candidatos para reflejar el cambio */
-					if (valor_previo != 0)
-					{
-						/* Se modificó un valor previo -> recalcular todo */
-						celdas_vacias = candidatos_actualizar_all(cuadricula);
-					}
-					else
-					{
-						/* Celda vacía -> propagar el nuevo valor */
-						candidatos_propagar_arm(cuadricula, fila, col);
-					}
-					
-					/* Limpiar todos los errores previos primero */
-					for (f = 0; f < NUM_FILAS; f++)
-					{
-						for (c = 0; c < NUM_COLUMNAS; c++)
-						{
-							celda_limpiar_error(&cuadricula[f][c]);
-						}
-					}
-					
-					/* Marcar la celda donde intentamos poner el valor */
-					celda_marcar_error(&cuadricula[fila][col]);
-					
-					/* Marcar TODAS las celdas involucradas en el conflicto */
-					/* Buscar en la misma fila */
-					for (c = 0; c < NUM_COLUMNAS; c++)
-					{
-						if (c != col && celda_leer_valor(cuadricula[fila][c]) == numero)
-						{
-							celda_marcar_error(&cuadricula[fila][c]);
-						}
-					}
-					
-					/* Buscar en la misma columna */
-					for (f = 0; f < NUM_FILAS; f++)
-					{
-						if (f != fila && celda_leer_valor(cuadricula[f][col]) == numero)
-						{
-							celda_marcar_error(&cuadricula[f][col]);
-						}
-					}
-					
-					/* Buscar en la misma región 3x3 */
-					INT8U region_fila_inicio = (fila / 3) * 3;
-					INT8U region_col_inicio = (col / 3) * 3;
-					
-					for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
-					{
-						for (c = region_col_inicio; c < region_col_inicio + 3; c++)
-						{
-							if ((f != fila || c != col) && celda_leer_valor(cuadricula[f][c]) == numero)
-							{
-								celda_marcar_error(&cuadricula[f][c]);
-							}
-						}
-					}
-					
-					/* Redibujar */
-					Sudoku_Redibujar_Region_Expandida();
-				}
+				/* Redibujar */
+				Sudoku_Redibujar_Region_Expandida();
 			}
 		}
 		
@@ -1358,24 +1270,9 @@ int Sudoku_Procesar_Touch_Region_Expandida(int x, int y)
 			/* Verificar que no sea una pista antes de borrar */
 			if (!celda_es_pista(cuadricula[fila][col]))
 			{
-				INT8U f, c;
-				extern int celdas_vacias;
-				
-				/* Valor 0 = borrar */
-				/* Limpiar todos los errores previos */
-				for (f = 0; f < NUM_FILAS; f++)
-				{
-					for (c = 0; c < NUM_COLUMNAS; c++)
-					{
-						celda_limpiar_error(&cuadricula[f][c]);
-					}
-				}
-				
-				/* Borrar el valor de la celda */
-				celda_poner_valor(&cuadricula[fila][col], 0);
-				
-				/* Al borrar un valor, hay que recalcular todos los candidatos */
-				celdas_vacias = candidatos_actualizar_all(cuadricula);
+				/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
+				/* Usar la función de button.c que maneja estados */
+				Sudoku_Borrar_Valor_Touch(fila, col);
 				
 				/* Redibujar */
 				Sudoku_Redibujar_Region_Expandida();

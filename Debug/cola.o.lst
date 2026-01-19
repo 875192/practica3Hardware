@@ -376,20 +376,20 @@
  1518              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 cola.c
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1243   .data:00000000 cola_global
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1240   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1246   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1249   .text:00000000 cola_init
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1337   .text:000000f0 $d
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1341   .text:000000f4 $a
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1344   .text:000000f4 cola_depuracion
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1442   .text:00000214 $d
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1446   .text:00000218 $a
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1449   .text:00000218 cola_get_num_eventos
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1478   .text:00000240 $d
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1482   .text:00000244 $a
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1485   .text:00000244 cola_get_indice
-C:\Users\jaime\AppData\Local\Temp\ccOf2pbP.s:1514   .text:0000026c $d
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1243   .data:00000000 cola_global
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1240   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1246   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1249   .text:00000000 cola_init
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1337   .text:000000f0 $d
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1341   .text:000000f4 $a
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1344   .text:000000f4 cola_depuracion
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1442   .text:00000214 $d
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1446   .text:00000218 $a
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1449   .text:00000218 cola_get_num_eventos
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1478   .text:00000240 $d
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1482   .text:00000244 $a
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1485   .text:00000244 cola_get_indice
+C:\Users\jaime\AppData\Local\Temp\ccqBBdUz.s:1514   .text:0000026c $d
                      .debug_frame:00000010 $d
 
 NO UNDEFINED SYMBOLS

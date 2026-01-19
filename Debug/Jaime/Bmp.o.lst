@@ -1,0 +1,1236 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"Bmp.c"
+  21              	.Ltext0:
+  22              		.file 1 "../Jaime/Bmp.c"
+ 1209              		.align	2
+ 1212              	ucMouseMap:
+ 1213 0000 0F       		.byte	15
+ 1214 0001 FF       		.byte	-1
+ 1215 0002 FF       		.byte	-1
+ 1216 0003 FF       		.byte	-1
+ 1217 0004 FF       		.byte	-1
+ 1218 0005 FF       		.byte	-1
+ 1219 0006 FF       		.byte	-1
+ 1220 0007 FF       		.byte	-1
+ 1221 0008 FF       		.byte	-1
+ 1222 0009 FF       		.byte	-1
+ 1223 000a FF       		.byte	-1
+ 1224 000b FF       		.byte	-1
+ 1225 000c 0F       		.byte	15
+ 1226 000d 0F       		.byte	15
+ 1227 000e FF       		.byte	-1
+ 1228 000f FF       		.byte	-1
+ 1229 0010 FF       		.byte	-1
+ 1230 0011 FF       		.byte	-1
+ 1231 0012 FF       		.byte	-1
+ 1232 0013 FF       		.byte	-1
+ 1233 0014 FF       		.byte	-1
+ 1234 0015 FF       		.byte	-1
+ 1235 0016 FF       		.byte	-1
+ 1236 0017 FF       		.byte	-1
+ 1237 0018 0F       		.byte	15
+ 1238 0019 00       		.byte	0
+ 1239 001a 0F       		.byte	15
+ 1240 001b FF       		.byte	-1
+ 1241 001c FF       		.byte	-1
+ 1242 001d FF       		.byte	-1
+ 1243 001e FF       		.byte	-1
+ 1244 001f FF       		.byte	-1
+ 1245 0020 FF       		.byte	-1
+ 1246 0021 FF       		.byte	-1
+ 1247 0022 FF       		.byte	-1
+ 1248 0023 FF       		.byte	-1
+ 1249 0024 0F       		.byte	15
+ 1250 0025 00       		.byte	0
+ 1251 0026 00       		.byte	0
+ 1252 0027 0F       		.byte	15
+ 1253 0028 FF       		.byte	-1
+ 1254 0029 FF       		.byte	-1
+ 1255 002a FF       		.byte	-1
+ 1256 002b FF       		.byte	-1
+ 1257 002c FF       		.byte	-1
+ 1258 002d FF       		.byte	-1
+ 1259 002e FF       		.byte	-1
+ 1260 002f FF       		.byte	-1
+ 1261 0030 0F       		.byte	15
+ 1262 0031 00       		.byte	0
+ 1263 0032 00       		.byte	0
+ 1264 0033 00       		.byte	0
+ 1265 0034 0F       		.byte	15
+ 1266 0035 FF       		.byte	-1
+ 1267 0036 FF       		.byte	-1
+ 1268 0037 FF       		.byte	-1
+ 1269 0038 FF       		.byte	-1
+ 1270 0039 FF       		.byte	-1
+ 1271 003a FF       		.byte	-1
+ 1272 003b FF       		.byte	-1
+ 1273 003c 0F       		.byte	15
+ 1274 003d 00       		.byte	0
+ 1275 003e 00       		.byte	0
+ 1276 003f 00       		.byte	0
+ 1277 0040 00       		.byte	0
+ 1278 0041 0F       		.byte	15
+ 1279 0042 FF       		.byte	-1
+ 1280 0043 FF       		.byte	-1
+ 1281 0044 FF       		.byte	-1
+ 1282 0045 FF       		.byte	-1
+ 1283 0046 FF       		.byte	-1
+ 1284 0047 FF       		.byte	-1
+ 1285 0048 0F       		.byte	15
+ 1286 0049 00       		.byte	0
+ 1287 004a 00       		.byte	0
+ 1288 004b 00       		.byte	0
+ 1289 004c 00       		.byte	0
+ 1290 004d 00       		.byte	0
+ 1291 004e 0F       		.byte	15
+ 1292 004f FF       		.byte	-1
+ 1293 0050 FF       		.byte	-1
+ 1294 0051 FF       		.byte	-1
+ 1295 0052 FF       		.byte	-1
+ 1296 0053 FF       		.byte	-1
+ 1297 0054 0F       		.byte	15
+ 1298 0055 00       		.byte	0
+ 1299 0056 00       		.byte	0
+ 1300 0057 00       		.byte	0
+ 1301 0058 00       		.byte	0
+ 1302 0059 00       		.byte	0
+ 1303 005a 00       		.byte	0
+ 1304 005b 0F       		.byte	15
+ 1305 005c FF       		.byte	-1
+ 1306 005d FF       		.byte	-1
+ 1307 005e FF       		.byte	-1
+ 1308 005f FF       		.byte	-1
+ 1309 0060 0F       		.byte	15
+ 1310 0061 00       		.byte	0
+ 1311 0062 00       		.byte	0
+ 1312 0063 00       		.byte	0
+ 1313 0064 00       		.byte	0
+ 1314 0065 00       		.byte	0
+ 1315 0066 00       		.byte	0
+ 1316 0067 00       		.byte	0
+ 1317 0068 0F       		.byte	15
+ 1318 0069 FF       		.byte	-1
+ 1319 006a FF       		.byte	-1
+ 1320 006b FF       		.byte	-1
+ 1321 006c 0F       		.byte	15
+ 1322 006d 00       		.byte	0
+ 1323 006e 00       		.byte	0
+ 1324 006f 00       		.byte	0
+ 1325 0070 00       		.byte	0
+ 1326 0071 00       		.byte	0
+ 1327 0072 00       		.byte	0
+ 1328 0073 00       		.byte	0
+ 1329 0074 00       		.byte	0
+ 1330 0075 0F       		.byte	15
+ 1331 0076 FF       		.byte	-1
+ 1332 0077 FF       		.byte	-1
+ 1333 0078 0F       		.byte	15
+ 1334 0079 00       		.byte	0
+ 1335 007a 00       		.byte	0
+ 1336 007b 00       		.byte	0
+ 1337 007c 00       		.byte	0
+ 1338 007d 00       		.byte	0
+ 1339 007e 00       		.byte	0
+ 1340 007f 00       		.byte	0
+ 1341 0080 00       		.byte	0
+ 1342 0081 00       		.byte	0
+ 1343 0082 0F       		.byte	15
+ 1344 0083 FF       		.byte	-1
+ 1345 0084 0F       		.byte	15
+ 1346 0085 00       		.byte	0
+ 1347 0086 00       		.byte	0
+ 1348 0087 00       		.byte	0
+ 1349 0088 00       		.byte	0
+ 1350 0089 00       		.byte	0
+ 1351 008a 00       		.byte	0
+ 1352 008b 0F       		.byte	15
+ 1353 008c 0F       		.byte	15
+ 1354 008d 0F       		.byte	15
+ 1355 008e 0F       		.byte	15
+ 1356 008f 0F       		.byte	15
+ 1357 0090 0F       		.byte	15
+ 1358 0091 00       		.byte	0
+ 1359 0092 00       		.byte	0
+ 1360 0093 0F       		.byte	15
+ 1361 0094 00       		.byte	0
+ 1362 0095 00       		.byte	0
+ 1363 0096 00       		.byte	0
+ 1364 0097 0F       		.byte	15
+ 1365 0098 FF       		.byte	-1
+ 1366 0099 FF       		.byte	-1
+ 1367 009a FF       		.byte	-1
+ 1368 009b FF       		.byte	-1
+ 1369 009c 0F       		.byte	15
+ 1370 009d 00       		.byte	0
+ 1371 009e 0F       		.byte	15
+ 1372 009f FF       		.byte	-1
+ 1373 00a0 0F       		.byte	15
+ 1374 00a1 00       		.byte	0
+ 1375 00a2 00       		.byte	0
+ 1376 00a3 00       		.byte	0
+ 1377 00a4 0F       		.byte	15
+ 1378 00a5 FF       		.byte	-1
+ 1379 00a6 FF       		.byte	-1
+ 1380 00a7 FF       		.byte	-1
+ 1381 00a8 0F       		.byte	15
+ 1382 00a9 0F       		.byte	15
+ 1383 00aa FF       		.byte	-1
+ 1384 00ab FF       		.byte	-1
+ 1385 00ac 0F       		.byte	15
+ 1386 00ad 00       		.byte	0
+ 1387 00ae 00       		.byte	0
+ 1388 00af 00       		.byte	0
+ 1389 00b0 0F       		.byte	15
+ 1390 00b1 FF       		.byte	-1
+ 1391 00b2 FF       		.byte	-1
+ 1392 00b3 FF       		.byte	-1
+ 1393 00b4 0F       		.byte	15
+ 1394 00b5 FF       		.byte	-1
+ 1395 00b6 FF       		.byte	-1
+ 1396 00b7 FF       		.byte	-1
+ 1397 00b8 FF       		.byte	-1
+ 1398 00b9 0F       		.byte	15
+ 1399 00ba 00       		.byte	0
+ 1400 00bb 00       		.byte	0
+ 1401 00bc 00       		.byte	0
+ 1402 00bd 0F       		.byte	15
+ 1403 00be FF       		.byte	-1
+ 1404 00bf FF       		.byte	-1
+ 1405 00c0 FF       		.byte	-1
+ 1406 00c1 FF       		.byte	-1
+ 1407 00c2 FF       		.byte	-1
+ 1408 00c3 FF       		.byte	-1
+ 1409 00c4 FF       		.byte	-1
+ 1410 00c5 0F       		.byte	15
+ 1411 00c6 00       		.byte	0
+ 1412 00c7 00       		.byte	0
+ 1413 00c8 00       		.byte	0
+ 1414 00c9 0F       		.byte	15
+ 1415 00ca FF       		.byte	-1
+ 1416 00cb FF       		.byte	-1
+ 1417 00cc FF       		.byte	-1
+ 1418 00cd FF       		.byte	-1
+ 1419 00ce FF       		.byte	-1
+ 1420 00cf FF       		.byte	-1
+ 1421 00d0 FF       		.byte	-1
+ 1422 00d1 FF       		.byte	-1
+ 1423 00d2 0F       		.byte	15
+ 1424 00d3 00       		.byte	0
+ 1425 00d4 00       		.byte	0
+ 1426 00d5 00       		.byte	0
+ 1427 00d6 0F       		.byte	15
+ 1428 00d7 FF       		.byte	-1
+ 1429 00d8 FF       		.byte	-1
+ 1430 00d9 FF       		.byte	-1
+ 1431 00da FF       		.byte	-1
+ 1432 00db FF       		.byte	-1
+ 1433 00dc FF       		.byte	-1
+ 1434 00dd FF       		.byte	-1
+ 1435 00de 0F       		.byte	15
+ 1436 00df 00       		.byte	0
+ 1437 00e0 00       		.byte	0
+ 1438 00e1 00       		.byte	0
+ 1439 00e2 0F       		.byte	15
+ 1440 00e3 FF       		.byte	-1
+ 1441 00e4 FF       		.byte	-1
+ 1442 00e5 FF       		.byte	-1
+ 1443 00e6 FF       		.byte	-1
+ 1444 00e7 FF       		.byte	-1
+ 1445 00e8 FF       		.byte	-1
+ 1446 00e9 FF       		.byte	-1
+ 1447 00ea FF       		.byte	-1
+ 1448 00eb 0F       		.byte	15
+ 1449 00ec 0F       		.byte	15
+ 1450 00ed 0F       		.byte	15
+ 1451 00ee FF       		.byte	-1
+ 1452 00ef FF       		.byte	-1
+ 1453              		.global	Stru_Bitmap_gbMouse
+ 1454              		.data
+ 1455              		.align	2
+ 1458              	Stru_Bitmap_gbMouse:
+ 1459 0000 10       		.byte	16
+ 1460 0001 04       		.byte	4
+ 1461 0002 0C00     		.short	12
+ 1462 0004 1400     		.short	20
+ 1463 0006 0000     		.space	2
+ 1464 0008 FF000000 		.word	255
+ 1465 000c 00000000 		.word	ucMouseMap
+ 1466              		.comm	ulMouseX,2,2
+ 1467              		.comm	ulMouseY,2,2
+ 1468              		.comm	ucCursorBackUp,120,4
+ 1469              		.text
+ 1470              		.align	2
+ 1471              		.global	BitmapView
+ 1473              	BitmapView:
+ 1474              	.LFB0:
+   1:../Jaime/Bmp.c **** /*********************************************************************************************
+   2:../Jaime/Bmp.c **** * Fichero:	Bmp.c
+   3:../Jaime/Bmp.c **** * Autor:	
+   4:../Jaime/Bmp.c **** * Descrip:	Funciones de control y visualización del LCD
+   5:../Jaime/Bmp.c **** * Version:	
+   6:../Jaime/Bmp.c **** *********************************************************************************************/
+   7:../Jaime/Bmp.c **** 
+   8:../Jaime/Bmp.c **** /*--- Archivos cabecera ---*/
+   9:../Jaime/Bmp.c **** #include "bmp.h"
+  10:../Jaime/Bmp.c **** #include "def.h"
+  11:../Jaime/Bmp.c **** #include "lcd.h"
+  12:../Jaime/Bmp.c **** 
+  13:../Jaime/Bmp.c **** /*--- variables globales ---*/
+  14:../Jaime/Bmp.c **** /* mapa de bits del cursor del ratón */
+  15:../Jaime/Bmp.c **** 
+  16:../Jaime/Bmp.c **** const INT8U ucMouseMap[] = {
+  17:../Jaime/Bmp.c **** BLACK,        TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, T
+  18:../Jaime/Bmp.c **** BLACK,        BLACK,        TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, T
+  19:../Jaime/Bmp.c **** BLACK,        WHITE,        BLACK,        TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, T
+  20:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        BLACK,        TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, T
+  21:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        BLACK,        TRANSPARENCY, TRANSPARENCY, T
+  22:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        BLACK,        TRANSPARENCY, T
+  23:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        BLACK,        T
+  24:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        B
+  25:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        W
+  26:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        W
+  27:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        W
+  28:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        WHITE,        B
+  29:../Jaime/Bmp.c **** BLACK,        WHITE,        WHITE,        BLACK,        WHITE,        WHITE,        WHITE,        B
+  30:../Jaime/Bmp.c **** BLACK,        WHITE,        BLACK,        TRANSPARENCY, BLACK,        WHITE,        WHITE,        W
+  31:../Jaime/Bmp.c **** BLACK,        BLACK,        TRANSPARENCY, TRANSPARENCY, BLACK,        WHITE,        WHITE,        W
+  32:../Jaime/Bmp.c **** BLACK,        TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, BLACK,        WHITE,        W
+  33:../Jaime/Bmp.c **** TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, BLACK,        WHITE,        W
+  34:../Jaime/Bmp.c **** TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, BLACK,        W
+  35:../Jaime/Bmp.c **** TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, BLACK,        W
+  36:../Jaime/Bmp.c **** TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, TRANSPARENCY, B
+  37:../Jaime/Bmp.c **** };
+  38:../Jaime/Bmp.c **** 
+  39:../Jaime/Bmp.c **** STRU_BITMAP Stru_Bitmap_gbMouse = {0x10, 4, 12, 20, TRANSPARENCY, (INT8U *)ucMouseMap};
+  40:../Jaime/Bmp.c **** 
+  41:../Jaime/Bmp.c **** INT16U ulMouseX;
+  42:../Jaime/Bmp.c **** INT16U ulMouseY;
+  43:../Jaime/Bmp.c **** INT8U ucCursorBackUp[20][12/2];
+  44:../Jaime/Bmp.c **** 
+  45:../Jaime/Bmp.c **** /*--- codigo de funcion ---*/
+  46:../Jaime/Bmp.c **** /*********************************************************************************************
+  47:../Jaime/Bmp.c **** * name:		BitmapView()
+  48:../Jaime/Bmp.c **** * func:		display bitmap
+  49:../Jaime/Bmp.c **** * para:		x,y -- pot's X-Y coordinate 
+  50:../Jaime/Bmp.c **** *			Stru_Bitmap -- bitmap struct
+  51:../Jaime/Bmp.c **** * ret:		none
+  52:../Jaime/Bmp.c **** * modify:
+  53:../Jaime/Bmp.c **** * comment:		
+  54:../Jaime/Bmp.c **** *********************************************************************************************/
+  55:../Jaime/Bmp.c **** void BitmapView (INT16U x, INT16U y, STRU_BITMAP Stru_Bitmap)
+  56:../Jaime/Bmp.c **** {
+ 1475              		.loc 1 56 0
+ 1476              		.cfi_startproc
+ 1477              		@ Function supports interworking.
+ 1478              		@ args = 16, pretend = 8, frame = 24
+ 1479              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1480 0000 0DC0A0E1 		mov	ip, sp
+ 1481              	.LCFI0:
+ 1482              		.cfi_def_cfa_register 12
+ 1483 0004 08D04DE2 		sub	sp, sp, #8
+ 1484 0008 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1485 000c 0CB04CE2 		sub	fp, ip, #12
+ 1486              		.cfi_offset 14, -16
+ 1487              		.cfi_offset 13, -20
+ 1488              		.cfi_offset 11, -24
+ 1489              	.LCFI1:
+ 1490              		.cfi_def_cfa 11, 12
+ 1491 0010 18D04DE2 		sub	sp, sp, #24
+ 1492 0014 04C08BE2 		add	ip, fp, #4
+ 1493 0018 0C008CE8 		stmia	ip, {r2, r3}
+ 1494 001c BE014BE1 		strh	r0, [fp, #-30]	@ movhi
+ 1495 0020 B0124BE1 		strh	r1, [fp, #-32]	@ movhi
+  57:../Jaime/Bmp.c **** 	INT32U i, j;
+  58:../Jaime/Bmp.c **** 	INT8U ucColor;
+  59:../Jaime/Bmp.c **** 	
+  60:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1496              		.loc 1 60 0
+ 1497 0024 0030A0E3 		mov	r3, #0
+ 1498 0028 10300BE5 		str	r3, [fp, #-16]
+ 1499 002c 4E0000EA 		b	.L2
+ 1500              	.L6:
+  61:../Jaime/Bmp.c **** 	{
+  62:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j++)
+ 1501              		.loc 1 62 0
+ 1502 0030 0030A0E3 		mov	r3, #0
+ 1503 0034 14300BE5 		str	r3, [fp, #-20]
+ 1504 0038 430000EA 		b	.L3
+ 1505              	.L5:
+  63:../Jaime/Bmp.c **** 		{
+  64:../Jaime/Bmp.c **** 			if ((ucColor = *(INT8U*)(Stru_Bitmap.pucStart + i * Stru_Bitmap.usWidth + j)) != TRANSPARENCY)
+ 1506              		.loc 1 64 0
+ 1507 003c 10209BE5 		ldr	r2, [fp, #16]
+ 1508 0040 B630DBE1 		ldrh	r3, [fp, #6]
+ 1509 0044 10101BE5 		ldr	r1, [fp, #-16]
+ 1510 0048 930101E0 		mul	r1, r3, r1
+ 1511 004c 14301BE5 		ldr	r3, [fp, #-20]
+ 1512 0050 033081E0 		add	r3, r1, r3
+ 1513 0054 033082E0 		add	r3, r2, r3
+ 1514 0058 0030D3E5 		ldrb	r3, [r3, #0]
+ 1515 005c 15304BE5 		strb	r3, [fp, #-21]
+ 1516 0060 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 1517 0064 FF0053E3 		cmp	r3, #255
+ 1518 0068 3400000A 		beq	.L4
+  65:../Jaime/Bmp.c **** 			{
+  66:../Jaime/Bmp.c **** 				LCD_PutPixel(x + j, y + i, ucColor); 
+ 1519              		.loc 1 66 0
+ 1520 006c B0225BE1 		ldrh	r2, [fp, #-32]
+ 1521 0070 10301BE5 		ldr	r3, [fp, #-16]
+ 1522 0074 032082E0 		add	r2, r2, r3
+ 1523 0078 0230A0E1 		mov	r3, r2
+ 1524 007c 0331A0E1 		mov	r3, r3, asl #2
+ 1525 0080 023083E0 		add	r3, r3, r2
+ 1526 0084 0333A0E1 		mov	r3, r3, asl #6
+ 1527 0088 A320A0E1 		mov	r2, r3, lsr #1
+ 1528 008c BE115BE1 		ldrh	r1, [fp, #-30]
+ 1529 0090 14301BE5 		ldr	r3, [fp, #-20]
+ 1530 0094 033081E0 		add	r3, r1, r3
+ 1531 0098 A331A0E1 		mov	r3, r3, lsr #3
+ 1532 009c 0331A0E1 		mov	r3, r3, asl #2
+ 1533 00a0 033082E0 		add	r3, r2, r3
+ 1534 00a4 C33683E2 		add	r3, r3, #204472320
+ 1535 00a8 963C83E2 		add	r3, r3, #38400
+ 1536 00ac 0310A0E1 		mov	r1, r3
+ 1537 00b0 B0225BE1 		ldrh	r2, [fp, #-32]
+ 1538 00b4 10301BE5 		ldr	r3, [fp, #-16]
+ 1539 00b8 032082E0 		add	r2, r2, r3
+ 1540 00bc 0230A0E1 		mov	r3, r2
+ 1541 00c0 0331A0E1 		mov	r3, r3, asl #2
+ 1542 00c4 023083E0 		add	r3, r3, r2
+ 1543 00c8 0333A0E1 		mov	r3, r3, asl #6
+ 1544 00cc A320A0E1 		mov	r2, r3, lsr #1
+ 1545 00d0 BE015BE1 		ldrh	r0, [fp, #-30]
+ 1546 00d4 14301BE5 		ldr	r3, [fp, #-20]
+ 1547 00d8 033080E0 		add	r3, r0, r3
+ 1548 00dc A331A0E1 		mov	r3, r3, lsr #3
+ 1549 00e0 0331A0E1 		mov	r3, r3, asl #2
+ 1550 00e4 033082E0 		add	r3, r2, r3
+ 1551 00e8 C33683E2 		add	r3, r3, #204472320
+ 1552 00ec 963C83E2 		add	r3, r3, #38400
+ 1553 00f0 002093E5 		ldr	r2, [r3, #0]
+ 1554 00f4 BE015BE1 		ldrh	r0, [fp, #-30]
+ 1555 00f8 14301BE5 		ldr	r3, [fp, #-20]
+ 1556 00fc 033080E0 		add	r3, r0, r3
+ 1557 0100 073003E2 		and	r3, r3, #7
+ 1558 0104 0331A0E1 		mov	r3, r3, asl #2
+ 1559 0108 0F02A0E3 		mov	r0, #-268435456
+ 1560 010c 3033A0E1 		mov	r3, r0, lsr r3
+ 1561 0110 0330E0E1 		mvn	r3, r3
+ 1562 0114 032002E0 		and	r2, r2, r3
+ 1563 0118 15005BE5 		ldrb	r0, [fp, #-21]	@ zero_extendqisi2
+ 1564 011c BEC15BE1 		ldrh	ip, [fp, #-30]
+ 1565 0120 14301BE5 		ldr	r3, [fp, #-20]
+ 1566 0124 03308CE0 		add	r3, ip, r3
+ 1567 0128 0330E0E1 		mvn	r3, r3
+ 1568 012c 073003E2 		and	r3, r3, #7
+ 1569 0130 0331A0E1 		mov	r3, r3, asl #2
+ 1570 0134 1033A0E1 		mov	r3, r0, asl r3
+ 1571 0138 033082E1 		orr	r3, r2, r3
+ 1572 013c 003081E5 		str	r3, [r1, #0]
+ 1573              	.L4:
+  62:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j++)
+ 1574              		.loc 1 62 0
+ 1575 0140 14301BE5 		ldr	r3, [fp, #-20]
+ 1576 0144 013083E2 		add	r3, r3, #1
+ 1577 0148 14300BE5 		str	r3, [fp, #-20]
+ 1578              	.L3:
+  62:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j++)
+ 1579              		.loc 1 62 0 is_stmt 0 discriminator 1
+ 1580 014c B630DBE1 		ldrh	r3, [fp, #6]
+ 1581 0150 0320A0E1 		mov	r2, r3
+ 1582 0154 14301BE5 		ldr	r3, [fp, #-20]
+ 1583 0158 030052E1 		cmp	r2, r3
+ 1584 015c B6FFFF8A 		bhi	.L5
+  60:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1585              		.loc 1 60 0 is_stmt 1
+ 1586 0160 10301BE5 		ldr	r3, [fp, #-16]
+ 1587 0164 013083E2 		add	r3, r3, #1
+ 1588 0168 10300BE5 		str	r3, [fp, #-16]
+ 1589              	.L2:
+  60:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1590              		.loc 1 60 0 is_stmt 0 discriminator 1
+ 1591 016c B830DBE1 		ldrh	r3, [fp, #8]
+ 1592 0170 0320A0E1 		mov	r2, r3
+ 1593 0174 10301BE5 		ldr	r3, [fp, #-16]
+ 1594 0178 030052E1 		cmp	r2, r3
+ 1595 017c ABFFFF8A 		bhi	.L6
+  67:../Jaime/Bmp.c **** 			}
+  68:../Jaime/Bmp.c **** 		}
+  69:../Jaime/Bmp.c **** 	}
+  70:../Jaime/Bmp.c **** }
+ 1596              		.loc 1 70 0 is_stmt 1
+ 1597 0180 0CD04BE2 		sub	sp, fp, #12
+ 1598 0184 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1599 0188 1EFF2FE1 		bx	lr
+ 1600              		.cfi_endproc
+ 1601              	.LFE0:
+ 1603              		.align	2
+ 1604              		.global	BitmapPush
+ 1606              	BitmapPush:
+ 1607              	.LFB1:
+  71:../Jaime/Bmp.c **** 
+  72:../Jaime/Bmp.c **** /*********************************************************************************************
+  73:../Jaime/Bmp.c **** * name:		BitmapPush()
+  74:../Jaime/Bmp.c **** * func:		push bitmap data into LCD active buffer
+  75:../Jaime/Bmp.c **** * para:		x,y -- pot's X-Y coordinate 
+  76:../Jaime/Bmp.c **** *			Stru_Bitmap -- bitmap struct
+  77:../Jaime/Bmp.c **** * ret:		none
+  78:../Jaime/Bmp.c **** * modify:
+  79:../Jaime/Bmp.c **** * comment:		
+  80:../Jaime/Bmp.c **** *********************************************************************************************/
+  81:../Jaime/Bmp.c **** void BitmapPush (INT16U x, INT16U y, STRU_BITMAP Stru_Bitmap)
+  82:../Jaime/Bmp.c **** {
+ 1608              		.loc 1 82 0
+ 1609              		.cfi_startproc
+ 1610              		@ Function supports interworking.
+ 1611              		@ args = 16, pretend = 8, frame = 16
+ 1612              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1613 018c 0DC0A0E1 		mov	ip, sp
+ 1614              	.LCFI2:
+ 1615              		.cfi_def_cfa_register 12
+ 1616 0190 08D04DE2 		sub	sp, sp, #8
+ 1617 0194 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1618 0198 0CB04CE2 		sub	fp, ip, #12
+ 1619              		.cfi_offset 14, -16
+ 1620              		.cfi_offset 13, -20
+ 1621              		.cfi_offset 11, -24
+ 1622              	.LCFI3:
+ 1623              		.cfi_def_cfa 11, 12
+ 1624 019c 10D04DE2 		sub	sp, sp, #16
+ 1625 01a0 04C08BE2 		add	ip, fp, #4
+ 1626 01a4 0C008CE8 		stmia	ip, {r2, r3}
+ 1627 01a8 B6014BE1 		strh	r0, [fp, #-22]	@ movhi
+ 1628 01ac B8114BE1 		strh	r1, [fp, #-24]	@ movhi
+  83:../Jaime/Bmp.c **** 	INT32U i, j;
+  84:../Jaime/Bmp.c **** 
+  85:../Jaime/Bmp.c **** 	ulMouseX = x; 
+ 1629              		.loc 1 85 0
+ 1630 01b0 34329FE5 		ldr	r3, .L14
+ 1631 01b4 B6215BE1 		ldrh	r2, [fp, #-22]	@ movhi
+ 1632 01b8 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  86:../Jaime/Bmp.c **** 	ulMouseY = y;
+ 1633              		.loc 1 86 0
+ 1634 01bc 2C329FE5 		ldr	r3, .L14+4
+ 1635 01c0 B8215BE1 		ldrh	r2, [fp, #-24]	@ movhi
+ 1636 01c4 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  87:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1637              		.loc 1 87 0
+ 1638 01c8 0030A0E3 		mov	r3, #0
+ 1639 01cc 10300BE5 		str	r3, [fp, #-16]
+ 1640 01d0 7D0000EA 		b	.L8
+ 1641              	.L13:
+  88:../Jaime/Bmp.c **** 	{
+  89:../Jaime/Bmp.c **** 		for (j = 0; j < Stru_Bitmap.usWidth; j+=2)
+ 1642              		.loc 1 89 0
+ 1643 01d4 0030A0E3 		mov	r3, #0
+ 1644 01d8 14300BE5 		str	r3, [fp, #-20]
+ 1645 01dc 720000EA 		b	.L9
+ 1646              	.L12:
+  90:../Jaime/Bmp.c **** 		{
+  91:../Jaime/Bmp.c **** 			if ((x + j)%2)
+ 1647              		.loc 1 91 0
+ 1648 01e0 B6215BE1 		ldrh	r2, [fp, #-22]
+ 1649 01e4 14301BE5 		ldr	r3, [fp, #-20]
+ 1650 01e8 033082E0 		add	r3, r2, r3
+ 1651 01ec 013003E2 		and	r3, r3, #1
+ 1652 01f0 FF3003E2 		and	r3, r3, #255
+ 1653 01f4 000053E3 		cmp	r3, #0
+ 1654 01f8 4400000A 		beq	.L10
+  92:../Jaime/Bmp.c **** 			{
+  93:../Jaime/Bmp.c **** 				ucCursorBackUp[i][j/2] =
+ 1655              		.loc 1 93 0
+ 1656 01fc 14301BE5 		ldr	r3, [fp, #-20]
+ 1657 0200 A3C0A0E1 		mov	ip, r3, lsr #1
+  94:../Jaime/Bmp.c **** 				(((*(INT8U*)(LCD_ACTIVE_BUFFER + (y + i) * SCR_XSIZE / 2 + (x + j) / 8 * 4  + 3 - ((x + j)%8) /
+ 1658              		.loc 1 94 0
+ 1659 0204 B8215BE1 		ldrh	r2, [fp, #-24]
+ 1660 0208 10301BE5 		ldr	r3, [fp, #-16]
+ 1661 020c 032082E0 		add	r2, r2, r3
+ 1662 0210 0230A0E1 		mov	r3, r2
+ 1663 0214 0331A0E1 		mov	r3, r3, asl #2
+ 1664 0218 023083E0 		add	r3, r3, r2
+ 1665 021c 0333A0E1 		mov	r3, r3, asl #6
+ 1666 0220 A320A0E1 		mov	r2, r3, lsr #1
+ 1667 0224 B6115BE1 		ldrh	r1, [fp, #-22]
+ 1668 0228 14301BE5 		ldr	r3, [fp, #-20]
+ 1669 022c 033081E0 		add	r3, r1, r3
+ 1670 0230 A331A0E1 		mov	r3, r3, lsr #3
+ 1671 0234 0331A0E1 		mov	r3, r3, asl #2
+ 1672 0238 032082E0 		add	r2, r2, r3
+ 1673 023c B6115BE1 		ldrh	r1, [fp, #-22]
+ 1674 0240 14301BE5 		ldr	r3, [fp, #-20]
+ 1675 0244 033081E0 		add	r3, r1, r3
+ 1676 0248 073003E2 		and	r3, r3, #7
+ 1677 024c A330A0E1 		mov	r3, r3, lsr #1
+ 1678 0250 003063E2 		rsb	r3, r3, #0
+ 1679 0254 033082E0 		add	r3, r2, r3
+ 1680 0258 C33683E2 		add	r3, r3, #204472320
+ 1681 025c 033083E2 		add	r3, r3, #3
+ 1682 0260 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1683 0264 0332A0E1 		mov	r3, r3, asl #4
+  93:../Jaime/Bmp.c **** 				ucCursorBackUp[i][j/2] =
+ 1684              		.loc 1 93 0
+ 1685 0268 FF1003E2 		and	r1, r3, #255
+  95:../Jaime/Bmp.c **** 				(((*(INT8U*)(LCD_ACTIVE_BUFFER + (y + i) * SCR_XSIZE / 2 + (x + j+1) / 8 * 4  + 3 - ((x + j+1)%
+ 1686              		.loc 1 95 0
+ 1687 026c B8215BE1 		ldrh	r2, [fp, #-24]
+ 1688 0270 10301BE5 		ldr	r3, [fp, #-16]
+ 1689 0274 032082E0 		add	r2, r2, r3
+ 1690 0278 0230A0E1 		mov	r3, r2
+ 1691 027c 0331A0E1 		mov	r3, r3, asl #2
+ 1692 0280 023083E0 		add	r3, r3, r2
+ 1693 0284 0333A0E1 		mov	r3, r3, asl #6
+ 1694 0288 A320A0E1 		mov	r2, r3, lsr #1
+ 1695 028c B6015BE1 		ldrh	r0, [fp, #-22]
+ 1696 0290 14301BE5 		ldr	r3, [fp, #-20]
+ 1697 0294 033080E0 		add	r3, r0, r3
+ 1698 0298 013083E2 		add	r3, r3, #1
+ 1699 029c A331A0E1 		mov	r3, r3, lsr #3
+ 1700 02a0 0331A0E1 		mov	r3, r3, asl #2
+ 1701 02a4 032082E0 		add	r2, r2, r3
+ 1702 02a8 B6015BE1 		ldrh	r0, [fp, #-22]
+ 1703 02ac 14301BE5 		ldr	r3, [fp, #-20]
+ 1704 02b0 033080E0 		add	r3, r0, r3
+ 1705 02b4 013083E2 		add	r3, r3, #1
+ 1706 02b8 073003E2 		and	r3, r3, #7
+ 1707 02bc A330A0E1 		mov	r3, r3, lsr #1
+ 1708 02c0 003063E2 		rsb	r3, r3, #0
+ 1709 02c4 033082E0 		add	r3, r2, r3
+ 1710 02c8 C33683E2 		add	r3, r3, #204472320
+ 1711 02cc 033083E2 		add	r3, r3, #3
+ 1712 02d0 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+  93:../Jaime/Bmp.c **** 				ucCursorBackUp[i][j/2] =
+ 1713              		.loc 1 93 0
+ 1714 02d4 2332A0E1 		mov	r3, r3, lsr #4
+ 1715 02d8 FF3003E2 		and	r3, r3, #255
+ 1716 02dc 033081E0 		add	r3, r1, r3
+ 1717 02e0 FF1003E2 		and	r1, r3, #255
+ 1718 02e4 08019FE5 		ldr	r0, .L14+8
+ 1719 02e8 10201BE5 		ldr	r2, [fp, #-16]
+ 1720 02ec 0230A0E1 		mov	r3, r2
+ 1721 02f0 8330A0E1 		mov	r3, r3, asl #1
+ 1722 02f4 023083E0 		add	r3, r3, r2
+ 1723 02f8 8330A0E1 		mov	r3, r3, asl #1
+ 1724 02fc 0C3083E0 		add	r3, r3, ip
+ 1725 0300 033080E0 		add	r3, r0, r3
+ 1726 0304 0120A0E1 		mov	r2, r1
+ 1727 0308 0020C3E5 		strb	r2, [r3, #0]
+ 1728 030c 230000EA 		b	.L11
+ 1729              	.L10:
+  96:../Jaime/Bmp.c **** 			}
+  97:../Jaime/Bmp.c **** 			else
+  98:../Jaime/Bmp.c **** 			{
+  99:../Jaime/Bmp.c **** 				ucCursorBackUp[i][j/2] = (*(INT8U*)(LCD_ACTIVE_BUFFER + (y + i) * SCR_XSIZE / 2 + (x + j) / 8 *
+ 1730              		.loc 1 99 0
+ 1731 0310 14301BE5 		ldr	r3, [fp, #-20]
+ 1732 0314 A3C0A0E1 		mov	ip, r3, lsr #1
+ 1733 0318 B8215BE1 		ldrh	r2, [fp, #-24]
+ 1734 031c 10301BE5 		ldr	r3, [fp, #-16]
+ 1735 0320 032082E0 		add	r2, r2, r3
+ 1736 0324 0230A0E1 		mov	r3, r2
+ 1737 0328 0331A0E1 		mov	r3, r3, asl #2
+ 1738 032c 023083E0 		add	r3, r3, r2
+ 1739 0330 0333A0E1 		mov	r3, r3, asl #6
+ 1740 0334 A320A0E1 		mov	r2, r3, lsr #1
+ 1741 0338 B6115BE1 		ldrh	r1, [fp, #-22]
+ 1742 033c 14301BE5 		ldr	r3, [fp, #-20]
+ 1743 0340 033081E0 		add	r3, r1, r3
+ 1744 0344 A331A0E1 		mov	r3, r3, lsr #3
+ 1745 0348 0331A0E1 		mov	r3, r3, asl #2
+ 1746 034c 032082E0 		add	r2, r2, r3
+ 1747 0350 B6115BE1 		ldrh	r1, [fp, #-22]
+ 1748 0354 14301BE5 		ldr	r3, [fp, #-20]
+ 1749 0358 033081E0 		add	r3, r1, r3
+ 1750 035c 073003E2 		and	r3, r3, #7
+ 1751 0360 A330A0E1 		mov	r3, r3, lsr #1
+ 1752 0364 003063E2 		rsb	r3, r3, #0
+ 1753 0368 033082E0 		add	r3, r2, r3
+ 1754 036c C33683E2 		add	r3, r3, #204472320
+ 1755 0370 033083E2 		add	r3, r3, #3
+ 1756 0374 0010D3E5 		ldrb	r1, [r3, #0]	@ zero_extendqisi2
+ 1757 0378 74009FE5 		ldr	r0, .L14+8
+ 1758 037c 10201BE5 		ldr	r2, [fp, #-16]
+ 1759 0380 0230A0E1 		mov	r3, r2
+ 1760 0384 8330A0E1 		mov	r3, r3, asl #1
+ 1761 0388 023083E0 		add	r3, r3, r2
+ 1762 038c 8330A0E1 		mov	r3, r3, asl #1
+ 1763 0390 0C3083E0 		add	r3, r3, ip
+ 1764 0394 033080E0 		add	r3, r0, r3
+ 1765 0398 0120A0E1 		mov	r2, r1
+ 1766 039c 0020C3E5 		strb	r2, [r3, #0]
+ 1767              	.L11:
+  89:../Jaime/Bmp.c **** 		for (j = 0; j < Stru_Bitmap.usWidth; j+=2)
+ 1768              		.loc 1 89 0
+ 1769 03a0 14301BE5 		ldr	r3, [fp, #-20]
+ 1770 03a4 023083E2 		add	r3, r3, #2
+ 1771 03a8 14300BE5 		str	r3, [fp, #-20]
+ 1772              	.L9:
+  89:../Jaime/Bmp.c **** 		for (j = 0; j < Stru_Bitmap.usWidth; j+=2)
+ 1773              		.loc 1 89 0 is_stmt 0 discriminator 1
+ 1774 03ac B630DBE1 		ldrh	r3, [fp, #6]
+ 1775 03b0 0320A0E1 		mov	r2, r3
+ 1776 03b4 14301BE5 		ldr	r3, [fp, #-20]
+ 1777 03b8 030052E1 		cmp	r2, r3
+ 1778 03bc 87FFFF8A 		bhi	.L12
+  87:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1779              		.loc 1 87 0 is_stmt 1
+ 1780 03c0 10301BE5 		ldr	r3, [fp, #-16]
+ 1781 03c4 013083E2 		add	r3, r3, #1
+ 1782 03c8 10300BE5 		str	r3, [fp, #-16]
+ 1783              	.L8:
+  87:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1784              		.loc 1 87 0 is_stmt 0 discriminator 1
+ 1785 03cc B830DBE1 		ldrh	r3, [fp, #8]
+ 1786 03d0 0320A0E1 		mov	r2, r3
+ 1787 03d4 10301BE5 		ldr	r3, [fp, #-16]
+ 1788 03d8 030052E1 		cmp	r2, r3
+ 1789 03dc 7CFFFF8A 		bhi	.L13
+ 100:../Jaime/Bmp.c **** 			}
+ 101:../Jaime/Bmp.c **** 		}
+ 102:../Jaime/Bmp.c **** 	}
+ 103:../Jaime/Bmp.c **** }
+ 1790              		.loc 1 103 0 is_stmt 1
+ 1791 03e0 0CD04BE2 		sub	sp, fp, #12
+ 1792 03e4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1793 03e8 1EFF2FE1 		bx	lr
+ 1794              	.L15:
+ 1795              		.align	2
+ 1796              	.L14:
+ 1797 03ec 00000000 		.word	ulMouseX
+ 1798 03f0 00000000 		.word	ulMouseY
+ 1799 03f4 00000000 		.word	ucCursorBackUp
+ 1800              		.cfi_endproc
+ 1801              	.LFE1:
+ 1803              		.align	2
+ 1804              		.global	BitmapPop
+ 1806              	BitmapPop:
+ 1807              	.LFB2:
+ 104:../Jaime/Bmp.c **** 
+ 105:../Jaime/Bmp.c **** /*********************************************************************************************
+ 106:../Jaime/Bmp.c **** * name:		BitmapPop()
+ 107:../Jaime/Bmp.c **** * func:		pop bitmap data into LCD active buffer
+ 108:../Jaime/Bmp.c **** * para:		x,y -- pot's X-Y coordinate 
+ 109:../Jaime/Bmp.c **** *			Stru_Bitmap -- bitmap struct
+ 110:../Jaime/Bmp.c **** * ret:		none
+ 111:../Jaime/Bmp.c **** * modify:
+ 112:../Jaime/Bmp.c **** * comment:		
+ 113:../Jaime/Bmp.c **** *********************************************************************************************/
+ 114:../Jaime/Bmp.c **** void BitmapPop(INT16U x, INT16U y, STRU_BITMAP Stru_Bitmap)
+ 115:../Jaime/Bmp.c **** {
+ 1808              		.loc 1 115 0
+ 1809              		.cfi_startproc
+ 1810              		@ Function supports interworking.
+ 1811              		@ args = 16, pretend = 8, frame = 24
+ 1812              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1813 03f8 0DC0A0E1 		mov	ip, sp
+ 1814              	.LCFI4:
+ 1815              		.cfi_def_cfa_register 12
+ 1816 03fc 08D04DE2 		sub	sp, sp, #8
+ 1817 0400 10D82DE9 		stmfd	sp!, {r4, fp, ip, lr, pc}
+ 1818 0404 0CB04CE2 		sub	fp, ip, #12
+ 1819              		.cfi_offset 14, -16
+ 1820              		.cfi_offset 13, -20
+ 1821              		.cfi_offset 11, -24
+ 1822              		.cfi_offset 4, -28
+ 1823              	.LCFI5:
+ 1824              		.cfi_def_cfa 11, 12
+ 1825 0408 1CD04DE2 		sub	sp, sp, #28
+ 1826 040c 04C08BE2 		add	ip, fp, #4
+ 1827 0410 0C008CE8 		stmia	ip, {r2, r3}
+ 1828 0414 B6024BE1 		strh	r0, [fp, #-38]	@ movhi
+ 1829 0418 B8124BE1 		strh	r1, [fp, #-40]	@ movhi
+ 116:../Jaime/Bmp.c **** 	INT32U i, j;
+ 117:../Jaime/Bmp.c **** 	INT32U ulAddr, ulAddr1;
+ 118:../Jaime/Bmp.c **** 
+ 119:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1830              		.loc 1 119 0
+ 1831 041c 0030A0E3 		mov	r3, #0
+ 1832 0420 18300BE5 		str	r3, [fp, #-24]
+ 1833 0424 8D0000EA 		b	.L17
+ 1834              	.L22:
+ 120:../Jaime/Bmp.c **** 	{
+ 121:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j+=2)
+ 1835              		.loc 1 121 0
+ 1836 0428 0030A0E3 		mov	r3, #0
+ 1837 042c 1C300BE5 		str	r3, [fp, #-28]
+ 1838 0430 820000EA 		b	.L18
+ 1839              	.L21:
+ 122:../Jaime/Bmp.c **** 		{
+ 123:../Jaime/Bmp.c **** 			ulAddr = LCD_ACTIVE_BUFFER + (y + i) * SCR_XSIZE / 2 + (x + j) / 8 * 4 + 3 - ((x + j)%8) / 2;
+ 1840              		.loc 1 123 0
+ 1841 0434 B8225BE1 		ldrh	r2, [fp, #-40]
+ 1842 0438 18301BE5 		ldr	r3, [fp, #-24]
+ 1843 043c 032082E0 		add	r2, r2, r3
+ 1844 0440 0230A0E1 		mov	r3, r2
+ 1845 0444 0331A0E1 		mov	r3, r3, asl #2
+ 1846 0448 023083E0 		add	r3, r3, r2
+ 1847 044c 0333A0E1 		mov	r3, r3, asl #6
+ 1848 0450 A320A0E1 		mov	r2, r3, lsr #1
+ 1849 0454 B6125BE1 		ldrh	r1, [fp, #-38]
+ 1850 0458 1C301BE5 		ldr	r3, [fp, #-28]
+ 1851 045c 033081E0 		add	r3, r1, r3
+ 1852 0460 A331A0E1 		mov	r3, r3, lsr #3
+ 1853 0464 0331A0E1 		mov	r3, r3, asl #2
+ 1854 0468 032082E0 		add	r2, r2, r3
+ 1855 046c B6125BE1 		ldrh	r1, [fp, #-38]
+ 1856 0470 1C301BE5 		ldr	r3, [fp, #-28]
+ 1857 0474 033081E0 		add	r3, r1, r3
+ 1858 0478 073003E2 		and	r3, r3, #7
+ 1859 047c A330A0E1 		mov	r3, r3, lsr #1
+ 1860 0480 003063E2 		rsb	r3, r3, #0
+ 1861 0484 033082E0 		add	r3, r2, r3
+ 1862 0488 C33683E2 		add	r3, r3, #204472320
+ 1863 048c 033083E2 		add	r3, r3, #3
+ 1864 0490 20300BE5 		str	r3, [fp, #-32]
+ 124:../Jaime/Bmp.c **** 			ulAddr1 =LCD_ACTIVE_BUFFER + (y + i) * SCR_XSIZE / 2 + (x + j + 1) / 8 * 4 + 3 - ((x + j + 1)%8)
+ 1865              		.loc 1 124 0
+ 1866 0494 B8225BE1 		ldrh	r2, [fp, #-40]
+ 1867 0498 18301BE5 		ldr	r3, [fp, #-24]
+ 1868 049c 032082E0 		add	r2, r2, r3
+ 1869 04a0 0230A0E1 		mov	r3, r2
+ 1870 04a4 0331A0E1 		mov	r3, r3, asl #2
+ 1871 04a8 023083E0 		add	r3, r3, r2
+ 1872 04ac 0333A0E1 		mov	r3, r3, asl #6
+ 1873 04b0 A320A0E1 		mov	r2, r3, lsr #1
+ 1874 04b4 B6125BE1 		ldrh	r1, [fp, #-38]
+ 1875 04b8 1C301BE5 		ldr	r3, [fp, #-28]
+ 1876 04bc 033081E0 		add	r3, r1, r3
+ 1877 04c0 013083E2 		add	r3, r3, #1
+ 1878 04c4 A331A0E1 		mov	r3, r3, lsr #3
+ 1879 04c8 0331A0E1 		mov	r3, r3, asl #2
+ 1880 04cc 032082E0 		add	r2, r2, r3
+ 1881 04d0 B6125BE1 		ldrh	r1, [fp, #-38]
+ 1882 04d4 1C301BE5 		ldr	r3, [fp, #-28]
+ 1883 04d8 033081E0 		add	r3, r1, r3
+ 1884 04dc 013083E2 		add	r3, r3, #1
+ 1885 04e0 073003E2 		and	r3, r3, #7
+ 1886 04e4 A330A0E1 		mov	r3, r3, lsr #1
+ 1887 04e8 003063E2 		rsb	r3, r3, #0
+ 1888 04ec 033082E0 		add	r3, r2, r3
+ 1889 04f0 C33683E2 		add	r3, r3, #204472320
+ 1890 04f4 033083E2 		add	r3, r3, #3
+ 1891 04f8 24300BE5 		str	r3, [fp, #-36]
+ 125:../Jaime/Bmp.c **** 			if ((x + j)%2)
+ 1892              		.loc 1 125 0
+ 1893 04fc B6225BE1 		ldrh	r2, [fp, #-38]
+ 1894 0500 1C301BE5 		ldr	r3, [fp, #-28]
+ 1895 0504 033082E0 		add	r3, r2, r3
+ 1896 0508 013003E2 		and	r3, r3, #1
+ 1897 050c FF3003E2 		and	r3, r3, #255
+ 1898 0510 000053E3 		cmp	r3, #0
+ 1899 0514 3900000A 		beq	.L19
+ 126:../Jaime/Bmp.c **** 			{
+ 127:../Jaime/Bmp.c **** 				
+ 128:../Jaime/Bmp.c **** 				(*(INT8U*)ulAddr) &= 0xf0;
+ 1900              		.loc 1 128 0
+ 1901 0518 20301BE5 		ldr	r3, [fp, #-32]
+ 1902 051c 20201BE5 		ldr	r2, [fp, #-32]
+ 1903 0520 0020D2E5 		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 1904 0524 0F20C2E3 		bic	r2, r2, #15
+ 1905 0528 FF2002E2 		and	r2, r2, #255
+ 1906 052c 0020C3E5 		strb	r2, [r3, #0]
+ 129:../Jaime/Bmp.c **** 				(*(INT8U*)ulAddr) |= ((ucCursorBackUp[i][j/2] >> 4) & 0x0f);
+ 1907              		.loc 1 129 0
+ 1908 0530 20101BE5 		ldr	r1, [fp, #-32]
+ 1909 0534 20301BE5 		ldr	r3, [fp, #-32]
+ 1910 0538 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1911 053c FF0003E2 		and	r0, r3, #255
+ 1912 0540 1C301BE5 		ldr	r3, [fp, #-28]
+ 1913 0544 A340A0E1 		mov	r4, r3, lsr #1
+ 1914 0548 30C19FE5 		ldr	ip, .L23
+ 1915 054c 18201BE5 		ldr	r2, [fp, #-24]
+ 1916 0550 0230A0E1 		mov	r3, r2
+ 1917 0554 8330A0E1 		mov	r3, r3, asl #1
+ 1918 0558 023083E0 		add	r3, r3, r2
+ 1919 055c 8330A0E1 		mov	r3, r3, asl #1
+ 1920 0560 043083E0 		add	r3, r3, r4
+ 1921 0564 03308CE0 		add	r3, ip, r3
+ 1922 0568 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1923 056c 2332A0E1 		mov	r3, r3, lsr #4
+ 1924 0570 FF3003E2 		and	r3, r3, #255
+ 1925 0574 FF3003E2 		and	r3, r3, #255
+ 1926 0578 0020A0E1 		mov	r2, r0
+ 1927 057c 033082E1 		orr	r3, r2, r3
+ 1928 0580 FF3003E2 		and	r3, r3, #255
+ 1929 0584 FF3003E2 		and	r3, r3, #255
+ 1930 0588 0030C1E5 		strb	r3, [r1, #0]
+ 130:../Jaime/Bmp.c **** 				(*(INT8U*)ulAddr1) &= 0x0f;
+ 1931              		.loc 1 130 0
+ 1932 058c 24301BE5 		ldr	r3, [fp, #-36]
+ 1933 0590 24201BE5 		ldr	r2, [fp, #-36]
+ 1934 0594 0020D2E5 		ldrb	r2, [r2, #0]	@ zero_extendqisi2
+ 1935 0598 0F2002E2 		and	r2, r2, #15
+ 1936 059c FF2002E2 		and	r2, r2, #255
+ 1937 05a0 0020C3E5 		strb	r2, [r3, #0]
+ 131:../Jaime/Bmp.c **** 				(*(INT8U*)ulAddr1) |= ((ucCursorBackUp[i][j/2] << 4) & 0xf0);
+ 1938              		.loc 1 131 0
+ 1939 05a4 24101BE5 		ldr	r1, [fp, #-36]
+ 1940 05a8 24301BE5 		ldr	r3, [fp, #-36]
+ 1941 05ac 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1942 05b0 FF0003E2 		and	r0, r3, #255
+ 1943 05b4 1C301BE5 		ldr	r3, [fp, #-28]
+ 1944 05b8 A340A0E1 		mov	r4, r3, lsr #1
+ 1945 05bc BCC09FE5 		ldr	ip, .L23
+ 1946 05c0 18201BE5 		ldr	r2, [fp, #-24]
+ 1947 05c4 0230A0E1 		mov	r3, r2
+ 1948 05c8 8330A0E1 		mov	r3, r3, asl #1
+ 1949 05cc 023083E0 		add	r3, r3, r2
+ 1950 05d0 8330A0E1 		mov	r3, r3, asl #1
+ 1951 05d4 043083E0 		add	r3, r3, r4
+ 1952 05d8 03308CE0 		add	r3, ip, r3
+ 1953 05dc 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1954 05e0 0332A0E1 		mov	r3, r3, asl #4
+ 1955 05e4 FF3003E2 		and	r3, r3, #255
+ 1956 05e8 0020A0E1 		mov	r2, r0
+ 1957 05ec 033082E1 		orr	r3, r2, r3
+ 1958 05f0 FF3003E2 		and	r3, r3, #255
+ 1959 05f4 FF3003E2 		and	r3, r3, #255
+ 1960 05f8 0030C1E5 		strb	r3, [r1, #0]
+ 1961 05fc 0C0000EA 		b	.L20
+ 1962              	.L19:
+ 132:../Jaime/Bmp.c **** 			}
+ 133:../Jaime/Bmp.c **** 			else
+ 134:../Jaime/Bmp.c **** 			{
+ 135:../Jaime/Bmp.c **** 				(*(INT8U*)ulAddr) = ucCursorBackUp[i][j/2];
+ 1963              		.loc 1 135 0
+ 1964 0600 20101BE5 		ldr	r1, [fp, #-32]
+ 1965 0604 1C301BE5 		ldr	r3, [fp, #-28]
+ 1966 0608 A3C0A0E1 		mov	ip, r3, lsr #1
+ 1967 060c 6C009FE5 		ldr	r0, .L23
+ 1968 0610 18201BE5 		ldr	r2, [fp, #-24]
+ 1969 0614 0230A0E1 		mov	r3, r2
+ 1970 0618 8330A0E1 		mov	r3, r3, asl #1
+ 1971 061c 023083E0 		add	r3, r3, r2
+ 1972 0620 8330A0E1 		mov	r3, r3, asl #1
+ 1973 0624 0C3083E0 		add	r3, r3, ip
+ 1974 0628 033080E0 		add	r3, r0, r3
+ 1975 062c 0030D3E5 		ldrb	r3, [r3, #0]	@ zero_extendqisi2
+ 1976 0630 0030C1E5 		strb	r3, [r1, #0]
+ 1977              	.L20:
+ 121:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j+=2)
+ 1978              		.loc 1 121 0
+ 1979 0634 1C301BE5 		ldr	r3, [fp, #-28]
+ 1980 0638 023083E2 		add	r3, r3, #2
+ 1981 063c 1C300BE5 		str	r3, [fp, #-28]
+ 1982              	.L18:
+ 121:../Jaime/Bmp.c **** 		for (j = 0; j <Stru_Bitmap.usWidth; j+=2)
+ 1983              		.loc 1 121 0 is_stmt 0 discriminator 1
+ 1984 0640 B630DBE1 		ldrh	r3, [fp, #6]
+ 1985 0644 0320A0E1 		mov	r2, r3
+ 1986 0648 1C301BE5 		ldr	r3, [fp, #-28]
+ 1987 064c 030052E1 		cmp	r2, r3
+ 1988 0650 77FFFF8A 		bhi	.L21
+ 119:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1989              		.loc 1 119 0 is_stmt 1
+ 1990 0654 18301BE5 		ldr	r3, [fp, #-24]
+ 1991 0658 013083E2 		add	r3, r3, #1
+ 1992 065c 18300BE5 		str	r3, [fp, #-24]
+ 1993              	.L17:
+ 119:../Jaime/Bmp.c **** 	for (i =  0; i < Stru_Bitmap.usHeight; i++)
+ 1994              		.loc 1 119 0 is_stmt 0 discriminator 1
+ 1995 0660 B830DBE1 		ldrh	r3, [fp, #8]
+ 1996 0664 0320A0E1 		mov	r2, r3
+ 1997 0668 18301BE5 		ldr	r3, [fp, #-24]
+ 1998 066c 030052E1 		cmp	r2, r3
+ 1999 0670 6CFFFF8A 		bhi	.L22
+ 136:../Jaime/Bmp.c **** 			}
+ 137:../Jaime/Bmp.c **** 			
+ 138:../Jaime/Bmp.c **** 		}
+ 139:../Jaime/Bmp.c **** 	}
+ 140:../Jaime/Bmp.c **** }
+ 2000              		.loc 1 140 0 is_stmt 1
+ 2001 0674 10D04BE2 		sub	sp, fp, #16
+ 2002 0678 10689DE8 		ldmfd	sp, {r4, fp, sp, lr}
+ 2003 067c 1EFF2FE1 		bx	lr
+ 2004              	.L24:
+ 2005              		.align	2
+ 2006              	.L23:
+ 2007 0680 00000000 		.word	ucCursorBackUp
+ 2008              		.cfi_endproc
+ 2009              	.LFE2:
+ 2011              		.align	2
+ 2012              		.global	CursorInit
+ 2014              	CursorInit:
+ 2015              	.LFB3:
+ 141:../Jaime/Bmp.c **** 
+ 142:../Jaime/Bmp.c **** /*********************************************************************************************
+ 143:../Jaime/Bmp.c **** * name:		CursorInit()
+ 144:../Jaime/Bmp.c **** * func:		cursor init
+ 145:../Jaime/Bmp.c **** * para:		none
+ 146:../Jaime/Bmp.c **** * ret:		none
+ 147:../Jaime/Bmp.c **** * modify:
+ 148:../Jaime/Bmp.c **** * comment:		
+ 149:../Jaime/Bmp.c **** *********************************************************************************************/
+ 150:../Jaime/Bmp.c **** void CursorInit(void)
+ 151:../Jaime/Bmp.c **** {
+ 2016              		.loc 1 151 0
+ 2017              		.cfi_startproc
+ 2018              		@ Function supports interworking.
+ 2019              		@ args = 0, pretend = 0, frame = 0
+ 2020              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2021 0684 0DC0A0E1 		mov	ip, sp
+ 2022              	.LCFI6:
+ 2023              		.cfi_def_cfa_register 12
+ 2024 0688 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2025 068c 04B04CE2 		sub	fp, ip, #4
+ 2026              		.cfi_offset 14, -8
+ 2027              		.cfi_offset 13, -12
+ 2028              		.cfi_offset 11, -16
+ 2029              	.LCFI7:
+ 2030              		.cfi_def_cfa 11, 4
+ 152:../Jaime/Bmp.c **** 	ulMouseX = 0;
+ 2031              		.loc 1 152 0
+ 2032 0690 38309FE5 		ldr	r3, .L26
+ 2033 0694 0020A0E3 		mov	r2, #0
+ 2034 0698 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 153:../Jaime/Bmp.c **** 	ulMouseY = 0;
+ 2035              		.loc 1 153 0
+ 2036 069c 30309FE5 		ldr	r3, .L26+4
+ 2037 06a0 0020A0E3 		mov	r2, #0
+ 2038 06a4 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+ 154:../Jaime/Bmp.c **** 	CursorView(ulMouseX, ulMouseY);
+ 2039              		.loc 1 154 0
+ 2040 06a8 20309FE5 		ldr	r3, .L26
+ 2041 06ac B020D3E1 		ldrh	r2, [r3, #0]
+ 2042 06b0 1C309FE5 		ldr	r3, .L26+4
+ 2043 06b4 B030D3E1 		ldrh	r3, [r3, #0]
+ 2044 06b8 0200A0E1 		mov	r0, r2
+ 2045 06bc 0310A0E1 		mov	r1, r3
+ 2046 06c0 FEFFFFEB 		bl	CursorView
+ 155:../Jaime/Bmp.c **** }
+ 2047              		.loc 1 155 0
+ 2048 06c4 0CD04BE2 		sub	sp, fp, #12
+ 2049 06c8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2050 06cc 1EFF2FE1 		bx	lr
+ 2051              	.L27:
+ 2052              		.align	2
+ 2053              	.L26:
+ 2054 06d0 00000000 		.word	ulMouseX
+ 2055 06d4 00000000 		.word	ulMouseY
+ 2056              		.cfi_endproc
+ 2057              	.LFE3:
+ 2059              		.align	2
+ 2060              		.global	CursorPush
+ 2062              	CursorPush:
+ 2063              	.LFB4:
+ 156:../Jaime/Bmp.c **** 
+ 157:../Jaime/Bmp.c **** /*********************************************************************************************
+ 158:../Jaime/Bmp.c **** * name:		CursorPush()
+ 159:../Jaime/Bmp.c **** * func:		cursor push
+ 160:../Jaime/Bmp.c **** * para:		none
+ 161:../Jaime/Bmp.c **** * ret:		none
+ 162:../Jaime/Bmp.c **** * modify:
+ 163:../Jaime/Bmp.c **** * comment:		
+ 164:../Jaime/Bmp.c **** *********************************************************************************************/
+ 165:../Jaime/Bmp.c **** void CursorPush(INT16U x, INT16U y)
+ 166:../Jaime/Bmp.c **** {
+ 2064              		.loc 1 166 0
+ 2065              		.cfi_startproc
+ 2066              		@ Function supports interworking.
+ 2067              		@ args = 0, pretend = 0, frame = 8
+ 2068              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2069 06d8 0DC0A0E1 		mov	ip, sp
+ 2070              	.LCFI8:
+ 2071              		.cfi_def_cfa_register 12
+ 2072 06dc 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2073 06e0 04B04CE2 		sub	fp, ip, #4
+ 2074              		.cfi_offset 14, -8
+ 2075              		.cfi_offset 13, -12
+ 2076              		.cfi_offset 11, -16
+ 2077              	.LCFI9:
+ 2078              		.cfi_def_cfa 11, 4
+ 2079 06e4 10D04DE2 		sub	sp, sp, #16
+ 2080 06e8 0020A0E1 		mov	r2, r0
+ 2081 06ec 0130A0E1 		mov	r3, r1
+ 2082 06f0 BE204BE1 		strh	r2, [fp, #-14]	@ movhi
+ 2083 06f4 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 167:../Jaime/Bmp.c **** 	BitmapPush(x, y, Stru_Bitmap_gbMouse);
+ 2084              		.loc 1 167 0
+ 2085 06f8 BEE05BE1 		ldrh	lr, [fp, #-14]
+ 2086 06fc B0C15BE1 		ldrh	ip, [fp, #-16]
+ 2087 0700 28309FE5 		ldr	r3, .L29
+ 2088 0704 0D20A0E1 		mov	r2, sp
+ 2089 0708 081083E2 		add	r1, r3, #8
+ 2090 070c 030091E8 		ldmia	r1, {r0, r1}
+ 2091 0710 030082E8 		stmia	r2, {r0, r1}
+ 2092 0714 0C0093E8 		ldmia	r3, {r2, r3}
+ 2093 0718 0E00A0E1 		mov	r0, lr
+ 2094 071c 0C10A0E1 		mov	r1, ip
+ 2095 0720 FEFFFFEB 		bl	BitmapPush
+ 168:../Jaime/Bmp.c **** }
+ 2096              		.loc 1 168 0
+ 2097 0724 0CD04BE2 		sub	sp, fp, #12
+ 2098 0728 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2099 072c 1EFF2FE1 		bx	lr
+ 2100              	.L30:
+ 2101              		.align	2
+ 2102              	.L29:
+ 2103 0730 00000000 		.word	Stru_Bitmap_gbMouse
+ 2104              		.cfi_endproc
+ 2105              	.LFE4:
+ 2107              		.align	2
+ 2108              		.global	CursorPop
+ 2110              	CursorPop:
+ 2111              	.LFB5:
+ 169:../Jaime/Bmp.c **** 
+ 170:../Jaime/Bmp.c **** /*********************************************************************************************
+ 171:../Jaime/Bmp.c **** * name:		CursorPop()
+ 172:../Jaime/Bmp.c **** * func:		cursor pop
+ 173:../Jaime/Bmp.c **** * para:		none
+ 174:../Jaime/Bmp.c **** * ret:		none
+ 175:../Jaime/Bmp.c **** * modify:
+ 176:../Jaime/Bmp.c **** * comment:		
+ 177:../Jaime/Bmp.c **** *********************************************************************************************/
+ 178:../Jaime/Bmp.c **** void CursorPop()
+ 179:../Jaime/Bmp.c **** {
+ 2112              		.loc 1 179 0
+ 2113              		.cfi_startproc
+ 2114              		@ Function supports interworking.
+ 2115              		@ args = 0, pretend = 0, frame = 0
+ 2116              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2117 0734 0DC0A0E1 		mov	ip, sp
+ 2118              	.LCFI10:
+ 2119              		.cfi_def_cfa_register 12
+ 2120 0738 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2121 073c 04B04CE2 		sub	fp, ip, #4
+ 2122              		.cfi_offset 14, -8
+ 2123              		.cfi_offset 13, -12
+ 2124              		.cfi_offset 11, -16
+ 2125              	.LCFI11:
+ 2126              		.cfi_def_cfa 11, 4
+ 2127 0740 08D04DE2 		sub	sp, sp, #8
+ 180:../Jaime/Bmp.c **** 	BitmapPop(ulMouseX, ulMouseY, Stru_Bitmap_gbMouse);
+ 2128              		.loc 1 180 0
+ 2129 0744 38309FE5 		ldr	r3, .L32
+ 2130 0748 B0E0D3E1 		ldrh	lr, [r3, #0]
+ 2131 074c 34309FE5 		ldr	r3, .L32+4
+ 2132 0750 B0C0D3E1 		ldrh	ip, [r3, #0]
+ 2133 0754 30309FE5 		ldr	r3, .L32+8
+ 2134 0758 0D20A0E1 		mov	r2, sp
+ 2135 075c 081083E2 		add	r1, r3, #8
+ 2136 0760 030091E8 		ldmia	r1, {r0, r1}
+ 2137 0764 030082E8 		stmia	r2, {r0, r1}
+ 2138 0768 0C0093E8 		ldmia	r3, {r2, r3}
+ 2139 076c 0E00A0E1 		mov	r0, lr
+ 2140 0770 0C10A0E1 		mov	r1, ip
+ 2141 0774 FEFFFFEB 		bl	BitmapPop
+ 181:../Jaime/Bmp.c **** }
+ 2142              		.loc 1 181 0
+ 2143 0778 0CD04BE2 		sub	sp, fp, #12
+ 2144 077c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2145 0780 1EFF2FE1 		bx	lr
+ 2146              	.L33:
+ 2147              		.align	2
+ 2148              	.L32:
+ 2149 0784 00000000 		.word	ulMouseX
+ 2150 0788 00000000 		.word	ulMouseY
+ 2151 078c 00000000 		.word	Stru_Bitmap_gbMouse
+ 2152              		.cfi_endproc
+ 2153              	.LFE5:
+ 2155              		.align	2
+ 2156              		.global	CursorView
+ 2158              	CursorView:
+ 2159              	.LFB6:
+ 182:../Jaime/Bmp.c **** 
+ 183:../Jaime/Bmp.c **** /*********************************************************************************************
+ 184:../Jaime/Bmp.c **** * name:		CursorView()
+ 185:../Jaime/Bmp.c **** * func:		cursor display
+ 186:../Jaime/Bmp.c **** * para:		none
+ 187:../Jaime/Bmp.c **** * ret:		none
+ 188:../Jaime/Bmp.c **** * modify:
+ 189:../Jaime/Bmp.c **** * comment:		
+ 190:../Jaime/Bmp.c **** *********************************************************************************************/
+ 191:../Jaime/Bmp.c **** void CursorView(INT16U x, INT16U y)
+ 192:../Jaime/Bmp.c **** {
+ 2160              		.loc 1 192 0
+ 2161              		.cfi_startproc
+ 2162              		@ Function supports interworking.
+ 2163              		@ args = 0, pretend = 0, frame = 8
+ 2164              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2165 0790 0DC0A0E1 		mov	ip, sp
+ 2166              	.LCFI12:
+ 2167              		.cfi_def_cfa_register 12
+ 2168 0794 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2169 0798 04B04CE2 		sub	fp, ip, #4
+ 2170              		.cfi_offset 14, -8
+ 2171              		.cfi_offset 13, -12
+ 2172              		.cfi_offset 11, -16
+ 2173              	.LCFI13:
+ 2174              		.cfi_def_cfa 11, 4
+ 2175 079c 10D04DE2 		sub	sp, sp, #16
+ 2176 07a0 0020A0E1 		mov	r2, r0
+ 2177 07a4 0130A0E1 		mov	r3, r1
+ 2178 07a8 BE204BE1 		strh	r2, [fp, #-14]	@ movhi
+ 2179 07ac B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 193:../Jaime/Bmp.c **** 	CursorPush(x, y);
+ 2180              		.loc 1 193 0
+ 2181 07b0 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2182 07b4 B0315BE1 		ldrh	r3, [fp, #-16]
+ 2183 07b8 0200A0E1 		mov	r0, r2
+ 2184 07bc 0310A0E1 		mov	r1, r3
+ 2185 07c0 FEFFFFEB 		bl	CursorPush
+ 194:../Jaime/Bmp.c **** 	BitmapView(x, y, Stru_Bitmap_gbMouse);
+ 2186              		.loc 1 194 0
+ 2187 07c4 BEE05BE1 		ldrh	lr, [fp, #-14]
+ 2188 07c8 B0C15BE1 		ldrh	ip, [fp, #-16]
+ 2189 07cc 28309FE5 		ldr	r3, .L35
+ 2190 07d0 0D20A0E1 		mov	r2, sp
+ 2191 07d4 081083E2 		add	r1, r3, #8
+ 2192 07d8 030091E8 		ldmia	r1, {r0, r1}
+ 2193 07dc 030082E8 		stmia	r2, {r0, r1}
+ 2194 07e0 0C0093E8 		ldmia	r3, {r2, r3}
+ 2195 07e4 0E00A0E1 		mov	r0, lr
+ 2196 07e8 0C10A0E1 		mov	r1, ip
+ 2197 07ec FEFFFFEB 		bl	BitmapView
+ 195:../Jaime/Bmp.c **** }
+ 2198              		.loc 1 195 0
+ 2199 07f0 0CD04BE2 		sub	sp, fp, #12
+ 2200 07f4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2201 07f8 1EFF2FE1 		bx	lr
+ 2202              	.L36:
+ 2203              		.align	2
+ 2204              	.L35:
+ 2205 07fc 00000000 		.word	Stru_Bitmap_gbMouse
+ 2206              		.cfi_endproc
+ 2207              	.LFE6:
+ 2209              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bmp.c
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1212   .rodata:00000000 ucMouseMap
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1209   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1458   .data:00000000 Stru_Bitmap_gbMouse
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1455   .data:00000000 $d
+                            *COM*:00000002 ulMouseX
+                            *COM*:00000002 ulMouseY
+                            *COM*:00000078 ucCursorBackUp
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1470   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1473   .text:00000000 BitmapView
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1606   .text:0000018c BitmapPush
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1797   .text:000003ec $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1803   .text:000003f8 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:1806   .text:000003f8 BitmapPop
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2007   .text:00000680 $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2011   .text:00000684 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2014   .text:00000684 CursorInit
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2158   .text:00000790 CursorView
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2054   .text:000006d0 $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2059   .text:000006d8 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2062   .text:000006d8 CursorPush
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2103   .text:00000730 $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2107   .text:00000734 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2110   .text:00000734 CursorPop
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2149   .text:00000784 $d
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2155   .text:00000790 $a
+C:\Users\jaime\AppData\Local\Temp\ccEqA904.s:2205   .text:000007fc $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,395 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"cola.c"
+  21              	.Ltext0:
+  22              		.file 1 "../Jaime/cola.c"
+ 1240              		.align	2
+ 1243              	cola_global:
+ 1244 0000 0000700C 		.word	208666624
+ 1245              		.text
+ 1246              		.align	2
+ 1247              		.global	cola_init
+ 1249              	cola_init:
+ 1250              	.LFB0:
+   1:../Jaime/cola.c **** /*********************************************************************************************
+   2:../Jaime/cola.c **** * Fichero:		cola.c
+   3:../Jaime/cola.c **** * Autor:		
+   4:../Jaime/cola.c **** * Descrip:		Implementación de la cola circular de depuración
+   5:../Jaime/cola.c **** * Version:		1.0
+   6:../Jaime/cola.c **** *********************************************************************************************/
+   7:../Jaime/cola.c **** 
+   8:../Jaime/cola.c **** /*--- Ficheros de cabecera ---*/
+   9:../Jaime/cola.c **** #include "cola.h"
+  10:../Jaime/cola.c **** #include "eventos.h"
+  11:../Jaime/cola.c **** #include "timer2.h"
+  12:../Jaime/cola.c **** #include <stdint.h>
+  13:../Jaime/cola.c **** 
+  14:../Jaime/cola.c **** /*--- Variables globales del módulo ---*/
+  15:../Jaime/cola.c **** 
+  16:../Jaime/cola.c **** /* Puntero a la cola global en memoria
+  17:../Jaime/cola.c ****  * Se ubica en una dirección fija de memoria (COLA_ADDRESS)
+  18:../Jaime/cola.c ****  * definida en cola.h */
+  19:../Jaime/cola.c **** ColaDebug* cola_global = (ColaDebug*)COLA_ADDRESS;
+  20:../Jaime/cola.c **** 
+  21:../Jaime/cola.c **** /*--- Código de las funciones públicas ---*/
+  22:../Jaime/cola.c **** 
+  23:../Jaime/cola.c **** /**
+  24:../Jaime/cola.c ****  * Inicializa la cola de depuración.
+  25:../Jaime/cola.c ****  * Pone a cero todos los contadores y limpia la estructura.
+  26:../Jaime/cola.c ****  */
+  27:../Jaime/cola.c **** void cola_init(void)
+  28:../Jaime/cola.c **** {
+ 1251              		.loc 1 28 0
+ 1252              		.cfi_startproc
+ 1253              		@ Function supports interworking.
+ 1254              		@ args = 0, pretend = 0, frame = 8
+ 1255              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1256 0000 0DC0A0E1 		mov	ip, sp
+ 1257              	.LCFI0:
+ 1258              		.cfi_def_cfa_register 12
+ 1259 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1260 0008 04B04CE2 		sub	fp, ip, #4
+ 1261              		.cfi_offset 14, -8
+ 1262              		.cfi_offset 13, -12
+ 1263              		.cfi_offset 11, -16
+ 1264              	.LCFI1:
+ 1265              		.cfi_def_cfa 11, 4
+ 1266 000c 08D04DE2 		sub	sp, sp, #8
+  29:../Jaime/cola.c **** 	int i;
+  30:../Jaime/cola.c **** 
+  31:../Jaime/cola.c **** 	/* Inicializar los índices de control */
+  32:../Jaime/cola.c **** 	cola_global->indice_escritura = 0;
+ 1267              		.loc 1 32 0
+ 1268 0010 D8309FE5 		ldr	r3, .L4
+ 1269 0014 003093E5 		ldr	r3, [r3, #0]
+ 1270 0018 0020A0E3 		mov	r2, #0
+ 1271 001c 002083E5 		str	r2, [r3, #0]
+  33:../Jaime/cola.c **** 	cola_global->num_eventos = 0;
+ 1272              		.loc 1 33 0
+ 1273 0020 C8309FE5 		ldr	r3, .L4
+ 1274 0024 003093E5 		ldr	r3, [r3, #0]
+ 1275 0028 0020A0E3 		mov	r2, #0
+ 1276 002c 042083E5 		str	r2, [r3, #4]
+  34:../Jaime/cola.c **** 
+  35:../Jaime/cola.c **** 	/* Limpiar todos los eventos de la cola */
+  36:../Jaime/cola.c **** 	for (i = 0; i < COLA_SIZE; i++)
+ 1277              		.loc 1 36 0
+ 1278 0030 0030A0E3 		mov	r3, #0
+ 1279 0034 10300BE5 		str	r3, [fp, #-16]
+ 1280 0038 260000EA 		b	.L2
+ 1281              	.L3:
+  37:../Jaime/cola.c **** 	{
+  38:../Jaime/cola.c **** 		cola_global->eventos[i].instante = 0;
+ 1282              		.loc 1 38 0 discriminator 2
+ 1283 003c AC309FE5 		ldr	r3, .L4
+ 1284 0040 000093E5 		ldr	r0, [r3, #0]
+ 1285 0044 10201BE5 		ldr	r2, [fp, #-16]
+ 1286 0048 0810A0E3 		mov	r1, #8
+ 1287 004c 0230A0E1 		mov	r3, r2
+ 1288 0050 8330A0E1 		mov	r3, r3, asl #1
+ 1289 0054 023083E0 		add	r3, r3, r2
+ 1290 0058 0331A0E1 		mov	r3, r3, asl #2
+ 1291 005c 033080E0 		add	r3, r0, r3
+ 1292 0060 013083E0 		add	r3, r3, r1
+ 1293 0064 0020A0E3 		mov	r2, #0
+ 1294 0068 002083E5 		str	r2, [r3, #0]
+  39:../Jaime/cola.c **** 		cola_global->eventos[i].ID_evento = 0;
+ 1295              		.loc 1 39 0 discriminator 2
+ 1296 006c 7C309FE5 		ldr	r3, .L4
+ 1297 0070 000093E5 		ldr	r0, [r3, #0]
+ 1298 0074 10201BE5 		ldr	r2, [fp, #-16]
+ 1299 0078 0810A0E3 		mov	r1, #8
+ 1300 007c 0230A0E1 		mov	r3, r2
+ 1301 0080 8330A0E1 		mov	r3, r3, asl #1
+ 1302 0084 023083E0 		add	r3, r3, r2
+ 1303 0088 0331A0E1 		mov	r3, r3, asl #2
+ 1304 008c 033080E0 		add	r3, r0, r3
+ 1305 0090 013083E0 		add	r3, r3, r1
+ 1306 0094 0020A0E3 		mov	r2, #0
+ 1307 0098 0420C3E5 		strb	r2, [r3, #4]
+  40:../Jaime/cola.c **** 		cola_global->eventos[i].auxData = 0;
+ 1308              		.loc 1 40 0 discriminator 2
+ 1309 009c 4C309FE5 		ldr	r3, .L4
+ 1310 00a0 000093E5 		ldr	r0, [r3, #0]
+ 1311 00a4 10201BE5 		ldr	r2, [fp, #-16]
+ 1312 00a8 1010A0E3 		mov	r1, #16
+ 1313 00ac 0230A0E1 		mov	r3, r2
+ 1314 00b0 8330A0E1 		mov	r3, r3, asl #1
+ 1315 00b4 023083E0 		add	r3, r3, r2
+ 1316 00b8 0331A0E1 		mov	r3, r3, asl #2
+ 1317 00bc 033080E0 		add	r3, r0, r3
+ 1318 00c0 013083E0 		add	r3, r3, r1
+ 1319 00c4 0020A0E3 		mov	r2, #0
+ 1320 00c8 002083E5 		str	r2, [r3, #0]
+  36:../Jaime/cola.c **** 	for (i = 0; i < COLA_SIZE; i++)
+ 1321              		.loc 1 36 0 discriminator 2
+ 1322 00cc 10301BE5 		ldr	r3, [fp, #-16]
+ 1323 00d0 013083E2 		add	r3, r3, #1
+ 1324 00d4 10300BE5 		str	r3, [fp, #-16]
+ 1325              	.L2:
+  36:../Jaime/cola.c **** 	for (i = 0; i < COLA_SIZE; i++)
+ 1326              		.loc 1 36 0 is_stmt 0 discriminator 1
+ 1327 00d8 10301BE5 		ldr	r3, [fp, #-16]
+ 1328 00dc 950053E3 		cmp	r3, #149
+ 1329 00e0 D5FFFFDA 		ble	.L3
+  41:../Jaime/cola.c **** 	}
+  42:../Jaime/cola.c **** }
+ 1330              		.loc 1 42 0 is_stmt 1
+ 1331 00e4 0CD04BE2 		sub	sp, fp, #12
+ 1332 00e8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1333 00ec 1EFF2FE1 		bx	lr
+ 1334              	.L5:
+ 1335              		.align	2
+ 1336              	.L4:
+ 1337 00f0 00000000 		.word	cola_global
+ 1338              		.cfi_endproc
+ 1339              	.LFE0:
+ 1341              		.align	2
+ 1342              		.global	cola_depuracion
+ 1344              	cola_depuracion:
+ 1345              	.LFB1:
+  43:../Jaime/cola.c **** 
+  44:../Jaime/cola.c **** /**
+  45:../Jaime/cola.c ****  * Introduce un nuevo evento en la cola de depuración.
+  46:../Jaime/cola.c ****  * 
+  47:../Jaime/cola.c ****  * Implementa una cola circular (FIFO):
+  48:../Jaime/cola.c ****  * - Si la cola no está llena, añade el evento al final
+  49:../Jaime/cola.c ****  * - Si la cola está llena, sobreescribe el evento más antiguo
+  50:../Jaime/cola.c ****  * 
+  51:../Jaime/cola.c ****  * @param instant Instante de tiempo en microsegundos (normalmente de timer2_count())
+  52:../Jaime/cola.c ****  * @param ID_evento Identificador del tipo de evento (ver eventos.h)
+  53:../Jaime/cola.c ****  * @param auxData Datos auxiliares específicos del evento
+  54:../Jaime/cola.c ****  */
+  55:../Jaime/cola.c **** void cola_depuracion(uint32_t instant, uint8_t ID_evento, uint32_t auxData)
+  56:../Jaime/cola.c **** {
+ 1346              		.loc 1 56 0
+ 1347              		.cfi_startproc
+ 1348              		@ Function supports interworking.
+ 1349              		@ args = 0, pretend = 0, frame = 16
+ 1350              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1351 00f4 0DC0A0E1 		mov	ip, sp
+ 1352              	.LCFI2:
+ 1353              		.cfi_def_cfa_register 12
+ 1354 00f8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1355 00fc 04B04CE2 		sub	fp, ip, #4
+ 1356              		.cfi_offset 14, -8
+ 1357              		.cfi_offset 13, -12
+ 1358              		.cfi_offset 11, -16
+ 1359              	.LCFI3:
+ 1360              		.cfi_def_cfa 11, 4
+ 1361 0100 10D04DE2 		sub	sp, sp, #16
+ 1362 0104 10000BE5 		str	r0, [fp, #-16]
+ 1363 0108 0130A0E1 		mov	r3, r1
+ 1364 010c 18200BE5 		str	r2, [fp, #-24]
+ 1365 0110 11304BE5 		strb	r3, [fp, #-17]
+  57:../Jaime/cola.c **** 	/* Guardar el evento en la posición actual de escritura */
+  58:../Jaime/cola.c **** 	cola_global->eventos[cola_global->indice_escritura].instante = instant;
+ 1366              		.loc 1 58 0
+ 1367 0114 F8309FE5 		ldr	r3, .L8
+ 1368 0118 000093E5 		ldr	r0, [r3, #0]
+ 1369 011c F0309FE5 		ldr	r3, .L8
+ 1370 0120 003093E5 		ldr	r3, [r3, #0]
+ 1371 0124 002093E5 		ldr	r2, [r3, #0]
+ 1372 0128 0810A0E3 		mov	r1, #8
+ 1373 012c 0230A0E1 		mov	r3, r2
+ 1374 0130 8330A0E1 		mov	r3, r3, asl #1
+ 1375 0134 023083E0 		add	r3, r3, r2
+ 1376 0138 0331A0E1 		mov	r3, r3, asl #2
+ 1377 013c 033080E0 		add	r3, r0, r3
+ 1378 0140 013083E0 		add	r3, r3, r1
+ 1379 0144 10201BE5 		ldr	r2, [fp, #-16]
+ 1380 0148 002083E5 		str	r2, [r3, #0]
+  59:../Jaime/cola.c **** 	cola_global->eventos[cola_global->indice_escritura].ID_evento = ID_evento;
+ 1381              		.loc 1 59 0
+ 1382 014c C0309FE5 		ldr	r3, .L8
+ 1383 0150 000093E5 		ldr	r0, [r3, #0]
+ 1384 0154 B8309FE5 		ldr	r3, .L8
+ 1385 0158 003093E5 		ldr	r3, [r3, #0]
+ 1386 015c 002093E5 		ldr	r2, [r3, #0]
+ 1387 0160 0810A0E3 		mov	r1, #8
+ 1388 0164 0230A0E1 		mov	r3, r2
+ 1389 0168 8330A0E1 		mov	r3, r3, asl #1
+ 1390 016c 023083E0 		add	r3, r3, r2
+ 1391 0170 0331A0E1 		mov	r3, r3, asl #2
+ 1392 0174 033080E0 		add	r3, r0, r3
+ 1393 0178 013083E0 		add	r3, r3, r1
+ 1394 017c 11205BE5 		ldrb	r2, [fp, #-17]
+ 1395 0180 0420C3E5 		strb	r2, [r3, #4]
+  60:../Jaime/cola.c **** 	cola_global->eventos[cola_global->indice_escritura].auxData = auxData;
+ 1396              		.loc 1 60 0
+ 1397 0184 88309FE5 		ldr	r3, .L8
+ 1398 0188 000093E5 		ldr	r0, [r3, #0]
+ 1399 018c 80309FE5 		ldr	r3, .L8
+ 1400 0190 003093E5 		ldr	r3, [r3, #0]
+ 1401 0194 002093E5 		ldr	r2, [r3, #0]
+ 1402 0198 1010A0E3 		mov	r1, #16
+ 1403 019c 0230A0E1 		mov	r3, r2
+ 1404 01a0 8330A0E1 		mov	r3, r3, asl #1
+ 1405 01a4 023083E0 		add	r3, r3, r2
+ 1406 01a8 0331A0E1 		mov	r3, r3, asl #2
+ 1407 01ac 033080E0 		add	r3, r0, r3
+ 1408 01b0 013083E0 		add	r3, r3, r1
+ 1409 01b4 18201BE5 		ldr	r2, [fp, #-24]
+ 1410 01b8 002083E5 		str	r2, [r3, #0]
+  61:../Jaime/cola.c **** 
+  62:../Jaime/cola.c **** 	/* Incrementar el índice de escritura de forma circular */
+  63:../Jaime/cola.c **** 	cola_global->indice_escritura++;
+ 1411              		.loc 1 63 0
+ 1412 01bc 50309FE5 		ldr	r3, .L8
+ 1413 01c0 003093E5 		ldr	r3, [r3, #0]
+ 1414 01c4 002093E5 		ldr	r2, [r3, #0]
+ 1415 01c8 012082E2 		add	r2, r2, #1
+ 1416 01cc 002083E5 		str	r2, [r3, #0]
+  64:../Jaime/cola.c **** 	if (cola_global->indice_escritura >= COLA_SIZE)
+ 1417              		.loc 1 64 0
+ 1418 01d0 3C309FE5 		ldr	r3, .L8
+ 1419 01d4 003093E5 		ldr	r3, [r3, #0]
+ 1420 01d8 003093E5 		ldr	r3, [r3, #0]
+ 1421 01dc 950053E3 		cmp	r3, #149
+ 1422 01e0 0300009A 		bls	.L7
+  65:../Jaime/cola.c **** 	{
+  66:../Jaime/cola.c **** 		cola_global->indice_escritura = 0;  // Volver al inicio (circular)
+ 1423              		.loc 1 66 0
+ 1424 01e4 28309FE5 		ldr	r3, .L8
+ 1425 01e8 003093E5 		ldr	r3, [r3, #0]
+ 1426 01ec 0020A0E3 		mov	r2, #0
+ 1427 01f0 002083E5 		str	r2, [r3, #0]
+ 1428              	.L7:
+  67:../Jaime/cola.c **** 	}
+  68:../Jaime/cola.c **** 
+  69:../Jaime/cola.c **** 	/* Incrementar el contador total de eventos (para estadísticas) */
+  70:../Jaime/cola.c **** 	cola_global->num_eventos++;
+ 1429              		.loc 1 70 0
+ 1430 01f4 18309FE5 		ldr	r3, .L8
+ 1431 01f8 003093E5 		ldr	r3, [r3, #0]
+ 1432 01fc 042093E5 		ldr	r2, [r3, #4]
+ 1433 0200 012082E2 		add	r2, r2, #1
+ 1434 0204 042083E5 		str	r2, [r3, #4]
+  71:../Jaime/cola.c **** }
+ 1435              		.loc 1 71 0
+ 1436 0208 0CD04BE2 		sub	sp, fp, #12
+ 1437 020c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1438 0210 1EFF2FE1 		bx	lr
+ 1439              	.L9:
+ 1440              		.align	2
+ 1441              	.L8:
+ 1442 0214 00000000 		.word	cola_global
+ 1443              		.cfi_endproc
+ 1444              	.LFE1:
+ 1446              		.align	2
+ 1447              		.global	cola_get_num_eventos
+ 1449              	cola_get_num_eventos:
+ 1450              	.LFB2:
+  72:../Jaime/cola.c **** 
+  73:../Jaime/cola.c **** /**
+  74:../Jaime/cola.c ****  * Obtiene el número total de eventos registrados.
+  75:../Jaime/cola.c ****  * 
+  76:../Jaime/cola.c ****  * @return Número total de eventos desde la inicialización
+  77:../Jaime/cola.c ****  *         Puede ser mayor que COLA_SIZE si la cola ha dado varias vueltas
+  78:../Jaime/cola.c ****  */
+  79:../Jaime/cola.c **** uint32_t cola_get_num_eventos(void)
+  80:../Jaime/cola.c **** {
+ 1451              		.loc 1 80 0
+ 1452              		.cfi_startproc
+ 1453              		@ Function supports interworking.
+ 1454              		@ args = 0, pretend = 0, frame = 0
+ 1455              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1456 0218 0DC0A0E1 		mov	ip, sp
+ 1457              	.LCFI4:
+ 1458              		.cfi_def_cfa_register 12
+ 1459 021c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1460 0220 04B04CE2 		sub	fp, ip, #4
+ 1461              		.cfi_offset 14, -8
+ 1462              		.cfi_offset 13, -12
+ 1463              		.cfi_offset 11, -16
+ 1464              	.LCFI5:
+ 1465              		.cfi_def_cfa 11, 4
+  81:../Jaime/cola.c **** 	return cola_global->num_eventos;
+ 1466              		.loc 1 81 0
+ 1467 0224 14309FE5 		ldr	r3, .L11
+ 1468 0228 003093E5 		ldr	r3, [r3, #0]
+ 1469 022c 043093E5 		ldr	r3, [r3, #4]
+  82:../Jaime/cola.c **** }
+ 1470              		.loc 1 82 0
+ 1471 0230 0300A0E1 		mov	r0, r3
+ 1472 0234 0CD04BE2 		sub	sp, fp, #12
+ 1473 0238 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1474 023c 1EFF2FE1 		bx	lr
+ 1475              	.L12:
+ 1476              		.align	2
+ 1477              	.L11:
+ 1478 0240 00000000 		.word	cola_global
+ 1479              		.cfi_endproc
+ 1480              	.LFE2:
+ 1482              		.align	2
+ 1483              		.global	cola_get_indice
+ 1485              	cola_get_indice:
+ 1486              	.LFB3:
+  83:../Jaime/cola.c **** 
+  84:../Jaime/cola.c **** /**
+  85:../Jaime/cola.c ****  * Obtiene el índice actual de escritura.
+  86:../Jaime/cola.c ****  * 
+  87:../Jaime/cola.c ****  * @return Índice donde se escribirá el próximo evento (0 a COLA_SIZE-1)
+  88:../Jaime/cola.c ****  */
+  89:../Jaime/cola.c **** uint32_t cola_get_indice(void)
+  90:../Jaime/cola.c **** {
+ 1487              		.loc 1 90 0
+ 1488              		.cfi_startproc
+ 1489              		@ Function supports interworking.
+ 1490              		@ args = 0, pretend = 0, frame = 0
+ 1491              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1492 0244 0DC0A0E1 		mov	ip, sp
+ 1493              	.LCFI6:
+ 1494              		.cfi_def_cfa_register 12
+ 1495 0248 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1496 024c 04B04CE2 		sub	fp, ip, #4
+ 1497              		.cfi_offset 14, -8
+ 1498              		.cfi_offset 13, -12
+ 1499              		.cfi_offset 11, -16
+ 1500              	.LCFI7:
+ 1501              		.cfi_def_cfa 11, 4
+  91:../Jaime/cola.c **** 	return cola_global->indice_escritura;
+ 1502              		.loc 1 91 0
+ 1503 0250 14309FE5 		ldr	r3, .L14
+ 1504 0254 003093E5 		ldr	r3, [r3, #0]
+ 1505 0258 003093E5 		ldr	r3, [r3, #0]
+  92:../Jaime/cola.c **** }...
+ 1506              		.loc 1 92 0
+ 1507 025c 0300A0E1 		mov	r0, r3
+ 1508 0260 0CD04BE2 		sub	sp, fp, #12
+ 1509 0264 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1510 0268 1EFF2FE1 		bx	lr
+ 1511              	.L15:
+ 1512              		.align	2
+ 1513              	.L14:
+ 1514 026c 00000000 		.word	cola_global
+ 1515              		.cfi_endproc
+ 1516              	.LFE3:
+ 1518              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 cola.c
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1243   .data:00000000 cola_global
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1240   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1246   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1249   .text:00000000 cola_init
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1337   .text:000000f0 $d
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1341   .text:000000f4 $a
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1344   .text:000000f4 cola_depuracion
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1442   .text:00000214 $d
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1446   .text:00000218 $a
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1449   .text:00000218 cola_get_num_eventos
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1478   .text:00000240 $d
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1482   .text:00000244 $a
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1485   .text:00000244 cola_get_indice
+C:\Users\jaime\AppData\Local\Temp\cc4WjVO2.s:1514   .text:0000026c $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

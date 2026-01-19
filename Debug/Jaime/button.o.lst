@@ -1,0 +1,3318 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"button.c"
+  21              	.Ltext0:
+  22              		.file 1 "../Jaime/button.c"
+ 2987              		.align	2
+ 2989              	celda_poner_valor:
+ 2990              	.LFB1:
+   1:../Jaime/celda.h **** 	/* guarda para evitar inclusiones mÃºltiples (include guard) */
+   2:../Jaime/celda.h **** 	#ifndef CELDA_H
+   3:../Jaime/celda.h **** 	#define CELDA_H
+   4:../Jaime/celda.h **** 	
+   5:../Jaime/celda.h **** 	#include <inttypes.h>
+   6:../Jaime/celda.h **** 	
+   7:../Jaime/celda.h **** 	/* Cada celda se codifica en 16 bits
+   8:../Jaime/celda.h **** 	 * bits [15,7]: los 9 bits mÃ¡s significativos representan el vector de candidatos,
+   9:../Jaime/celda.h **** 	 * si el bit 7 + valor - 1 estÃ¡ a 0, valor es candidato, 1 en caso contrario
+  10:../Jaime/celda.h **** 	 * bit 6: no empleado
+  11:../Jaime/celda.h **** 	 * bit 5: error
+  12:../Jaime/celda.h **** 	 * bit 4: pista
+  13:../Jaime/celda.h **** 	 * bits [3,0]: valor de la celda
+  14:../Jaime/celda.h **** 	 */
+  15:../Jaime/celda.h **** 	
+  16:../Jaime/celda.h **** enum { BIT_CANDIDATOS = 7, BIT_NO_USADO = 6, BIT_ERROR = 5, BIT_PISTA = 4 };
+  17:../Jaime/celda.h **** 	
+  18:../Jaime/celda.h **** 	typedef uint16_t CELDA;
+  19:../Jaime/celda.h **** 	
+  20:../Jaime/celda.h **** 	/* *****************************************************************************
+  21:../Jaime/celda.h **** 	 * elimina el candidato del valor almacenado en la celda indicada */
+  22:../Jaime/celda.h **** 	__inline static void
+  23:../Jaime/celda.h **** 	celda_eliminar_candidato(CELDA *celdaptr, uint8_t valor)
+  24:../Jaime/celda.h **** 	{
+  25:../Jaime/celda.h **** 		*celdaptr = *celdaptr | (0x0001 << (BIT_CANDIDATOS + valor - 1));
+  26:../Jaime/celda.h **** 	}
+  27:../Jaime/celda.h **** 	
+  28:../Jaime/celda.h **** 	/* *****************************************************************************
+  29:../Jaime/celda.h **** 	 * modifica el valor almacenado en la celda indicada */
+  30:../Jaime/celda.h **** 	__inline static void
+  31:../Jaime/celda.h **** 	celda_poner_valor(CELDA *celdaptr, uint8_t val)
+  32:../Jaime/celda.h **** 	{
+ 2991              		.loc 17 32 0
+ 2992              		.cfi_startproc
+ 2993              		@ Function supports interworking.
+ 2994              		@ args = 0, pretend = 0, frame = 8
+ 2995              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2996 0000 0DC0A0E1 		mov	ip, sp
+ 2997              	.LCFI0:
+ 2998              		.cfi_def_cfa_register 12
+ 2999 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3000 0008 04B04CE2 		sub	fp, ip, #4
+ 3001              		.cfi_offset 14, -8
+ 3002              		.cfi_offset 13, -12
+ 3003              		.cfi_offset 11, -16
+ 3004              	.LCFI1:
+ 3005              		.cfi_def_cfa 11, 4
+ 3006 000c 08D04DE2 		sub	sp, sp, #8
+ 3007 0010 10000BE5 		str	r0, [fp, #-16]
+ 3008 0014 0130A0E1 		mov	r3, r1
+ 3009 0018 11304BE5 		strb	r3, [fp, #-17]
+  33:../Jaime/celda.h **** 		*celdaptr = (*celdaptr & 0xFFF0) | (val & 0x000F);
+ 3010              		.loc 17 33 0
+ 3011 001c 10301BE5 		ldr	r3, [fp, #-16]
+ 3012 0020 B030D3E1 		ldrh	r3, [r3, #0]
+ 3013 0024 0338A0E1 		mov	r3, r3, asl #16
+ 3014 0028 2338A0E1 		mov	r3, r3, lsr #16
+ 3015 002c 0F30C3E3 		bic	r3, r3, #15
+ 3016 0030 0338A0E1 		mov	r3, r3, asl #16
+ 3017 0034 2328A0E1 		mov	r2, r3, lsr #16
+ 3018 0038 11305BE5 		ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+ 3019 003c 0338A0E1 		mov	r3, r3, asl #16
+ 3020 0040 2338A0E1 		mov	r3, r3, lsr #16
+ 3021 0044 0F3003E2 		and	r3, r3, #15
+ 3022 0048 0338A0E1 		mov	r3, r3, asl #16
+ 3023 004c 2338A0E1 		mov	r3, r3, lsr #16
+ 3024 0050 033082E1 		orr	r3, r2, r3
+ 3025 0054 0338A0E1 		mov	r3, r3, asl #16
+ 3026 0058 2338A0E1 		mov	r3, r3, lsr #16
+ 3027 005c 0338A0E1 		mov	r3, r3, asl #16
+ 3028 0060 2328A0E1 		mov	r2, r3, lsr #16
+ 3029 0064 10301BE5 		ldr	r3, [fp, #-16]
+ 3030 0068 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  34:../Jaime/celda.h **** 	}
+ 3031              		.loc 17 34 0
+ 3032 006c 0CD04BE2 		sub	sp, fp, #12
+ 3033 0070 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3034 0074 1EFF2FE1 		bx	lr
+ 3035              		.cfi_endproc
+ 3036              	.LFE1:
+ 3038              		.align	2
+ 3040              	celda_leer_valor:
+ 3041              	.LFB2:
+  35:../Jaime/celda.h **** 	
+  36:../Jaime/celda.h **** 	/* *****************************************************************************
+  37:../Jaime/celda.h **** 	 * extrae el valor almacenado en los 16 bits de una celda */
+  38:../Jaime/celda.h ****         __inline static uint8_t
+  39:../Jaime/celda.h ****         celda_leer_valor(CELDA celda)
+  40:../Jaime/celda.h ****         {
+ 3042              		.loc 17 40 0
+ 3043              		.cfi_startproc
+ 3044              		@ Function supports interworking.
+ 3045              		@ args = 0, pretend = 0, frame = 8
+ 3046              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3047 0078 0DC0A0E1 		mov	ip, sp
+ 3048              	.LCFI2:
+ 3049              		.cfi_def_cfa_register 12
+ 3050 007c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3051 0080 04B04CE2 		sub	fp, ip, #4
+ 3052              		.cfi_offset 14, -8
+ 3053              		.cfi_offset 13, -12
+ 3054              		.cfi_offset 11, -16
+ 3055              	.LCFI3:
+ 3056              		.cfi_def_cfa 11, 4
+ 3057 0084 08D04DE2 		sub	sp, sp, #8
+ 3058 0088 0030A0E1 		mov	r3, r0
+ 3059 008c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  41:../Jaime/celda.h ****                 return (celda & 0x000F);
+ 3060              		.loc 17 41 0
+ 3061 0090 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 3062 0094 FF3003E2 		and	r3, r3, #255
+ 3063 0098 0F3003E2 		and	r3, r3, #15
+ 3064 009c FF3003E2 		and	r3, r3, #255
+  42:../Jaime/celda.h ****         }
+ 3065              		.loc 17 42 0
+ 3066 00a0 0300A0E1 		mov	r0, r3
+ 3067 00a4 0CD04BE2 		sub	sp, fp, #12
+ 3068 00a8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3069 00ac 1EFF2FE1 		bx	lr
+ 3070              		.cfi_endproc
+ 3071              	.LFE2:
+ 3073              		.align	2
+ 3075              	celda_es_candidato:
+ 3076              	.LFB3:
+  43:../Jaime/celda.h **** 
+  44:../Jaime/celda.h ****         /* *****************************************************************************
+  45:../Jaime/celda.h ****          * comprueba si el valor es candidato en la celda indicada */
+  46:../Jaime/celda.h ****         __inline static int
+  47:../Jaime/celda.h ****         celda_es_candidato(CELDA celda, uint8_t valor)
+  48:../Jaime/celda.h ****         {
+ 3077              		.loc 17 48 0
+ 3078              		.cfi_startproc
+ 3079              		@ Function supports interworking.
+ 3080              		@ args = 0, pretend = 0, frame = 8
+ 3081              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3082 00b0 0DC0A0E1 		mov	ip, sp
+ 3083              	.LCFI4:
+ 3084              		.cfi_def_cfa_register 12
+ 3085 00b4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3086 00b8 04B04CE2 		sub	fp, ip, #4
+ 3087              		.cfi_offset 14, -8
+ 3088              		.cfi_offset 13, -12
+ 3089              		.cfi_offset 11, -16
+ 3090              	.LCFI5:
+ 3091              		.cfi_def_cfa 11, 4
+ 3092 00bc 08D04DE2 		sub	sp, sp, #8
+ 3093 00c0 0020A0E1 		mov	r2, r0
+ 3094 00c4 0130A0E1 		mov	r3, r1
+ 3095 00c8 BE204BE1 		strh	r2, [fp, #-14]	@ movhi
+ 3096 00cc 0F304BE5 		strb	r3, [fp, #-15]
+  49:../Jaime/celda.h ****                 return (celda & (0x0001 << (BIT_CANDIDATOS + valor - 1))) == 0;
+ 3097              		.loc 17 49 0
+ 3098 00d0 BE205BE1 		ldrh	r2, [fp, #-14]
+ 3099 00d4 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 3100 00d8 063083E2 		add	r3, r3, #6
+ 3101 00dc 5233A0E1 		mov	r3, r2, asr r3
+ 3102 00e0 013003E2 		and	r3, r3, #1
+ 3103 00e4 000053E3 		cmp	r3, #0
+ 3104 00e8 0030A013 		movne	r3, #0
+ 3105 00ec 0130A003 		moveq	r3, #1
+  50:../Jaime/celda.h ****         }
+ 3106              		.loc 17 50 0
+ 3107 00f0 0300A0E1 		mov	r0, r3
+ 3108 00f4 0CD04BE2 		sub	sp, fp, #12
+ 3109 00f8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3110 00fc 1EFF2FE1 		bx	lr
+ 3111              		.cfi_endproc
+ 3112              	.LFE3:
+ 3114              		.align	2
+ 3116              	celda_es_pista:
+ 3117              	.LFB4:
+  51:../Jaime/celda.h **** 
+  52:../Jaime/celda.h ****         /* *****************************************************************************
+  53:../Jaime/celda.h ****          * comprueba si la celda es una pista */
+  54:../Jaime/celda.h ****         __inline static int
+  55:../Jaime/celda.h ****         celda_es_pista(CELDA celda)
+  56:../Jaime/celda.h ****         {
+ 3118              		.loc 17 56 0
+ 3119              		.cfi_startproc
+ 3120              		@ Function supports interworking.
+ 3121              		@ args = 0, pretend = 0, frame = 8
+ 3122              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3123 0100 0DC0A0E1 		mov	ip, sp
+ 3124              	.LCFI6:
+ 3125              		.cfi_def_cfa_register 12
+ 3126 0104 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3127 0108 04B04CE2 		sub	fp, ip, #4
+ 3128              		.cfi_offset 14, -8
+ 3129              		.cfi_offset 13, -12
+ 3130              		.cfi_offset 11, -16
+ 3131              	.LCFI7:
+ 3132              		.cfi_def_cfa 11, 4
+ 3133 010c 08D04DE2 		sub	sp, sp, #8
+ 3134 0110 0030A0E1 		mov	r3, r0
+ 3135 0114 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  57:../Jaime/celda.h ****                 return (celda & (1 << BIT_PISTA)) != 0;
+ 3136              		.loc 17 57 0
+ 3137 0118 BE305BE1 		ldrh	r3, [fp, #-14]
+ 3138 011c 103003E2 		and	r3, r3, #16
+ 3139 0120 000053E3 		cmp	r3, #0
+ 3140 0124 0030A003 		moveq	r3, #0
+ 3141 0128 0130A013 		movne	r3, #1
+  58:../Jaime/celda.h ****         }
+ 3142              		.loc 17 58 0
+ 3143 012c 0300A0E1 		mov	r0, r3
+ 3144 0130 0CD04BE2 		sub	sp, fp, #12
+ 3145 0134 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3146 0138 1EFF2FE1 		bx	lr
+ 3147              		.cfi_endproc
+ 3148              	.LFE4:
+ 3150              		.align	2
+ 3152              	celda_marcar_error:
+ 3153              	.LFB5:
+  59:../Jaime/celda.h **** 
+  60:../Jaime/celda.h ****         /* *****************************************************************************
+  61:../Jaime/celda.h ****          * marca o limpia el bit de error de la celda */
+  62:../Jaime/celda.h ****         __inline static void
+  63:../Jaime/celda.h ****         celda_marcar_error(CELDA *celdaptr)
+  64:../Jaime/celda.h ****         {
+ 3154              		.loc 17 64 0
+ 3155              		.cfi_startproc
+ 3156              		@ Function supports interworking.
+ 3157              		@ args = 0, pretend = 0, frame = 8
+ 3158              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3159 013c 0DC0A0E1 		mov	ip, sp
+ 3160              	.LCFI8:
+ 3161              		.cfi_def_cfa_register 12
+ 3162 0140 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3163 0144 04B04CE2 		sub	fp, ip, #4
+ 3164              		.cfi_offset 14, -8
+ 3165              		.cfi_offset 13, -12
+ 3166              		.cfi_offset 11, -16
+ 3167              	.LCFI9:
+ 3168              		.cfi_def_cfa 11, 4
+ 3169 0148 08D04DE2 		sub	sp, sp, #8
+ 3170 014c 10000BE5 		str	r0, [fp, #-16]
+  65:../Jaime/celda.h ****                 *celdaptr |= (1 << BIT_ERROR);
+ 3171              		.loc 17 65 0
+ 3172 0150 10301BE5 		ldr	r3, [fp, #-16]
+ 3173 0154 B030D3E1 		ldrh	r3, [r3, #0]
+ 3174 0158 203083E3 		orr	r3, r3, #32
+ 3175 015c 0338A0E1 		mov	r3, r3, asl #16
+ 3176 0160 2328A0E1 		mov	r2, r3, lsr #16
+ 3177 0164 10301BE5 		ldr	r3, [fp, #-16]
+ 3178 0168 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  66:../Jaime/celda.h ****         }
+ 3179              		.loc 17 66 0
+ 3180 016c 0CD04BE2 		sub	sp, fp, #12
+ 3181 0170 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3182 0174 1EFF2FE1 		bx	lr
+ 3183              		.cfi_endproc
+ 3184              	.LFE5:
+ 3186              		.align	2
+ 3188              	celda_limpiar_error:
+ 3189              	.LFB6:
+  67:../Jaime/celda.h **** 
+  68:../Jaime/celda.h ****         __inline static void
+  69:../Jaime/celda.h ****         celda_limpiar_error(CELDA *celdaptr)
+  70:../Jaime/celda.h ****         {
+ 3190              		.loc 17 70 0
+ 3191              		.cfi_startproc
+ 3192              		@ Function supports interworking.
+ 3193              		@ args = 0, pretend = 0, frame = 8
+ 3194              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3195 0178 0DC0A0E1 		mov	ip, sp
+ 3196              	.LCFI10:
+ 3197              		.cfi_def_cfa_register 12
+ 3198 017c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3199 0180 04B04CE2 		sub	fp, ip, #4
+ 3200              		.cfi_offset 14, -8
+ 3201              		.cfi_offset 13, -12
+ 3202              		.cfi_offset 11, -16
+ 3203              	.LCFI11:
+ 3204              		.cfi_def_cfa 11, 4
+ 3205 0184 08D04DE2 		sub	sp, sp, #8
+ 3206 0188 10000BE5 		str	r0, [fp, #-16]
+  71:../Jaime/celda.h ****                 *celdaptr &= ~(1 << BIT_ERROR);
+ 3207              		.loc 17 71 0
+ 3208 018c 10301BE5 		ldr	r3, [fp, #-16]
+ 3209 0190 B030D3E1 		ldrh	r3, [r3, #0]
+ 3210 0194 2030C3E3 		bic	r3, r3, #32
+ 3211 0198 0338A0E1 		mov	r3, r3, asl #16
+ 3212 019c 2328A0E1 		mov	r2, r3, lsr #16
+ 3213 01a0 10301BE5 		ldr	r3, [fp, #-16]
+ 3214 01a4 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  72:../Jaime/celda.h ****         }
+ 3215              		.loc 17 72 0
+ 3216 01a8 0CD04BE2 		sub	sp, fp, #12
+ 3217 01ac 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3218 01b0 1EFF2FE1 		bx	lr
+ 3219              		.cfi_endproc
+ 3220              	.LFE6:
+ 3222              		.bss
+ 3223              	estado_juego:
+ 3224 0000 00       		.space	1
+ 3225              	int_count:
+ 3226 0001 00       		.space	1
+ 3227              	fila:
+ 3228 0002 00       		.space	1
+ 3229              	columna:
+ 3230 0003 00       		.space	1
+ 3231              	valor:
+ 3232 0004 00       		.space	1
+ 3233              	valor_previo:
+ 3234 0005 00       		.space	1
+ 3235              	pantalla_mostrada:
+ 3236 0006 00       		.space	1
+ 3237 0007 00       		.align	2
+ 3238              	tiempo_inicio:
+ 3239 0008 00000000 		.space	4
+ 3240              		.align	2
+ 3241              	tiempo_final:
+ 3242 000c 00000000 		.space	4
+ 3243              		.data
+ 3244              		.align	5
+ 3247              	cuadricula_C_C:
+ 3248 0000 1500     		.short	21
+ 3249 0002 0000     		.short	0
+ 3250 0004 0000     		.short	0
+ 3251 0006 1300     		.short	19
+ 3252 0008 0000     		.short	0
+ 3253 000a 0000     		.short	0
+ 3254 000c 0000     		.short	0
+ 3255 000e 0000     		.short	0
+ 3256 0010 0000     		.short	0
+ 3257 0012 0000     		.short	0
+ 3258 0014 0000     		.short	0
+ 3259 0016 0000     		.short	0
+ 3260 0018 0000     		.short	0
+ 3261 001a 0000     		.short	0
+ 3262 001c 0000     		.short	0
+ 3263 001e 0000     		.short	0
+ 3264 0020 0000     		.short	0
+ 3265 0022 0000     		.short	0
+ 3266 0024 0000     		.short	0
+ 3267 0026 0000     		.short	0
+ 3268 0028 1900     		.short	25
+ 3269 002a 0000     		.short	0
+ 3270 002c 0000     		.short	0
+ 3271 002e 0000     		.short	0
+ 3272 0030 1500     		.short	21
+ 3273 0032 0000     		.short	0
+ 3274 0034 0000     		.short	0
+ 3275 0036 0000     		.short	0
+ 3276 0038 0000     		.short	0
+ 3277 003a 0000     		.short	0
+ 3278 003c 0000     		.short	0
+ 3279 003e 0000     		.short	0
+ 3280 0040 0000     		.short	0
+ 3281 0042 1900     		.short	25
+ 3282 0044 1600     		.short	22
+ 3283 0046 1700     		.short	23
+ 3284 0048 0000     		.short	0
+ 3285 004a 1500     		.short	21
+ 3286 004c 0000     		.short	0
+ 3287 004e 1300     		.short	19
+ 3288 0050 0000     		.short	0
+ 3289 0052 0000     		.short	0
+ 3290 0054 0000     		.short	0
+ 3291 0056 0000     		.short	0
+ 3292 0058 0000     		.short	0
+ 3293 005a 0000     		.short	0
+ 3294 005c 0000     		.short	0
+ 3295 005e 0000     		.short	0
+ 3296 0060 0000     		.short	0
+ 3297 0062 1800     		.short	24
+ 3298 0064 0000     		.short	0
+ 3299 0066 1900     		.short	25
+ 3300 0068 0000     		.short	0
+ 3301 006a 0000     		.short	0
+ 3302 006c 1600     		.short	22
+ 3303 006e 0000     		.short	0
+ 3304 0070 0000     		.short	0
+ 3305 0072 0000     		.short	0
+ 3306 0074 0000     		.short	0
+ 3307 0076 0000     		.short	0
+ 3308 0078 0000     		.short	0
+ 3309 007a 0000     		.short	0
+ 3310 007c 0000     		.short	0
+ 3311 007e 0000     		.short	0
+ 3312 0080 0000     		.short	0
+ 3313 0082 0000     		.short	0
+ 3314 0084 1500     		.short	21
+ 3315 0086 1800     		.short	24
+ 3316 0088 1600     		.short	22
+ 3317 008a 1100     		.short	17
+ 3318 008c 1400     		.short	20
+ 3319 008e 0000     		.short	0
+ 3320 0090 0000     		.short	0
+ 3321 0092 0000     		.short	0
+ 3322 0094 0000     		.short	0
+ 3323 0096 0000     		.short	0
+ 3324 0098 0000     		.short	0
+ 3325 009a 0000     		.short	0
+ 3326 009c 0000     		.short	0
+ 3327 009e 0000     		.short	0
+ 3328 00a0 0000     		.short	0
+ 3329 00a2 0000     		.short	0
+ 3330 00a4 1400     		.short	20
+ 3331 00a6 1200     		.short	18
+ 3332 00a8 0000     		.short	0
+ 3333 00aa 1300     		.short	19
+ 3334 00ac 0000     		.short	0
+ 3335 00ae 1700     		.short	23
+ 3336 00b0 0000     		.short	0
+ 3337 00b2 0000     		.short	0
+ 3338 00b4 0000     		.short	0
+ 3339 00b6 0000     		.short	0
+ 3340 00b8 0000     		.short	0
+ 3341 00ba 0000     		.short	0
+ 3342 00bc 0000     		.short	0
+ 3343 00be 0000     		.short	0
+ 3344 00c0 0000     		.short	0
+ 3345 00c2 1700     		.short	23
+ 3346 00c4 0000     		.short	0
+ 3347 00c6 1500     		.short	21
+ 3348 00c8 0000     		.short	0
+ 3349 00ca 1900     		.short	25
+ 3350 00cc 1200     		.short	18
+ 3351 00ce 1600     		.short	22
+ 3352 00d0 0000     		.short	0
+ 3353 00d2 0000     		.short	0
+ 3354 00d4 0000     		.short	0
+ 3355 00d6 0000     		.short	0
+ 3356 00d8 0000     		.short	0
+ 3357 00da 0000     		.short	0
+ 3358 00dc 0000     		.short	0
+ 3359 00de 0000     		.short	0
+ 3360 00e0 1600     		.short	22
+ 3361 00e2 0000     		.short	0
+ 3362 00e4 0000     		.short	0
+ 3363 00e6 0000     		.short	0
+ 3364 00e8 1800     		.short	24
+ 3365 00ea 0000     		.short	0
+ 3366 00ec 0000     		.short	0
+ 3367 00ee 0000     		.short	0
+ 3368 00f0 0000     		.short	0
+ 3369 00f2 0000     		.short	0
+ 3370 00f4 0000     		.short	0
+ 3371 00f6 0000     		.short	0
+ 3372 00f8 0000     		.short	0
+ 3373 00fa 0000     		.short	0
+ 3374 00fc 0000     		.short	0
+ 3375 00fe 0000     		.short	0
+ 3376 0100 0000     		.short	0
+ 3377 0102 0000     		.short	0
+ 3378 0104 0000     		.short	0
+ 3379 0106 0000     		.short	0
+ 3380 0108 0000     		.short	0
+ 3381 010a 1200     		.short	18
+ 3382 010c 0000     		.short	0
+ 3383 010e 0000     		.short	0
+ 3384 0110 1100     		.short	17
+ 3385 0112 0000     		.short	0
+ 3386 0114 0000     		.short	0
+ 3387 0116 0000     		.short	0
+ 3388 0118 0000     		.short	0
+ 3389 011a 0000     		.short	0
+ 3390 011c 0000     		.short	0
+ 3391 011e 0000     		.short	0
+ 3392              		.align	5
+ 3395              	cuadricula_C_ARM:
+ 3396 0120 1500     		.short	21
+ 3397 0122 0000     		.short	0
+ 3398 0124 0000     		.short	0
+ 3399 0126 1300     		.short	19
+ 3400 0128 0000     		.short	0
+ 3401 012a 0000     		.short	0
+ 3402 012c 0000     		.short	0
+ 3403 012e 0000     		.short	0
+ 3404 0130 0000     		.short	0
+ 3405 0132 0000     		.short	0
+ 3406 0134 0000     		.short	0
+ 3407 0136 0000     		.short	0
+ 3408 0138 0000     		.short	0
+ 3409 013a 0000     		.short	0
+ 3410 013c 0000     		.short	0
+ 3411 013e 0000     		.short	0
+ 3412 0140 0000     		.short	0
+ 3413 0142 0000     		.short	0
+ 3414 0144 0000     		.short	0
+ 3415 0146 0000     		.short	0
+ 3416 0148 1900     		.short	25
+ 3417 014a 0000     		.short	0
+ 3418 014c 0000     		.short	0
+ 3419 014e 0000     		.short	0
+ 3420 0150 1500     		.short	21
+ 3421 0152 0000     		.short	0
+ 3422 0154 0000     		.short	0
+ 3423 0156 0000     		.short	0
+ 3424 0158 0000     		.short	0
+ 3425 015a 0000     		.short	0
+ 3426 015c 0000     		.short	0
+ 3427 015e 0000     		.short	0
+ 3428 0160 0000     		.short	0
+ 3429 0162 1900     		.short	25
+ 3430 0164 1600     		.short	22
+ 3431 0166 1700     		.short	23
+ 3432 0168 0000     		.short	0
+ 3433 016a 1500     		.short	21
+ 3434 016c 0000     		.short	0
+ 3435 016e 1300     		.short	19
+ 3436 0170 0000     		.short	0
+ 3437 0172 0000     		.short	0
+ 3438 0174 0000     		.short	0
+ 3439 0176 0000     		.short	0
+ 3440 0178 0000     		.short	0
+ 3441 017a 0000     		.short	0
+ 3442 017c 0000     		.short	0
+ 3443 017e 0000     		.short	0
+ 3444 0180 0000     		.short	0
+ 3445 0182 1800     		.short	24
+ 3446 0184 0000     		.short	0
+ 3447 0186 1900     		.short	25
+ 3448 0188 0000     		.short	0
+ 3449 018a 0000     		.short	0
+ 3450 018c 1600     		.short	22
+ 3451 018e 0000     		.short	0
+ 3452 0190 0000     		.short	0
+ 3453 0192 0000     		.short	0
+ 3454 0194 0000     		.short	0
+ 3455 0196 0000     		.short	0
+ 3456 0198 0000     		.short	0
+ 3457 019a 0000     		.short	0
+ 3458 019c 0000     		.short	0
+ 3459 019e 0000     		.short	0
+ 3460 01a0 0000     		.short	0
+ 3461 01a2 0000     		.short	0
+ 3462 01a4 1500     		.short	21
+ 3463 01a6 1800     		.short	24
+ 3464 01a8 1600     		.short	22
+ 3465 01aa 1100     		.short	17
+ 3466 01ac 1400     		.short	20
+ 3467 01ae 0000     		.short	0
+ 3468 01b0 0000     		.short	0
+ 3469 01b2 0000     		.short	0
+ 3470 01b4 0000     		.short	0
+ 3471 01b6 0000     		.short	0
+ 3472 01b8 0000     		.short	0
+ 3473 01ba 0000     		.short	0
+ 3474 01bc 0000     		.short	0
+ 3475 01be 0000     		.short	0
+ 3476 01c0 0000     		.short	0
+ 3477 01c2 0000     		.short	0
+ 3478 01c4 1400     		.short	20
+ 3479 01c6 1200     		.short	18
+ 3480 01c8 0000     		.short	0
+ 3481 01ca 1300     		.short	19
+ 3482 01cc 0000     		.short	0
+ 3483 01ce 1700     		.short	23
+ 3484 01d0 0000     		.short	0
+ 3485 01d2 0000     		.short	0
+ 3486 01d4 0000     		.short	0
+ 3487 01d6 0000     		.short	0
+ 3488 01d8 0000     		.short	0
+ 3489 01da 0000     		.short	0
+ 3490 01dc 0000     		.short	0
+ 3491 01de 0000     		.short	0
+ 3492 01e0 0000     		.short	0
+ 3493 01e2 1700     		.short	23
+ 3494 01e4 0000     		.short	0
+ 3495 01e6 1500     		.short	21
+ 3496 01e8 0000     		.short	0
+ 3497 01ea 1900     		.short	25
+ 3498 01ec 1200     		.short	18
+ 3499 01ee 1600     		.short	22
+ 3500 01f0 0000     		.short	0
+ 3501 01f2 0000     		.short	0
+ 3502 01f4 0000     		.short	0
+ 3503 01f6 0000     		.short	0
+ 3504 01f8 0000     		.short	0
+ 3505 01fa 0000     		.short	0
+ 3506 01fc 0000     		.short	0
+ 3507 01fe 0000     		.short	0
+ 3508 0200 1600     		.short	22
+ 3509 0202 0000     		.short	0
+ 3510 0204 0000     		.short	0
+ 3511 0206 0000     		.short	0
+ 3512 0208 1800     		.short	24
+ 3513 020a 0000     		.short	0
+ 3514 020c 0000     		.short	0
+ 3515 020e 0000     		.short	0
+ 3516 0210 0000     		.short	0
+ 3517 0212 0000     		.short	0
+ 3518 0214 0000     		.short	0
+ 3519 0216 0000     		.short	0
+ 3520 0218 0000     		.short	0
+ 3521 021a 0000     		.short	0
+ 3522 021c 0000     		.short	0
+ 3523 021e 0000     		.short	0
+ 3524 0220 0000     		.short	0
+ 3525 0222 0000     		.short	0
+ 3526 0224 0000     		.short	0
+ 3527 0226 0000     		.short	0
+ 3528 0228 0000     		.short	0
+ 3529 022a 1200     		.short	18
+ 3530 022c 0000     		.short	0
+ 3531 022e 0000     		.short	0
+ 3532 0230 1100     		.short	17
+ 3533 0232 0000     		.short	0
+ 3534 0234 0000     		.short	0
+ 3535 0236 0000     		.short	0
+ 3536 0238 0000     		.short	0
+ 3537 023a 0000     		.short	0
+ 3538 023c 0000     		.short	0
+ 3539 023e 0000     		.short	0
+ 3540              		.align	5
+ 3543              	cuadricula_ARM_C:
+ 3544 0240 1500     		.short	21
+ 3545 0242 0000     		.short	0
+ 3546 0244 0000     		.short	0
+ 3547 0246 1300     		.short	19
+ 3548 0248 0000     		.short	0
+ 3549 024a 0000     		.short	0
+ 3550 024c 0000     		.short	0
+ 3551 024e 0000     		.short	0
+ 3552 0250 0000     		.short	0
+ 3553 0252 0000     		.short	0
+ 3554 0254 0000     		.short	0
+ 3555 0256 0000     		.short	0
+ 3556 0258 0000     		.short	0
+ 3557 025a 0000     		.short	0
+ 3558 025c 0000     		.short	0
+ 3559 025e 0000     		.short	0
+ 3560 0260 0000     		.short	0
+ 3561 0262 0000     		.short	0
+ 3562 0264 0000     		.short	0
+ 3563 0266 0000     		.short	0
+ 3564 0268 1900     		.short	25
+ 3565 026a 0000     		.short	0
+ 3566 026c 0000     		.short	0
+ 3567 026e 0000     		.short	0
+ 3568 0270 1500     		.short	21
+ 3569 0272 0000     		.short	0
+ 3570 0274 0000     		.short	0
+ 3571 0276 0000     		.short	0
+ 3572 0278 0000     		.short	0
+ 3573 027a 0000     		.short	0
+ 3574 027c 0000     		.short	0
+ 3575 027e 0000     		.short	0
+ 3576 0280 0000     		.short	0
+ 3577 0282 1900     		.short	25
+ 3578 0284 1600     		.short	22
+ 3579 0286 1700     		.short	23
+ 3580 0288 0000     		.short	0
+ 3581 028a 1500     		.short	21
+ 3582 028c 0000     		.short	0
+ 3583 028e 1300     		.short	19
+ 3584 0290 0000     		.short	0
+ 3585 0292 0000     		.short	0
+ 3586 0294 0000     		.short	0
+ 3587 0296 0000     		.short	0
+ 3588 0298 0000     		.short	0
+ 3589 029a 0000     		.short	0
+ 3590 029c 0000     		.short	0
+ 3591 029e 0000     		.short	0
+ 3592 02a0 0000     		.short	0
+ 3593 02a2 1800     		.short	24
+ 3594 02a4 0000     		.short	0
+ 3595 02a6 1900     		.short	25
+ 3596 02a8 0000     		.short	0
+ 3597 02aa 0000     		.short	0
+ 3598 02ac 1600     		.short	22
+ 3599 02ae 0000     		.short	0
+ 3600 02b0 0000     		.short	0
+ 3601 02b2 0000     		.short	0
+ 3602 02b4 0000     		.short	0
+ 3603 02b6 0000     		.short	0
+ 3604 02b8 0000     		.short	0
+ 3605 02ba 0000     		.short	0
+ 3606 02bc 0000     		.short	0
+ 3607 02be 0000     		.short	0
+ 3608 02c0 0000     		.short	0
+ 3609 02c2 0000     		.short	0
+ 3610 02c4 1500     		.short	21
+ 3611 02c6 1800     		.short	24
+ 3612 02c8 1600     		.short	22
+ 3613 02ca 1100     		.short	17
+ 3614 02cc 1400     		.short	20
+ 3615 02ce 0000     		.short	0
+ 3616 02d0 0000     		.short	0
+ 3617 02d2 0000     		.short	0
+ 3618 02d4 0000     		.short	0
+ 3619 02d6 0000     		.short	0
+ 3620 02d8 0000     		.short	0
+ 3621 02da 0000     		.short	0
+ 3622 02dc 0000     		.short	0
+ 3623 02de 0000     		.short	0
+ 3624 02e0 0000     		.short	0
+ 3625 02e2 0000     		.short	0
+ 3626 02e4 1400     		.short	20
+ 3627 02e6 1200     		.short	18
+ 3628 02e8 0000     		.short	0
+ 3629 02ea 1300     		.short	19
+ 3630 02ec 0000     		.short	0
+ 3631 02ee 1700     		.short	23
+ 3632 02f0 0000     		.short	0
+ 3633 02f2 0000     		.short	0
+ 3634 02f4 0000     		.short	0
+ 3635 02f6 0000     		.short	0
+ 3636 02f8 0000     		.short	0
+ 3637 02fa 0000     		.short	0
+ 3638 02fc 0000     		.short	0
+ 3639 02fe 0000     		.short	0
+ 3640 0300 0000     		.short	0
+ 3641 0302 1700     		.short	23
+ 3642 0304 0000     		.short	0
+ 3643 0306 1500     		.short	21
+ 3644 0308 0000     		.short	0
+ 3645 030a 1900     		.short	25
+ 3646 030c 1200     		.short	18
+ 3647 030e 1600     		.short	22
+ 3648 0310 0000     		.short	0
+ 3649 0312 0000     		.short	0
+ 3650 0314 0000     		.short	0
+ 3651 0316 0000     		.short	0
+ 3652 0318 0000     		.short	0
+ 3653 031a 0000     		.short	0
+ 3654 031c 0000     		.short	0
+ 3655 031e 0000     		.short	0
+ 3656 0320 1600     		.short	22
+ 3657 0322 0000     		.short	0
+ 3658 0324 0000     		.short	0
+ 3659 0326 0000     		.short	0
+ 3660 0328 1800     		.short	24
+ 3661 032a 0000     		.short	0
+ 3662 032c 0000     		.short	0
+ 3663 032e 0000     		.short	0
+ 3664 0330 0000     		.short	0
+ 3665 0332 0000     		.short	0
+ 3666 0334 0000     		.short	0
+ 3667 0336 0000     		.short	0
+ 3668 0338 0000     		.short	0
+ 3669 033a 0000     		.short	0
+ 3670 033c 0000     		.short	0
+ 3671 033e 0000     		.short	0
+ 3672 0340 0000     		.short	0
+ 3673 0342 0000     		.short	0
+ 3674 0344 0000     		.short	0
+ 3675 0346 0000     		.short	0
+ 3676 0348 0000     		.short	0
+ 3677 034a 1200     		.short	18
+ 3678 034c 0000     		.short	0
+ 3679 034e 0000     		.short	0
+ 3680 0350 1100     		.short	17
+ 3681 0352 0000     		.short	0
+ 3682 0354 0000     		.short	0
+ 3683 0356 0000     		.short	0
+ 3684 0358 0000     		.short	0
+ 3685 035a 0000     		.short	0
+ 3686 035c 0000     		.short	0
+ 3687 035e 0000     		.short	0
+ 3688              		.align	5
+ 3691              	cuadricula_ARM_ARM:
+ 3692 0360 1500     		.short	21
+ 3693 0362 0000     		.short	0
+ 3694 0364 0000     		.short	0
+ 3695 0366 1300     		.short	19
+ 3696 0368 0000     		.short	0
+ 3697 036a 0000     		.short	0
+ 3698 036c 0000     		.short	0
+ 3699 036e 0000     		.short	0
+ 3700 0370 0000     		.short	0
+ 3701 0372 0000     		.short	0
+ 3702 0374 0000     		.short	0
+ 3703 0376 0000     		.short	0
+ 3704 0378 0000     		.short	0
+ 3705 037a 0000     		.short	0
+ 3706 037c 0000     		.short	0
+ 3707 037e 0000     		.short	0
+ 3708 0380 0000     		.short	0
+ 3709 0382 0000     		.short	0
+ 3710 0384 0000     		.short	0
+ 3711 0386 0000     		.short	0
+ 3712 0388 1900     		.short	25
+ 3713 038a 0000     		.short	0
+ 3714 038c 0000     		.short	0
+ 3715 038e 0000     		.short	0
+ 3716 0390 1500     		.short	21
+ 3717 0392 0000     		.short	0
+ 3718 0394 0000     		.short	0
+ 3719 0396 0000     		.short	0
+ 3720 0398 0000     		.short	0
+ 3721 039a 0000     		.short	0
+ 3722 039c 0000     		.short	0
+ 3723 039e 0000     		.short	0
+ 3724 03a0 0000     		.short	0
+ 3725 03a2 1900     		.short	25
+ 3726 03a4 1600     		.short	22
+ 3727 03a6 1700     		.short	23
+ 3728 03a8 0000     		.short	0
+ 3729 03aa 1500     		.short	21
+ 3730 03ac 0000     		.short	0
+ 3731 03ae 1300     		.short	19
+ 3732 03b0 0000     		.short	0
+ 3733 03b2 0000     		.short	0
+ 3734 03b4 0000     		.short	0
+ 3735 03b6 0000     		.short	0
+ 3736 03b8 0000     		.short	0
+ 3737 03ba 0000     		.short	0
+ 3738 03bc 0000     		.short	0
+ 3739 03be 0000     		.short	0
+ 3740 03c0 0000     		.short	0
+ 3741 03c2 1800     		.short	24
+ 3742 03c4 0000     		.short	0
+ 3743 03c6 1900     		.short	25
+ 3744 03c8 0000     		.short	0
+ 3745 03ca 0000     		.short	0
+ 3746 03cc 1600     		.short	22
+ 3747 03ce 0000     		.short	0
+ 3748 03d0 0000     		.short	0
+ 3749 03d2 0000     		.short	0
+ 3750 03d4 0000     		.short	0
+ 3751 03d6 0000     		.short	0
+ 3752 03d8 0000     		.short	0
+ 3753 03da 0000     		.short	0
+ 3754 03dc 0000     		.short	0
+ 3755 03de 0000     		.short	0
+ 3756 03e0 0000     		.short	0
+ 3757 03e2 0000     		.short	0
+ 3758 03e4 1500     		.short	21
+ 3759 03e6 1800     		.short	24
+ 3760 03e8 1600     		.short	22
+ 3761 03ea 1100     		.short	17
+ 3762 03ec 1400     		.short	20
+ 3763 03ee 0000     		.short	0
+ 3764 03f0 0000     		.short	0
+ 3765 03f2 0000     		.short	0
+ 3766 03f4 0000     		.short	0
+ 3767 03f6 0000     		.short	0
+ 3768 03f8 0000     		.short	0
+ 3769 03fa 0000     		.short	0
+ 3770 03fc 0000     		.short	0
+ 3771 03fe 0000     		.short	0
+ 3772 0400 0000     		.short	0
+ 3773 0402 0000     		.short	0
+ 3774 0404 1400     		.short	20
+ 3775 0406 1200     		.short	18
+ 3776 0408 0000     		.short	0
+ 3777 040a 1300     		.short	19
+ 3778 040c 0000     		.short	0
+ 3779 040e 1700     		.short	23
+ 3780 0410 0000     		.short	0
+ 3781 0412 0000     		.short	0
+ 3782 0414 0000     		.short	0
+ 3783 0416 0000     		.short	0
+ 3784 0418 0000     		.short	0
+ 3785 041a 0000     		.short	0
+ 3786 041c 0000     		.short	0
+ 3787 041e 0000     		.short	0
+ 3788 0420 0000     		.short	0
+ 3789 0422 1700     		.short	23
+ 3790 0424 0000     		.short	0
+ 3791 0426 1500     		.short	21
+ 3792 0428 0000     		.short	0
+ 3793 042a 1900     		.short	25
+ 3794 042c 1200     		.short	18
+ 3795 042e 1600     		.short	22
+ 3796 0430 0000     		.short	0
+ 3797 0432 0000     		.short	0
+ 3798 0434 0000     		.short	0
+ 3799 0436 0000     		.short	0
+ 3800 0438 0000     		.short	0
+ 3801 043a 0000     		.short	0
+ 3802 043c 0000     		.short	0
+ 3803 043e 0000     		.short	0
+ 3804 0440 1600     		.short	22
+ 3805 0442 0000     		.short	0
+ 3806 0444 0000     		.short	0
+ 3807 0446 0000     		.short	0
+ 3808 0448 1800     		.short	24
+ 3809 044a 0000     		.short	0
+ 3810 044c 0000     		.short	0
+ 3811 044e 0000     		.short	0
+ 3812 0450 0000     		.short	0
+ 3813 0452 0000     		.short	0
+ 3814 0454 0000     		.short	0
+ 3815 0456 0000     		.short	0
+ 3816 0458 0000     		.short	0
+ 3817 045a 0000     		.short	0
+ 3818 045c 0000     		.short	0
+ 3819 045e 0000     		.short	0
+ 3820 0460 0000     		.short	0
+ 3821 0462 0000     		.short	0
+ 3822 0464 0000     		.short	0
+ 3823 0466 0000     		.short	0
+ 3824 0468 0000     		.short	0
+ 3825 046a 1200     		.short	18
+ 3826 046c 0000     		.short	0
+ 3827 046e 0000     		.short	0
+ 3828 0470 1100     		.short	17
+ 3829 0472 0000     		.short	0
+ 3830 0474 0000     		.short	0
+ 3831 0476 0000     		.short	0
+ 3832 0478 0000     		.short	0
+ 3833 047a 0000     		.short	0
+ 3834 047c 0000     		.short	0
+ 3835 047e 0000     		.short	0
+ 3836              		.section	.rodata
+ 3837              		.align	5
+ 3840              	cuadricula_Respaldo:
+ 3841 0000 1500     		.short	21
+ 3842 0002 0000     		.short	0
+ 3843 0004 0000     		.short	0
+ 3844 0006 1300     		.short	19
+ 3845 0008 0000     		.short	0
+ 3846 000a 0000     		.short	0
+ 3847 000c 0000     		.short	0
+ 3848 000e 0000     		.short	0
+ 3849 0010 0000     		.short	0
+ 3850 0012 0000     		.short	0
+ 3851 0014 0000     		.short	0
+ 3852 0016 0000     		.short	0
+ 3853 0018 0000     		.short	0
+ 3854 001a 0000     		.short	0
+ 3855 001c 0000     		.short	0
+ 3856 001e 0000     		.short	0
+ 3857 0020 0000     		.short	0
+ 3858 0022 0000     		.short	0
+ 3859 0024 0000     		.short	0
+ 3860 0026 0000     		.short	0
+ 3861 0028 1900     		.short	25
+ 3862 002a 0000     		.short	0
+ 3863 002c 0000     		.short	0
+ 3864 002e 0000     		.short	0
+ 3865 0030 1500     		.short	21
+ 3866 0032 0000     		.short	0
+ 3867 0034 0000     		.short	0
+ 3868 0036 0000     		.short	0
+ 3869 0038 0000     		.short	0
+ 3870 003a 0000     		.short	0
+ 3871 003c 0000     		.short	0
+ 3872 003e 0000     		.short	0
+ 3873 0040 0000     		.short	0
+ 3874 0042 1900     		.short	25
+ 3875 0044 1600     		.short	22
+ 3876 0046 1700     		.short	23
+ 3877 0048 0000     		.short	0
+ 3878 004a 1500     		.short	21
+ 3879 004c 0000     		.short	0
+ 3880 004e 1300     		.short	19
+ 3881 0050 0000     		.short	0
+ 3882 0052 0000     		.short	0
+ 3883 0054 0000     		.short	0
+ 3884 0056 0000     		.short	0
+ 3885 0058 0000     		.short	0
+ 3886 005a 0000     		.short	0
+ 3887 005c 0000     		.short	0
+ 3888 005e 0000     		.short	0
+ 3889 0060 0000     		.short	0
+ 3890 0062 1800     		.short	24
+ 3891 0064 0000     		.short	0
+ 3892 0066 1900     		.short	25
+ 3893 0068 0000     		.short	0
+ 3894 006a 0000     		.short	0
+ 3895 006c 1600     		.short	22
+ 3896 006e 0000     		.short	0
+ 3897 0070 0000     		.short	0
+ 3898 0072 0000     		.short	0
+ 3899 0074 0000     		.short	0
+ 3900 0076 0000     		.short	0
+ 3901 0078 0000     		.short	0
+ 3902 007a 0000     		.short	0
+ 3903 007c 0000     		.short	0
+ 3904 007e 0000     		.short	0
+ 3905 0080 0000     		.short	0
+ 3906 0082 0000     		.short	0
+ 3907 0084 1500     		.short	21
+ 3908 0086 1800     		.short	24
+ 3909 0088 1600     		.short	22
+ 3910 008a 1100     		.short	17
+ 3911 008c 1400     		.short	20
+ 3912 008e 0000     		.short	0
+ 3913 0090 0000     		.short	0
+ 3914 0092 0000     		.short	0
+ 3915 0094 0000     		.short	0
+ 3916 0096 0000     		.short	0
+ 3917 0098 0000     		.short	0
+ 3918 009a 0000     		.short	0
+ 3919 009c 0000     		.short	0
+ 3920 009e 0000     		.short	0
+ 3921 00a0 0000     		.short	0
+ 3922 00a2 0000     		.short	0
+ 3923 00a4 1400     		.short	20
+ 3924 00a6 1200     		.short	18
+ 3925 00a8 0000     		.short	0
+ 3926 00aa 1300     		.short	19
+ 3927 00ac 0000     		.short	0
+ 3928 00ae 1700     		.short	23
+ 3929 00b0 0000     		.short	0
+ 3930 00b2 0000     		.short	0
+ 3931 00b4 0000     		.short	0
+ 3932 00b6 0000     		.short	0
+ 3933 00b8 0000     		.short	0
+ 3934 00ba 0000     		.short	0
+ 3935 00bc 0000     		.short	0
+ 3936 00be 0000     		.short	0
+ 3937 00c0 0000     		.short	0
+ 3938 00c2 1700     		.short	23
+ 3939 00c4 0000     		.short	0
+ 3940 00c6 1500     		.short	21
+ 3941 00c8 0000     		.short	0
+ 3942 00ca 1900     		.short	25
+ 3943 00cc 1200     		.short	18
+ 3944 00ce 1600     		.short	22
+ 3945 00d0 0000     		.short	0
+ 3946 00d2 0000     		.short	0
+ 3947 00d4 0000     		.short	0
+ 3948 00d6 0000     		.short	0
+ 3949 00d8 0000     		.short	0
+ 3950 00da 0000     		.short	0
+ 3951 00dc 0000     		.short	0
+ 3952 00de 0000     		.short	0
+ 3953 00e0 1600     		.short	22
+ 3954 00e2 0000     		.short	0
+ 3955 00e4 0000     		.short	0
+ 3956 00e6 0000     		.short	0
+ 3957 00e8 1800     		.short	24
+ 3958 00ea 0000     		.short	0
+ 3959 00ec 0000     		.short	0
+ 3960 00ee 0000     		.short	0
+ 3961 00f0 0000     		.short	0
+ 3962 00f2 0000     		.short	0
+ 3963 00f4 0000     		.short	0
+ 3964 00f6 0000     		.short	0
+ 3965 00f8 0000     		.short	0
+ 3966 00fa 0000     		.short	0
+ 3967 00fc 0000     		.short	0
+ 3968 00fe 0000     		.short	0
+ 3969 0100 0000     		.short	0
+ 3970 0102 0000     		.short	0
+ 3971 0104 0000     		.short	0
+ 3972 0106 0000     		.short	0
+ 3973 0108 0000     		.short	0
+ 3974 010a 1200     		.short	18
+ 3975 010c 0000     		.short	0
+ 3976 010e 0000     		.short	0
+ 3977 0110 1100     		.short	17
+ 3978 0112 0000     		.short	0
+ 3979 0114 0000     		.short	0
+ 3980 0116 0000     		.short	0
+ 3981 0118 0000     		.short	0
+ 3982 011a 0000     		.short	0
+ 3983 011c 0000     		.short	0
+ 3984 011e 0000     		.short	0
+ 3985              		.data
+ 3986              		.align	5
+ 3989              	cuadricula_ARM_ARM_ALL:
+ 3990 0480 1500     		.short	21
+ 3991 0482 0000     		.short	0
+ 3992 0484 0000     		.short	0
+ 3993 0486 1300     		.short	19
+ 3994 0488 0000     		.short	0
+ 3995 048a 0000     		.short	0
+ 3996 048c 0000     		.short	0
+ 3997 048e 0000     		.short	0
+ 3998 0490 0000     		.short	0
+ 3999 0492 0000     		.short	0
+ 4000 0494 0000     		.short	0
+ 4001 0496 0000     		.short	0
+ 4002 0498 0000     		.short	0
+ 4003 049a 0000     		.short	0
+ 4004 049c 0000     		.short	0
+ 4005 049e 0000     		.short	0
+ 4006 04a0 0000     		.short	0
+ 4007 04a2 0000     		.short	0
+ 4008 04a4 0000     		.short	0
+ 4009 04a6 0000     		.short	0
+ 4010 04a8 1900     		.short	25
+ 4011 04aa 0000     		.short	0
+ 4012 04ac 0000     		.short	0
+ 4013 04ae 0000     		.short	0
+ 4014 04b0 1500     		.short	21
+ 4015 04b2 0000     		.short	0
+ 4016 04b4 0000     		.short	0
+ 4017 04b6 0000     		.short	0
+ 4018 04b8 0000     		.short	0
+ 4019 04ba 0000     		.short	0
+ 4020 04bc 0000     		.short	0
+ 4021 04be 0000     		.short	0
+ 4022 04c0 0000     		.short	0
+ 4023 04c2 1900     		.short	25
+ 4024 04c4 1600     		.short	22
+ 4025 04c6 1700     		.short	23
+ 4026 04c8 0000     		.short	0
+ 4027 04ca 1500     		.short	21
+ 4028 04cc 0000     		.short	0
+ 4029 04ce 1300     		.short	19
+ 4030 04d0 0000     		.short	0
+ 4031 04d2 0000     		.short	0
+ 4032 04d4 0000     		.short	0
+ 4033 04d6 0000     		.short	0
+ 4034 04d8 0000     		.short	0
+ 4035 04da 0000     		.short	0
+ 4036 04dc 0000     		.short	0
+ 4037 04de 0000     		.short	0
+ 4038 04e0 0000     		.short	0
+ 4039 04e2 1800     		.short	24
+ 4040 04e4 0000     		.short	0
+ 4041 04e6 1900     		.short	25
+ 4042 04e8 0000     		.short	0
+ 4043 04ea 0000     		.short	0
+ 4044 04ec 1600     		.short	22
+ 4045 04ee 0000     		.short	0
+ 4046 04f0 0000     		.short	0
+ 4047 04f2 0000     		.short	0
+ 4048 04f4 0000     		.short	0
+ 4049 04f6 0000     		.short	0
+ 4050 04f8 0000     		.short	0
+ 4051 04fa 0000     		.short	0
+ 4052 04fc 0000     		.short	0
+ 4053 04fe 0000     		.short	0
+ 4054 0500 0000     		.short	0
+ 4055 0502 0000     		.short	0
+ 4056 0504 1500     		.short	21
+ 4057 0506 1800     		.short	24
+ 4058 0508 1600     		.short	22
+ 4059 050a 1100     		.short	17
+ 4060 050c 1400     		.short	20
+ 4061 050e 0000     		.short	0
+ 4062 0510 0000     		.short	0
+ 4063 0512 0000     		.short	0
+ 4064 0514 0000     		.short	0
+ 4065 0516 0000     		.short	0
+ 4066 0518 0000     		.short	0
+ 4067 051a 0000     		.short	0
+ 4068 051c 0000     		.short	0
+ 4069 051e 0000     		.short	0
+ 4070 0520 0000     		.short	0
+ 4071 0522 0000     		.short	0
+ 4072 0524 1400     		.short	20
+ 4073 0526 1200     		.short	18
+ 4074 0528 0000     		.short	0
+ 4075 052a 1300     		.short	19
+ 4076 052c 0000     		.short	0
+ 4077 052e 1700     		.short	23
+ 4078 0530 0000     		.short	0
+ 4079 0532 0000     		.short	0
+ 4080 0534 0000     		.short	0
+ 4081 0536 0000     		.short	0
+ 4082 0538 0000     		.short	0
+ 4083 053a 0000     		.short	0
+ 4084 053c 0000     		.short	0
+ 4085 053e 0000     		.short	0
+ 4086 0540 0000     		.short	0
+ 4087 0542 1700     		.short	23
+ 4088 0544 0000     		.short	0
+ 4089 0546 1500     		.short	21
+ 4090 0548 0000     		.short	0
+ 4091 054a 1900     		.short	25
+ 4092 054c 1200     		.short	18
+ 4093 054e 1600     		.short	22
+ 4094 0550 0000     		.short	0
+ 4095 0552 0000     		.short	0
+ 4096 0554 0000     		.short	0
+ 4097 0556 0000     		.short	0
+ 4098 0558 0000     		.short	0
+ 4099 055a 0000     		.short	0
+ 4100 055c 0000     		.short	0
+ 4101 055e 0000     		.short	0
+ 4102 0560 1600     		.short	22
+ 4103 0562 0000     		.short	0
+ 4104 0564 0000     		.short	0
+ 4105 0566 0000     		.short	0
+ 4106 0568 1800     		.short	24
+ 4107 056a 0000     		.short	0
+ 4108 056c 0000     		.short	0
+ 4109 056e 0000     		.short	0
+ 4110 0570 0000     		.short	0
+ 4111 0572 0000     		.short	0
+ 4112 0574 0000     		.short	0
+ 4113 0576 0000     		.short	0
+ 4114 0578 0000     		.short	0
+ 4115 057a 0000     		.short	0
+ 4116 057c 0000     		.short	0
+ 4117 057e 0000     		.short	0
+ 4118 0580 0000     		.short	0
+ 4119 0582 0000     		.short	0
+ 4120 0584 0000     		.short	0
+ 4121 0586 0000     		.short	0
+ 4122 0588 0000     		.short	0
+ 4123 058a 1200     		.short	18
+ 4124 058c 0000     		.short	0
+ 4125 058e 0000     		.short	0
+ 4126 0590 1100     		.short	17
+ 4127 0592 0000     		.short	0
+ 4128 0594 0000     		.short	0
+ 4129 0596 0000     		.short	0
+ 4130 0598 0000     		.short	0
+ 4131 059a 0000     		.short	0
+ 4132 059c 0000     		.short	0
+ 4133 059e 0000     		.short	0
+ 4134              		.align	5
+ 4137              	solucion:
+ 4138 05a0 159A     		.short	-26091
+ 4139 05a2 00FA     		.short	-1536
+ 4140 05a4 009E     		.short	-25088
+ 4141 05a6 13EB     		.short	-5357
+ 4142 05a8 00FA     		.short	-1536
+ 4143 05aa 80AB     		.short	-21632
+ 4144 05ac 001F     		.short	7936
+ 4145 05ae 003A     		.short	14848
+ 4146 05b0 800A     		.short	2688
+ 4147 05b2 0000     		.short	0
+ 4148 05b4 0000     		.short	0
+ 4149 05b6 0000     		.short	0
+ 4150 05b8 0000     		.short	0
+ 4151 05ba 0000     		.short	0
+ 4152 05bc 0000     		.short	0
+ 4153 05be 0000     		.short	0
+ 4154 05c0 0098     		.short	-26624
+ 4155 05c2 00F8     		.short	-2048
+ 4156 05c4 009C     		.short	-25600
+ 4157 05c6 00EB     		.short	-5376
+ 4158 05c8 19FA     		.short	-1511
+ 4159 05ca 80AB     		.short	-21632
+ 4160 05cc 009F     		.short	-24832
+ 4161 05ce 00BA     		.short	-17920
+ 4162 05d0 958A     		.short	-30059
+ 4163 05d2 0000     		.short	0
+ 4164 05d4 0000     		.short	0
+ 4165 05d6 0000     		.short	0
+ 4166 05d8 0000     		.short	0
+ 4167 05da 0000     		.short	0
+ 4168 05dc 0000     		.short	0
+ 4169 05de 0000     		.short	0
+ 4170 05e0 00BA     		.short	-17920
+ 4171 05e2 19FA     		.short	-1511
+ 4172 05e4 16BE     		.short	-16874
+ 4173 05e6 17FB     		.short	-1257
+ 4174 05e8 00FA     		.short	-1536
+ 4175 05ea 95BB     		.short	-17515
+ 4176 05ec 00BF     		.short	-16640
+ 4177 05ee 13BA     		.short	-17901
+ 4178 05f0 80BA     		.short	-17792
+ 4179 05f2 0000     		.short	0
+ 4180 05f4 0000     		.short	0
+ 4181 05f6 0000     		.short	0
+ 4182 05f8 0000     		.short	0
+ 4183 05fa 0000     		.short	0
+ 4184 05fc 0000     		.short	0
+ 4185 05fe 0000     		.short	0
+ 4186 0600 00DC     		.short	-9216
+ 4187 0602 18FC     		.short	-1000
+ 4188 0604 00DC     		.short	-9216
+ 4189 0606 99FB     		.short	-1127
+ 4190 0608 80D3     		.short	-11392
+ 4191 060a 80DB     		.short	-9344
+ 4192 060c 16F5     		.short	-2794
+ 4193 060e 00F6     		.short	-2560
+ 4194 0610 80FC     		.short	-896
+ 4195 0612 0000     		.short	0
+ 4196 0614 0000     		.short	0
+ 4197 0616 0000     		.short	0
+ 4198 0618 0000     		.short	0
+ 4199 061a 0000     		.short	0
+ 4200 061c 0000     		.short	0
+ 4201 061e 0000     		.short	0
+ 4202 0620 805C     		.short	23680
+ 4203 0622 80FC     		.short	-896
+ 4204 0624 955C     		.short	23701
+ 4205 0626 98FF     		.short	-104
+ 4206 0628 96DF     		.short	-8298
+ 4207 062a 91DF     		.short	-8303
+ 4208 062c 947D     		.short	32148
+ 4209 062e 807E     		.short	32384
+ 4210 0630 807C     		.short	31872
+ 4211 0632 0000     		.short	0
+ 4212 0634 0000     		.short	0
+ 4213 0636 0000     		.short	0
+ 4214 0638 0000     		.short	0
+ 4215 063a 0000     		.short	0
+ 4216 063c 0000     		.short	0
+ 4217 063e 0000     		.short	0
+ 4218 0640 007F     		.short	32512
+ 4219 0642 00EF     		.short	-4352
+ 4220 0644 147F     		.short	32532
+ 4221 0646 92FF     		.short	-110
+ 4222 0648 80F7     		.short	-2176
+ 4223 064a 93FF     		.short	-109
+ 4224 064c 0037     		.short	14080
+ 4225 064e 1737     		.short	14103
+ 4226 0650 803F     		.short	16256
+ 4227 0652 0000     		.short	0
+ 4228 0654 0000     		.short	0
+ 4229 0656 0000     		.short	0
+ 4230 0658 0000     		.short	0
+ 4231 065a 0000     		.short	0
+ 4232 065c 0000     		.short	0
+ 4233 065e 0000     		.short	0
+ 4234 0660 00B9     		.short	-18176
+ 4235 0662 17F9     		.short	-1769
+ 4236 0664 00BD     		.short	-17152
+ 4237 0666 15FB     		.short	-1259
+ 4238 0668 00F9     		.short	-1792
+ 4239 066a 99FB     		.short	-1127
+ 4240 066c 92BD     		.short	-17006
+ 4241 066e 96BB     		.short	-17514
+ 4242 0670 80B9     		.short	-18048
+ 4243 0672 0000     		.short	0
+ 4244 0674 0000     		.short	0
+ 4245 0676 0000     		.short	0
+ 4246 0678 0000     		.short	0
+ 4247 067a 0000     		.short	0
+ 4248 067c 0000     		.short	0
+ 4249 067e 0000     		.short	0
+ 4250 0680 1678     		.short	30742
+ 4251 0682 00F0     		.short	-4096
+ 4252 0684 007C     		.short	31744
+ 4253 0686 00FB     		.short	-1280
+ 4254 0688 18D9     		.short	-9960
+ 4255 068a 80DB     		.short	-9344
+ 4256 068c 8055     		.short	21888
+ 4257 068e 8073     		.short	29568
+ 4258 0690 8059     		.short	22912
+ 4259 0692 0000     		.short	0
+ 4260 0694 0000     		.short	0
+ 4261 0696 0000     		.short	0
+ 4262 0698 0000     		.short	0
+ 4263 069a 0000     		.short	0
+ 4264 069c 0000     		.short	0
+ 4265 069e 0000     		.short	0
+ 4266 06a0 8039     		.short	14720
+ 4267 06a2 80F1     		.short	-3712
+ 4268 06a4 803D     		.short	15744
+ 4269 06a6 80EB     		.short	-5248
+ 4270 06a8 80D9     		.short	-9856
+ 4271 06aa 92CB     		.short	-13422
+ 4272 06ac 8015     		.short	5504
+ 4273 06ae 8033     		.short	13184
+ 4274 06b0 9119     		.short	6545
+ 4275 06b2 0000     		.short	0
+ 4276 06b4 0000     		.short	0
+ 4277 06b6 0000     		.short	0
+ 4278 06b8 0000     		.short	0
+ 4279 06ba 0000     		.short	0
+ 4280 06bc 0000     		.short	0
+ 4281 06be 0000     		.short	0
+ 4282              		.text
+ 4283              		.align	2
+ 4285              	restaurar_cuadricula_original:
+ 4286              	.LFB7:
+   1:../Jaime/button.c **** /*********************************************************************************************
+   2:../Jaime/button.c **** * Fichero:      button.c
+   3:../Jaime/button.c **** * Autor:
+   4:../Jaime/button.c **** * Descrip:      Funciones de manejo de los pulsadores (EINT6-7)
+   5:../Jaime/button.c **** * Version:
+   6:../Jaime/button.c **** *********************************************************************************************/
+   7:../Jaime/button.c **** 
+   8:../Jaime/button.c **** /*--- ficheros de cabecera ---*/
+   9:../Jaime/button.c **** #include "button.h"
+  10:../Jaime/button.c **** #include "8led.h"
+  11:../Jaime/button.c **** #include "cola.h"
+  12:../Jaime/button.c **** #include "eventos.h"
+  13:../Jaime/button.c **** #include "timer2.h"
+  14:../Jaime/button.c **** #include "timer3.h"
+  15:../Jaime/button.c **** #include "44blib.h"
+  16:../Jaime/button.c **** #include "44b.h"
+  17:../Jaime/button.c **** #include "def.h"
+  18:../Jaime/button.c **** #include "sudoku_2025.h"
+  19:../Jaime/button.c **** #include "lcd.h"
+  20:../Jaime/button.c **** 
+  21:../Jaime/button.c **** /*--- Variables del juego Sudoku ---*/
+  22:../Jaime/button.c **** static volatile EstadoSudoku estado_juego = ESPERANDO_INICIO;
+  23:../Jaime/button.c **** static volatile uint8_t int_count = 0;
+  24:../Jaime/button.c **** static volatile uint8_t fila = 0;
+  25:../Jaime/button.c **** static volatile uint8_t columna = 0;
+  26:../Jaime/button.c **** static volatile uint8_t valor = 0;
+  27:../Jaime/button.c **** static volatile uint8_t valor_previo = 0;  /* Para detectar modificación de valor */
+  28:../Jaime/button.c **** static volatile uint8_t pantalla_mostrada = 0;  /* Flag para mostrar pantalla inicial solo una vez 
+  29:../Jaime/button.c **** static volatile uint32_t tiempo_inicio = 0;  /* Tiempo de inicio de la partida actual */
+  30:../Jaime/button.c **** static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la partida */
+  31:../Jaime/button.c **** 
+  32:../Jaime/button.c **** /* Declaración externa de la cuadrícula del juego */
+  33:../Jaime/button.c **** extern CELDA (*cuadricula)[NUM_COLUMNAS];
+  34:../Jaime/button.c **** extern int celdas_vacias;
+  35:../Jaime/button.c **** 
+  36:../Jaime/button.c **** /* Declaración externa de la cuadrícula original (para reiniciar) */
+  37:../Jaime/button.c **** #include "tableros.h"
+  38:../Jaime/button.c **** 
+  39:../Jaime/button.c **** /* Función auxiliar para restaurar la cuadrícula al estado original */
+  40:../Jaime/button.c **** static void restaurar_cuadricula_original(void)
+  41:../Jaime/button.c **** {
+ 4287              		.loc 1 41 0
+ 4288              		.cfi_startproc
+ 4289              		@ Function supports interworking.
+ 4290              		@ args = 0, pretend = 0, frame = 8
+ 4291              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4292 01b4 0DC0A0E1 		mov	ip, sp
+ 4293              	.LCFI12:
+ 4294              		.cfi_def_cfa_register 12
+ 4295 01b8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4296 01bc 04B04CE2 		sub	fp, ip, #4
+ 4297              		.cfi_offset 14, -8
+ 4298              		.cfi_offset 13, -12
+ 4299              		.cfi_offset 11, -16
+ 4300              	.LCFI13:
+ 4301              		.cfi_def_cfa 11, 4
+ 4302 01c0 08D04DE2 		sub	sp, sp, #8
+  42:../Jaime/button.c **** 	uint8_t f, c;
+  43:../Jaime/button.c **** 	
+  44:../Jaime/button.c **** 	/* Copiar toda la cuadrícula original (incluye todas las columnas del array) */
+  45:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4303              		.loc 1 45 0
+ 4304 01c4 0030A0E3 		mov	r3, #0
+ 4305 01c8 0D304BE5 		strb	r3, [fp, #-13]
+ 4306 01cc 1C0000EA 		b	.L8
+ 4307              	.L11:
+  46:../Jaime/button.c **** 	{
+  47:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4308              		.loc 1 47 0
+ 4309 01d0 0030A0E3 		mov	r3, #0
+ 4310 01d4 0E304BE5 		strb	r3, [fp, #-14]
+ 4311 01d8 130000EA 		b	.L9
+ 4312              	.L10:
+  48:../Jaime/button.c **** 		{
+  49:../Jaime/button.c **** 			cuadricula[f][c] = cuadricula_Respaldo[f][c];
+ 4313              		.loc 1 49 0 discriminator 2
+ 4314 01dc 78309FE5 		ldr	r3, .L12
+ 4315 01e0 002093E5 		ldr	r2, [r3, #0]
+ 4316 01e4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4317 01e8 8332A0E1 		mov	r3, r3, asl #5
+ 4318 01ec 031082E0 		add	r1, r2, r3
+ 4319 01f0 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4320 01f4 0DC05BE5 		ldrb	ip, [fp, #-13]	@ zero_extendqisi2
+ 4321 01f8 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 4322 01fc 5C009FE5 		ldr	r0, .L12+4
+ 4323 0200 0CC2A0E1 		mov	ip, ip, asl #4
+ 4324 0204 02208CE0 		add	r2, ip, r2
+ 4325 0208 8220A0E1 		mov	r2, r2, asl #1
+ 4326 020c 022080E0 		add	r2, r0, r2
+ 4327 0210 B020D2E1 		ldrh	r2, [r2, #0]
+ 4328 0214 8330A0E1 		mov	r3, r3, asl #1
+ 4329 0218 033081E0 		add	r3, r1, r3
+ 4330 021c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  47:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4331              		.loc 1 47 0 discriminator 2
+ 4332 0220 0E305BE5 		ldrb	r3, [fp, #-14]
+ 4333 0224 013083E2 		add	r3, r3, #1
+ 4334 0228 0E304BE5 		strb	r3, [fp, #-14]
+ 4335              	.L9:
+  47:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4336              		.loc 1 47 0 is_stmt 0 discriminator 1
+ 4337 022c 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4338 0230 0F0053E3 		cmp	r3, #15
+ 4339 0234 E8FFFF9A 		bls	.L10
+  45:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4340              		.loc 1 45 0 is_stmt 1
+ 4341 0238 0D305BE5 		ldrb	r3, [fp, #-13]
+ 4342 023c 013083E2 		add	r3, r3, #1
+ 4343 0240 0D304BE5 		strb	r3, [fp, #-13]
+ 4344              	.L8:
+  45:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4345              		.loc 1 45 0 is_stmt 0 discriminator 1
+ 4346 0244 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4347 0248 080053E3 		cmp	r3, #8
+ 4348 024c DFFFFF9A 		bls	.L11
+  50:../Jaime/button.c **** 		}
+  51:../Jaime/button.c **** 	}
+  52:../Jaime/button.c **** }
+ 4349              		.loc 1 52 0 is_stmt 1
+ 4350 0250 0CD04BE2 		sub	sp, fp, #12
+ 4351 0254 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 4352 0258 1EFF2FE1 		bx	lr
+ 4353              	.L13:
+ 4354              		.align	2
+ 4355              	.L12:
+ 4356 025c 00000000 		.word	cuadricula
+ 4357 0260 00000000 		.word	cuadricula_Respaldo
+ 4358              		.cfi_endproc
+ 4359              	.LFE7:
+ 4361              		.align	2
+ 4363              	marcar_celdas_en_conflicto:
+ 4364              	.LFB8:
+  53:../Jaime/button.c **** 
+  54:../Jaime/button.c **** /* Función auxiliar para marcar todas las celdas en conflicto con un valor */
+  55:../Jaime/button.c **** static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, uint8_t valor_error)
+  56:../Jaime/button.c **** {
+ 4365              		.loc 1 56 0
+ 4366              		.cfi_startproc
+ 4367              		@ Function supports interworking.
+ 4368              		@ args = 0, pretend = 0, frame = 16
+ 4369              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4370 0264 0DC0A0E1 		mov	ip, sp
+ 4371              	.LCFI14:
+ 4372              		.cfi_def_cfa_register 12
+ 4373 0268 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4374 026c 04B04CE2 		sub	fp, ip, #4
+ 4375              		.cfi_offset 14, -8
+ 4376              		.cfi_offset 13, -12
+ 4377              		.cfi_offset 11, -16
+ 4378              	.LCFI15:
+ 4379              		.cfi_def_cfa 11, 4
+ 4380 0270 10D04DE2 		sub	sp, sp, #16
+ 4381 0274 0230A0E1 		mov	r3, r2
+ 4382 0278 0020A0E1 		mov	r2, r0
+ 4383 027c 15204BE5 		strb	r2, [fp, #-21]
+ 4384 0280 0120A0E1 		mov	r2, r1
+ 4385 0284 16204BE5 		strb	r2, [fp, #-22]
+ 4386 0288 17304BE5 		strb	r3, [fp, #-23]
+  57:../Jaime/button.c **** 	uint8_t i, f, c;
+  58:../Jaime/button.c **** 	uint8_t region_fila_inicio, region_col_inicio;
+  59:../Jaime/button.c **** 	
+  60:../Jaime/button.c **** 	/* Primero limpiar todos los errores previos */
+  61:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4387              		.loc 1 61 0
+ 4388 028c 0030A0E3 		mov	r3, #0
+ 4389 0290 0E304BE5 		strb	r3, [fp, #-14]
+ 4390 0294 160000EA 		b	.L15
+ 4391              	.L18:
+  62:../Jaime/button.c **** 	{
+  63:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4392              		.loc 1 63 0
+ 4393 0298 0030A0E3 		mov	r3, #0
+ 4394 029c 0F304BE5 		strb	r3, [fp, #-15]
+ 4395 02a0 0D0000EA 		b	.L16
+ 4396              	.L17:
+  64:../Jaime/button.c **** 		{
+  65:../Jaime/button.c **** 			celda_limpiar_error(&cuadricula[f][c]);
+ 4397              		.loc 1 65 0 discriminator 2
+ 4398 02a4 EC329FE5 		ldr	r3, .L31
+ 4399 02a8 003093E5 		ldr	r3, [r3, #0]
+ 4400 02ac 0320A0E1 		mov	r2, r3
+ 4401 02b0 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4402 02b4 0312A0E1 		mov	r1, r3, asl #4
+ 4403 02b8 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 4404 02bc 033081E0 		add	r3, r1, r3
+ 4405 02c0 8330A0E1 		mov	r3, r3, asl #1
+ 4406 02c4 033082E0 		add	r3, r2, r3
+ 4407 02c8 0300A0E1 		mov	r0, r3
+ 4408 02cc A9FFFFEB 		bl	celda_limpiar_error
+  63:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4409              		.loc 1 63 0 discriminator 2
+ 4410 02d0 0F305BE5 		ldrb	r3, [fp, #-15]
+ 4411 02d4 013083E2 		add	r3, r3, #1
+ 4412 02d8 0F304BE5 		strb	r3, [fp, #-15]
+ 4413              	.L16:
+  63:../Jaime/button.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 4414              		.loc 1 63 0 is_stmt 0 discriminator 1
+ 4415 02dc 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 4416 02e0 0F0053E3 		cmp	r3, #15
+ 4417 02e4 EEFFFF9A 		bls	.L17
+  61:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4418              		.loc 1 61 0 is_stmt 1
+ 4419 02e8 0E305BE5 		ldrb	r3, [fp, #-14]
+ 4420 02ec 013083E2 		add	r3, r3, #1
+ 4421 02f0 0E304BE5 		strb	r3, [fp, #-14]
+ 4422              	.L15:
+  61:../Jaime/button.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 4423              		.loc 1 61 0 is_stmt 0 discriminator 1
+ 4424 02f4 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4425 02f8 080053E3 		cmp	r3, #8
+ 4426 02fc E5FFFF9A 		bls	.L18
+  66:../Jaime/button.c **** 		}
+  67:../Jaime/button.c **** 	}
+  68:../Jaime/button.c **** 	
+  69:../Jaime/button.c **** 	/* Marcar la celda donde intentamos poner el valor */
+  70:../Jaime/button.c **** 	celda_marcar_error(&cuadricula[fila_error][col_error]);
+ 4427              		.loc 1 70 0 is_stmt 1
+ 4428 0300 90329FE5 		ldr	r3, .L31
+ 4429 0304 003093E5 		ldr	r3, [r3, #0]
+ 4430 0308 0320A0E1 		mov	r2, r3
+ 4431 030c 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4432 0310 0312A0E1 		mov	r1, r3, asl #4
+ 4433 0314 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 4434 0318 033081E0 		add	r3, r1, r3
+ 4435 031c 8330A0E1 		mov	r3, r3, asl #1
+ 4436 0320 033082E0 		add	r3, r2, r3
+ 4437 0324 0300A0E1 		mov	r0, r3
+ 4438 0328 83FFFFEB 		bl	celda_marcar_error
+  71:../Jaime/button.c **** 	
+  72:../Jaime/button.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma fila */
+  73:../Jaime/button.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 4439              		.loc 1 73 0
+ 4440 032c 0030A0E3 		mov	r3, #0
+ 4441 0330 0D304BE5 		strb	r3, [fp, #-13]
+ 4442 0334 200000EA 		b	.L19
+ 4443              	.L21:
+  74:../Jaime/button.c **** 	{
+  75:../Jaime/button.c **** 		if (i != col_error && celda_leer_valor(cuadricula[fila_error][i]) == valor_error)
+ 4444              		.loc 1 75 0
+ 4445 0338 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 4446 033c 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 4447 0340 030052E1 		cmp	r2, r3
+ 4448 0344 1900000A 		beq	.L20
+ 4449              		.loc 1 75 0 is_stmt 0 discriminator 1
+ 4450 0348 48329FE5 		ldr	r3, .L31
+ 4451 034c 002093E5 		ldr	r2, [r3, #0]
+ 4452 0350 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4453 0354 8332A0E1 		mov	r3, r3, asl #5
+ 4454 0358 032082E0 		add	r2, r2, r3
+ 4455 035c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4456 0360 8330A0E1 		mov	r3, r3, asl #1
+ 4457 0364 033082E0 		add	r3, r2, r3
+ 4458 0368 B030D3E1 		ldrh	r3, [r3, #0]
+ 4459 036c 0300A0E1 		mov	r0, r3
+ 4460 0370 40FFFFEB 		bl	celda_leer_valor
+ 4461 0374 0030A0E1 		mov	r3, r0
+ 4462 0378 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 4463 037c 030052E1 		cmp	r2, r3
+ 4464 0380 0A00001A 		bne	.L20
+  76:../Jaime/button.c **** 		{
+  77:../Jaime/button.c **** 			celda_marcar_error(&cuadricula[fila_error][i]);
+ 4465              		.loc 1 77 0 is_stmt 1
+ 4466 0384 0C329FE5 		ldr	r3, .L31
+ 4467 0388 003093E5 		ldr	r3, [r3, #0]
+ 4468 038c 0320A0E1 		mov	r2, r3
+ 4469 0390 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4470 0394 0312A0E1 		mov	r1, r3, asl #4
+ 4471 0398 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4472 039c 033081E0 		add	r3, r1, r3
+ 4473 03a0 8330A0E1 		mov	r3, r3, asl #1
+ 4474 03a4 033082E0 		add	r3, r2, r3
+ 4475 03a8 0300A0E1 		mov	r0, r3
+ 4476 03ac 62FFFFEB 		bl	celda_marcar_error
+ 4477              	.L20:
+  73:../Jaime/button.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 4478              		.loc 1 73 0
+ 4479 03b0 0D305BE5 		ldrb	r3, [fp, #-13]
+ 4480 03b4 013083E2 		add	r3, r3, #1
+ 4481 03b8 0D304BE5 		strb	r3, [fp, #-13]
+ 4482              	.L19:
+  73:../Jaime/button.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 4483              		.loc 1 73 0 is_stmt 0 discriminator 1
+ 4484 03bc 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4485 03c0 0F0053E3 		cmp	r3, #15
+ 4486 03c4 DBFFFF9A 		bls	.L21
+  78:../Jaime/button.c **** 		}
+  79:../Jaime/button.c **** 	}
+  80:../Jaime/button.c **** 	
+  81:../Jaime/button.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma columna */
+  82:../Jaime/button.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 4487              		.loc 1 82 0 is_stmt 1
+ 4488 03c8 0030A0E3 		mov	r3, #0
+ 4489 03cc 0D304BE5 		strb	r3, [fp, #-13]
+ 4490 03d0 200000EA 		b	.L22
+ 4491              	.L24:
+  83:../Jaime/button.c **** 	{
+  84:../Jaime/button.c **** 		if (i != fila_error && celda_leer_valor(cuadricula[i][col_error]) == valor_error)
+ 4492              		.loc 1 84 0
+ 4493 03d4 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 4494 03d8 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4495 03dc 030052E1 		cmp	r2, r3
+ 4496 03e0 1900000A 		beq	.L23
+ 4497              		.loc 1 84 0 is_stmt 0 discriminator 1
+ 4498 03e4 AC319FE5 		ldr	r3, .L31
+ 4499 03e8 002093E5 		ldr	r2, [r3, #0]
+ 4500 03ec 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4501 03f0 8332A0E1 		mov	r3, r3, asl #5
+ 4502 03f4 032082E0 		add	r2, r2, r3
+ 4503 03f8 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 4504 03fc 8330A0E1 		mov	r3, r3, asl #1
+ 4505 0400 033082E0 		add	r3, r2, r3
+ 4506 0404 B030D3E1 		ldrh	r3, [r3, #0]
+ 4507 0408 0300A0E1 		mov	r0, r3
+ 4508 040c 19FFFFEB 		bl	celda_leer_valor
+ 4509 0410 0030A0E1 		mov	r3, r0
+ 4510 0414 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 4511 0418 030052E1 		cmp	r2, r3
+ 4512 041c 0A00001A 		bne	.L23
+  85:../Jaime/button.c **** 		{
+  86:../Jaime/button.c **** 			celda_marcar_error(&cuadricula[i][col_error]);
+ 4513              		.loc 1 86 0 is_stmt 1
+ 4514 0420 70319FE5 		ldr	r3, .L31
+ 4515 0424 003093E5 		ldr	r3, [r3, #0]
+ 4516 0428 0320A0E1 		mov	r2, r3
+ 4517 042c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4518 0430 0312A0E1 		mov	r1, r3, asl #4
+ 4519 0434 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 4520 0438 033081E0 		add	r3, r1, r3
+ 4521 043c 8330A0E1 		mov	r3, r3, asl #1
+ 4522 0440 033082E0 		add	r3, r2, r3
+ 4523 0444 0300A0E1 		mov	r0, r3
+ 4524 0448 3BFFFFEB 		bl	celda_marcar_error
+ 4525              	.L23:
+  82:../Jaime/button.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 4526              		.loc 1 82 0
+ 4527 044c 0D305BE5 		ldrb	r3, [fp, #-13]
+ 4528 0450 013083E2 		add	r3, r3, #1
+ 4529 0454 0D304BE5 		strb	r3, [fp, #-13]
+ 4530              	.L22:
+  82:../Jaime/button.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 4531              		.loc 1 82 0 is_stmt 0 discriminator 1
+ 4532 0458 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4533 045c 080053E3 		cmp	r3, #8
+ 4534 0460 DBFFFF9A 		bls	.L24
+  87:../Jaime/button.c **** 		}
+  88:../Jaime/button.c **** 	}
+  89:../Jaime/button.c **** 	
+  90:../Jaime/button.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma región 3x3 */
+  91:../Jaime/button.c **** 	region_fila_inicio = (fila_error / 3) * 3;
+ 4535              		.loc 1 91 0 is_stmt 1
+ 4536 0464 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 4537 0468 2C319FE5 		ldr	r3, .L31+4
+ 4538 046c 921383E0 		umull	r1, r3, r2, r3
+ 4539 0470 A330A0E1 		mov	r3, r3, lsr #1
+ 4540 0474 FF3003E2 		and	r3, r3, #255
+ 4541 0478 0320A0E1 		mov	r2, r3
+ 4542 047c 8220A0E1 		mov	r2, r2, asl #1
+ 4543 0480 033082E0 		add	r3, r2, r3
+ 4544 0484 10304BE5 		strb	r3, [fp, #-16]
+  92:../Jaime/button.c **** 	region_col_inicio = (col_error / 3) * 3;
+ 4545              		.loc 1 92 0
+ 4546 0488 16205BE5 		ldrb	r2, [fp, #-22]	@ zero_extendqisi2
+ 4547 048c 08319FE5 		ldr	r3, .L31+4
+ 4548 0490 921383E0 		umull	r1, r3, r2, r3
+ 4549 0494 A330A0E1 		mov	r3, r3, lsr #1
+ 4550 0498 FF3003E2 		and	r3, r3, #255
+ 4551 049c 0320A0E1 		mov	r2, r3
+ 4552 04a0 8220A0E1 		mov	r2, r2, asl #1
+ 4553 04a4 033082E0 		add	r3, r2, r3
+ 4554 04a8 11304BE5 		strb	r3, [fp, #-17]
+  93:../Jaime/button.c **** 	
+  94:../Jaime/button.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 4555              		.loc 1 94 0
+ 4556 04ac 10305BE5 		ldrb	r3, [fp, #-16]
+ 4557 04b0 0E304BE5 		strb	r3, [fp, #-14]
+ 4558 04b4 2F0000EA 		b	.L25
+ 4559              	.L30:
+  95:../Jaime/button.c **** 	{
+  96:../Jaime/button.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 4560              		.loc 1 96 0
+ 4561 04b8 11305BE5 		ldrb	r3, [fp, #-17]
+ 4562 04bc 0F304BE5 		strb	r3, [fp, #-15]
+ 4563 04c0 240000EA 		b	.L26
+ 4564              	.L29:
+  97:../Jaime/button.c **** 		{
+  98:../Jaime/button.c **** 			if ((f != fila_error || c != col_error) && celda_leer_valor(cuadricula[f][c]) == valor_error)
+ 4565              		.loc 1 98 0
+ 4566 04c4 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 4567 04c8 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4568 04cc 030052E1 		cmp	r2, r3
+ 4569 04d0 0300001A 		bne	.L27
+ 4570              		.loc 1 98 0 is_stmt 0 discriminator 2
+ 4571 04d4 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 4572 04d8 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 4573 04dc 030052E1 		cmp	r2, r3
+ 4574 04e0 1900000A 		beq	.L28
+ 4575              	.L27:
+ 4576              		.loc 1 98 0 discriminator 1
+ 4577 04e4 AC309FE5 		ldr	r3, .L31
+ 4578 04e8 002093E5 		ldr	r2, [r3, #0]
+ 4579 04ec 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4580 04f0 8332A0E1 		mov	r3, r3, asl #5
+ 4581 04f4 032082E0 		add	r2, r2, r3
+ 4582 04f8 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 4583 04fc 8330A0E1 		mov	r3, r3, asl #1
+ 4584 0500 033082E0 		add	r3, r2, r3
+ 4585 0504 B030D3E1 		ldrh	r3, [r3, #0]
+ 4586 0508 0300A0E1 		mov	r0, r3
+ 4587 050c D9FEFFEB 		bl	celda_leer_valor
+ 4588 0510 0030A0E1 		mov	r3, r0
+ 4589 0514 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 4590 0518 030052E1 		cmp	r2, r3
+ 4591 051c 0A00001A 		bne	.L28
+  99:../Jaime/button.c **** 			{
+ 100:../Jaime/button.c **** 				celda_marcar_error(&cuadricula[f][c]);
+ 4592              		.loc 1 100 0 is_stmt 1
+ 4593 0520 70309FE5 		ldr	r3, .L31
+ 4594 0524 003093E5 		ldr	r3, [r3, #0]
+ 4595 0528 0320A0E1 		mov	r2, r3
+ 4596 052c 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4597 0530 0312A0E1 		mov	r1, r3, asl #4
+ 4598 0534 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 4599 0538 033081E0 		add	r3, r1, r3
+ 4600 053c 8330A0E1 		mov	r3, r3, asl #1
+ 4601 0540 033082E0 		add	r3, r2, r3
+ 4602 0544 0300A0E1 		mov	r0, r3
+ 4603 0548 FBFEFFEB 		bl	celda_marcar_error
+ 4604              	.L28:
+  96:../Jaime/button.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 4605              		.loc 1 96 0
+ 4606 054c 0F305BE5 		ldrb	r3, [fp, #-15]
+ 4607 0550 013083E2 		add	r3, r3, #1
+ 4608 0554 0F304BE5 		strb	r3, [fp, #-15]
+ 4609              	.L26:
+  96:../Jaime/button.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 4610              		.loc 1 96 0 is_stmt 0 discriminator 1
+ 4611 0558 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 4612 055c 11305BE5 		ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+ 4613 0560 033083E2 		add	r3, r3, #3
+ 4614 0564 030052E1 		cmp	r2, r3
+ 4615 0568 D5FFFFBA 		blt	.L29
+  94:../Jaime/button.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 4616              		.loc 1 94 0 is_stmt 1
+ 4617 056c 0E305BE5 		ldrb	r3, [fp, #-14]
+ 4618 0570 013083E2 		add	r3, r3, #1
+ 4619 0574 0E304BE5 		strb	r3, [fp, #-14]
+ 4620              	.L25:
+  94:../Jaime/button.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 4621              		.loc 1 94 0 is_stmt 0 discriminator 1
+ 4622 0578 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 4623 057c 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 4624 0580 033083E2 		add	r3, r3, #3
+ 4625 0584 030052E1 		cmp	r2, r3
+ 4626 0588 CAFFFFBA 		blt	.L30
+ 101:../Jaime/button.c **** 			}
+ 102:../Jaime/button.c **** 		}
+ 103:../Jaime/button.c **** 	}
+ 104:../Jaime/button.c **** }
+ 4627              		.loc 1 104 0 is_stmt 1
+ 4628 058c 0CD04BE2 		sub	sp, fp, #12
+ 4629 0590 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 4630 0594 1EFF2FE1 		bx	lr
+ 4631              	.L32:
+ 4632              		.align	2
+ 4633              	.L31:
+ 4634 0598 00000000 		.word	cuadricula
+ 4635 059c ABAAAAAA 		.word	-1431655765
+ 4636              		.cfi_endproc
+ 4637              	.LFE8:
+ 4639              		.align	2
+ 4641              	boton_confirmado:
+ 4642              	.LFB9:
+ 105:../Jaime/button.c **** 
+ 106:../Jaime/button.c **** /* Callback para recibir la confirmación de pulsaciones filtradas por el timer3 */
+ 107:../Jaime/button.c **** static void boton_confirmado(uint8_t boton_id)
+ 108:../Jaime/button.c **** {
+ 4643              		.loc 1 108 0
+ 4644              		.cfi_startproc
+ 4645              		@ Function supports interworking.
+ 4646              		@ args = 0, pretend = 0, frame = 16
+ 4647              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4648 05a0 0DC0A0E1 		mov	ip, sp
+ 4649              	.LCFI16:
+ 4650              		.cfi_def_cfa_register 12
+ 4651 05a4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4652 05a8 04B04CE2 		sub	fp, ip, #4
+ 4653              		.cfi_offset 14, -8
+ 4654              		.cfi_offset 13, -12
+ 4655              		.cfi_offset 11, -16
+ 4656              	.LCFI17:
+ 4657              		.cfi_def_cfa 11, 4
+ 4658 05ac 10D04DE2 		sub	sp, sp, #16
+ 4659 05b0 0030A0E1 		mov	r3, r0
+ 4660 05b4 15304BE5 		strb	r3, [fp, #-21]
+ 109:../Jaime/button.c ****         cola_depuracion(timer2_count(), boton_id, estado_juego);
+ 4661              		.loc 1 109 0
+ 4662 05b8 FEFFFFEB 		bl	timer2_count
+ 4663 05bc 0010A0E1 		mov	r1, r0
+ 4664 05c0 94389FE5 		ldr	r3, .L75
+ 4665 05c4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4666 05c8 FF3003E2 		and	r3, r3, #255
+ 4667 05cc 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 4668 05d0 0100A0E1 		mov	r0, r1
+ 4669 05d4 0210A0E1 		mov	r1, r2
+ 4670 05d8 0320A0E1 		mov	r2, r3
+ 4671 05dc FEFFFFEB 		bl	cola_depuracion
+ 110:../Jaime/button.c ****         
+ 111:../Jaime/button.c ****         switch (estado_juego)
+ 4672              		.loc 1 111 0
+ 4673 05e0 74389FE5 		ldr	r3, .L75
+ 4674 05e4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4675 05e8 FF3003E2 		and	r3, r3, #255
+ 4676 05ec 070053E3 		cmp	r3, #7
+ 4677 05f0 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 4678 05f4 150200EA 		b	.L33
+ 4679              	.L42:
+ 4680 05f8 18060000 		.word	.L35
+ 4681 05fc 88060000 		.word	.L36
+ 4682 0600 78070000 		.word	.L37
+ 4683 0604 38080000 		.word	.L38
+ 4684 0608 C0080000 		.word	.L39
+ 4685 060c 60090000 		.word	.L40
+ 4686 0610 500E0000 		.word	.L33
+ 4687 0614 D80D0000 		.word	.L41
+ 4688              	.L35:
+ 112:../Jaime/button.c ****         {
+ 113:../Jaime/button.c ****                 case ESPERANDO_INICIO:
+ 114:../Jaime/button.c ****                         /* Cualquier botón inicia el juego */
+ 115:../Jaime/button.c ****                         /* Guardar tiempo de inicio para reiniciar el contador */
+ 116:../Jaime/button.c ****                         tiempo_inicio = timer2_count();
+ 4689              		.loc 1 116 0
+ 4690 0618 FEFFFFEB 		bl	timer2_count
+ 4691 061c 0020A0E1 		mov	r2, r0
+ 4692 0620 38389FE5 		ldr	r3, .L75+4
+ 4693 0624 002083E5 		str	r2, [r3, #0]
+ 117:../Jaime/button.c ****                         
+ 118:../Jaime/button.c ****                         /* Calcular candidatos por primera vez */
+ 119:../Jaime/button.c ****                         celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 4694              		.loc 1 119 0
+ 4695 0628 34389FE5 		ldr	r3, .L75+8
+ 4696 062c 003093E5 		ldr	r3, [r3, #0]
+ 4697 0630 0300A0E1 		mov	r0, r3
+ 4698 0634 FEFFFFEB 		bl	candidatos_actualizar_all
+ 4699 0638 0020A0E1 		mov	r2, r0
+ 4700 063c 24389FE5 		ldr	r3, .L75+12
+ 4701 0640 002083E5 		str	r2, [r3, #0]
+ 120:../Jaime/button.c ****                         
+ 121:../Jaime/button.c ****                         /* Dibujar el tablero del juego */
+ 122:../Jaime/button.c ****                         Sudoku_Dibujar_Tablero();
+ 4702              		.loc 1 122 0
+ 4703 0644 FEFFFFEB 		bl	Sudoku_Dibujar_Tablero
+ 123:../Jaime/button.c ****                         
+ 124:../Jaime/button.c ****                         /* Actualizar con los valores de la cuadrícula */
+ 125:../Jaime/button.c ****                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 4704              		.loc 1 125 0
+ 4705 0648 14389FE5 		ldr	r3, .L75+8
+ 4706 064c 003093E5 		ldr	r3, [r3, #0]
+ 4707 0650 0300A0E1 		mov	r0, r3
+ 4708 0654 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 126:../Jaime/button.c ****                         
+ 127:../Jaime/button.c ****                         /* Pasar a introducir fila */
+ 128:../Jaime/button.c ****                         estado_juego = INTRODUCIR_FILA;
+ 4709              		.loc 1 128 0
+ 4710 0658 FC379FE5 		ldr	r3, .L75
+ 4711 065c 0120A0E3 		mov	r2, #1
+ 4712 0660 0020C3E5 		strb	r2, [r3, #0]
+ 129:../Jaime/button.c ****                         int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+ 4713              		.loc 1 129 0
+ 4714 0664 00389FE5 		ldr	r3, .L75+16
+ 4715 0668 0920A0E3 		mov	r2, #9
+ 4716 066c 0020C3E5 		strb	r2, [r3, #0]
+ 130:../Jaime/button.c ****                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 4717              		.loc 1 130 0
+ 4718 0670 0F00A0E3 		mov	r0, #15
+ 4719 0674 FEFFFFEB 		bl	D8Led_symbol
+ 131:../Jaime/button.c ****                         pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
+ 4720              		.loc 1 131 0
+ 4721 0678 F0379FE5 		ldr	r3, .L75+20
+ 4722 067c 0020A0E3 		mov	r2, #0
+ 4723 0680 0020C3E5 		strb	r2, [r3, #0]
+ 132:../Jaime/button.c ****                         break;
+ 4724              		.loc 1 132 0
+ 4725 0684 F10100EA 		b	.L33
+ 4726              	.L36:
+ 133:../Jaime/button.c ****                 
+ 134:../Jaime/button.c ****                 case INTRODUCIR_FILA:
+ 135:../Jaime/button.c ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 4727              		.loc 1 135 0
+ 4728 0688 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4729 068c 080053E3 		cmp	r3, #8
+ 4730 0690 1500001A 		bne	.L43
+ 136:../Jaime/button.c ****                         {
+ 137:../Jaime/button.c ****                                 /* Incrementar fila (ciclo: 0 → 1 → 2 → ... → 9 → 0) */
+ 138:../Jaime/button.c ****                                 int_count++;
+ 4731              		.loc 1 138 0
+ 4732 0694 D0379FE5 		ldr	r3, .L75+16
+ 4733 0698 0030D3E5 		ldrb	r3, [r3, #0]
+ 4734 069c FF3003E2 		and	r3, r3, #255
+ 4735 06a0 013083E2 		add	r3, r3, #1
+ 4736 06a4 FF2003E2 		and	r2, r3, #255
+ 4737 06a8 BC379FE5 		ldr	r3, .L75+16
+ 4738 06ac 0020C3E5 		strb	r2, [r3, #0]
+ 139:../Jaime/button.c ****                                 if (int_count > 9)
+ 4739              		.loc 1 139 0
+ 4740 06b0 B4379FE5 		ldr	r3, .L75+16
+ 4741 06b4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4742 06b8 FF3003E2 		and	r3, r3, #255
+ 4743 06bc 090053E3 		cmp	r3, #9
+ 4744 06c0 0200009A 		bls	.L44
+ 140:../Jaime/button.c ****                                 {
+ 141:../Jaime/button.c ****                                         int_count = 0;  /* Volver a 0 */
+ 4745              		.loc 1 141 0
+ 4746 06c4 A0379FE5 		ldr	r3, .L75+16
+ 4747 06c8 0020A0E3 		mov	r2, #0
+ 4748 06cc 0020C3E5 		strb	r2, [r3, #0]
+ 4749              	.L44:
+ 142:../Jaime/button.c ****                                 }
+ 143:../Jaime/button.c ****                                 D8Led_symbol(int_count & 0x000f);
+ 4750              		.loc 1 143 0
+ 4751 06d0 94379FE5 		ldr	r3, .L75+16
+ 4752 06d4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4753 06d8 FF3003E2 		and	r3, r3, #255
+ 4754 06dc 0F3003E2 		and	r3, r3, #15
+ 4755 06e0 0300A0E1 		mov	r0, r3
+ 4756 06e4 FEFFFFEB 		bl	D8Led_symbol
+ 144:../Jaime/button.c ****                         }
+ 145:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 146:../Jaime/button.c ****                         {
+ 147:../Jaime/button.c ****                                 /* Verificar si se eligió fila 0 (terminar partida) */
+ 148:../Jaime/button.c ****                                 if (int_count == 0)
+ 149:../Jaime/button.c ****                                 {
+ 150:../Jaime/button.c ****                                         /* Fila 0: terminar la partida */
+ 151:../Jaime/button.c ****                                         /* Guardar tiempo transcurrido desde el inicio de esta part
+ 152:../Jaime/button.c ****                                         tiempo_final = timer2_count() - tiempo_inicio;
+ 153:../Jaime/button.c ****                                         estado_juego = PARTIDA_TERMINADA;
+ 154:../Jaime/button.c ****                                         /* La pantalla final se mostrará en este estado */
+ 155:../Jaime/button.c ****                                 }
+ 156:../Jaime/button.c ****                                 else
+ 157:../Jaime/button.c ****                                 {
+ 158:../Jaime/button.c ****                                         /* Confirmar fila y pasar a introducir columna */
+ 159:../Jaime/button.c ****                                         fila = int_count - 1;  /* Convertir a índice 0-8 */
+ 160:../Jaime/button.c ****                                         estado_juego = INTRODUCIR_COLUMNA;
+ 161:../Jaime/button.c ****                                         int_count = 0;
+ 162:../Jaime/button.c ****                                         D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en
+ 163:../Jaime/button.c ****                                 }
+ 164:../Jaime/button.c ****                         }
+ 165:../Jaime/button.c ****                         break;
+ 4757              		.loc 1 165 0
+ 4758 06e8 D80100EA 		b	.L33
+ 4759              	.L43:
+ 145:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 4760              		.loc 1 145 0
+ 4761 06ec 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4762 06f0 040053E3 		cmp	r3, #4
+ 4763 06f4 D001001A 		bne	.L72
+ 148:../Jaime/button.c ****                                 if (int_count == 0)
+ 4764              		.loc 1 148 0
+ 4765 06f8 6C379FE5 		ldr	r3, .L75+16
+ 4766 06fc 0030D3E5 		ldrb	r3, [r3, #0]
+ 4767 0700 FF3003E2 		and	r3, r3, #255
+ 4768 0704 000053E3 		cmp	r3, #0
+ 4769 0708 0A00001A 		bne	.L46
+ 152:../Jaime/button.c ****                                         tiempo_final = timer2_count() - tiempo_inicio;
+ 4770              		.loc 1 152 0
+ 4771 070c FEFFFFEB 		bl	timer2_count
+ 4772 0710 0020A0E1 		mov	r2, r0
+ 4773 0714 44379FE5 		ldr	r3, .L75+4
+ 4774 0718 003093E5 		ldr	r3, [r3, #0]
+ 4775 071c 022063E0 		rsb	r2, r3, r2
+ 4776 0720 4C379FE5 		ldr	r3, .L75+24
+ 4777 0724 002083E5 		str	r2, [r3, #0]
+ 153:../Jaime/button.c ****                                         estado_juego = PARTIDA_TERMINADA;
+ 4778              		.loc 1 153 0
+ 4779 0728 2C379FE5 		ldr	r3, .L75
+ 4780 072c 0720A0E3 		mov	r2, #7
+ 4781 0730 0020C3E5 		strb	r2, [r3, #0]
+ 4782              		.loc 1 165 0
+ 4783 0734 C50100EA 		b	.L33
+ 4784              	.L46:
+ 159:../Jaime/button.c ****                                         fila = int_count - 1;  /* Convertir a índice 0-8 */
+ 4785              		.loc 1 159 0
+ 4786 0738 2C379FE5 		ldr	r3, .L75+16
+ 4787 073c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4788 0740 FF3003E2 		and	r3, r3, #255
+ 4789 0744 013043E2 		sub	r3, r3, #1
+ 4790 0748 FF2003E2 		and	r2, r3, #255
+ 4791 074c 24379FE5 		ldr	r3, .L75+28
+ 4792 0750 0020C3E5 		strb	r2, [r3, #0]
+ 160:../Jaime/button.c ****                                         estado_juego = INTRODUCIR_COLUMNA;
+ 4793              		.loc 1 160 0
+ 4794 0754 00379FE5 		ldr	r3, .L75
+ 4795 0758 0220A0E3 		mov	r2, #2
+ 4796 075c 0020C3E5 		strb	r2, [r3, #0]
+ 161:../Jaime/button.c ****                                         int_count = 0;
+ 4797              		.loc 1 161 0
+ 4798 0760 04379FE5 		ldr	r3, .L75+16
+ 4799 0764 0020A0E3 		mov	r2, #0
+ 4800 0768 0020C3E5 		strb	r2, [r3, #0]
+ 162:../Jaime/button.c ****                                         D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en
+ 4801              		.loc 1 162 0
+ 4802 076c 0C00A0E3 		mov	r0, #12
+ 4803 0770 FEFFFFEB 		bl	D8Led_symbol
+ 4804              		.loc 1 165 0
+ 4805 0774 B50100EA 		b	.L33
+ 4806              	.L37:
+ 166:../Jaime/button.c ****                 
+ 167:../Jaime/button.c ****                 case INTRODUCIR_COLUMNA:
+ 168:../Jaime/button.c ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 4807              		.loc 1 168 0
+ 4808 0778 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4809 077c 080053E3 		cmp	r3, #8
+ 4810 0780 1500001A 		bne	.L47
+ 169:../Jaime/button.c ****                         {
+ 170:../Jaime/button.c ****                                 /* Incrementar columna */
+ 171:../Jaime/button.c ****                                 int_count++;
+ 4811              		.loc 1 171 0
+ 4812 0784 E0369FE5 		ldr	r3, .L75+16
+ 4813 0788 0030D3E5 		ldrb	r3, [r3, #0]
+ 4814 078c FF3003E2 		and	r3, r3, #255
+ 4815 0790 013083E2 		add	r3, r3, #1
+ 4816 0794 FF2003E2 		and	r2, r3, #255
+ 4817 0798 CC369FE5 		ldr	r3, .L75+16
+ 4818 079c 0020C3E5 		strb	r2, [r3, #0]
+ 172:../Jaime/button.c ****                                 if (int_count > 9)
+ 4819              		.loc 1 172 0
+ 4820 07a0 C4369FE5 		ldr	r3, .L75+16
+ 4821 07a4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4822 07a8 FF3003E2 		and	r3, r3, #255
+ 4823 07ac 090053E3 		cmp	r3, #9
+ 4824 07b0 0200009A 		bls	.L48
+ 173:../Jaime/button.c ****                                 {
+ 174:../Jaime/button.c ****                                         int_count = 1;
+ 4825              		.loc 1 174 0
+ 4826 07b4 B0369FE5 		ldr	r3, .L75+16
+ 4827 07b8 0120A0E3 		mov	r2, #1
+ 4828 07bc 0020C3E5 		strb	r2, [r3, #0]
+ 4829              	.L48:
+ 175:../Jaime/button.c ****                                 }
+ 176:../Jaime/button.c ****                                 D8Led_symbol(int_count & 0x000f);
+ 4830              		.loc 1 176 0
+ 4831 07c0 A4369FE5 		ldr	r3, .L75+16
+ 4832 07c4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4833 07c8 FF3003E2 		and	r3, r3, #255
+ 4834 07cc 0F3003E2 		and	r3, r3, #15
+ 4835 07d0 0300A0E1 		mov	r0, r3
+ 4836 07d4 FEFFFFEB 		bl	D8Led_symbol
+ 177:../Jaime/button.c ****                         }
+ 178:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 179:../Jaime/button.c ****                         {
+ 180:../Jaime/button.c ****                                 /* Confirmar columna y pasar a introducir valor */
+ 181:../Jaime/button.c ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
+ 182:../Jaime/button.c ****                                 estado_juego = VERIFICAR_CELDA;
+ 183:../Jaime/button.c ****                                 int_count = 0;
+ 184:../Jaime/button.c ****                                 D8Led_symbol(int_count & 0x000f);
+ 185:../Jaime/button.c ****                         }
+ 186:../Jaime/button.c ****                         break;
+ 4837              		.loc 1 186 0
+ 4838 07d8 9C0100EA 		b	.L33
+ 4839              	.L47:
+ 178:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 4840              		.loc 1 178 0
+ 4841 07dc 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4842 07e0 040053E3 		cmp	r3, #4
+ 4843 07e4 9601001A 		bne	.L73
+ 181:../Jaime/button.c ****                                 columna = int_count - 1;  /* Convertir a índice 0-8 */
+ 4844              		.loc 1 181 0
+ 4845 07e8 7C369FE5 		ldr	r3, .L75+16
+ 4846 07ec 0030D3E5 		ldrb	r3, [r3, #0]
+ 4847 07f0 FF3003E2 		and	r3, r3, #255
+ 4848 07f4 013043E2 		sub	r3, r3, #1
+ 4849 07f8 FF2003E2 		and	r2, r3, #255
+ 4850 07fc 78369FE5 		ldr	r3, .L75+32
+ 4851 0800 0020C3E5 		strb	r2, [r3, #0]
+ 182:../Jaime/button.c ****                                 estado_juego = VERIFICAR_CELDA;
+ 4852              		.loc 1 182 0
+ 4853 0804 50369FE5 		ldr	r3, .L75
+ 4854 0808 0320A0E3 		mov	r2, #3
+ 4855 080c 0020C3E5 		strb	r2, [r3, #0]
+ 183:../Jaime/button.c ****                                 int_count = 0;
+ 4856              		.loc 1 183 0
+ 4857 0810 54369FE5 		ldr	r3, .L75+16
+ 4858 0814 0020A0E3 		mov	r2, #0
+ 4859 0818 0020C3E5 		strb	r2, [r3, #0]
+ 184:../Jaime/button.c ****                                 D8Led_symbol(int_count & 0x000f);
+ 4860              		.loc 1 184 0
+ 4861 081c 48369FE5 		ldr	r3, .L75+16
+ 4862 0820 0030D3E5 		ldrb	r3, [r3, #0]
+ 4863 0824 FF3003E2 		and	r3, r3, #255
+ 4864 0828 0F3003E2 		and	r3, r3, #15
+ 4865 082c 0300A0E1 		mov	r0, r3
+ 4866 0830 FEFFFFEB 		bl	D8Led_symbol
+ 4867              		.loc 1 186 0
+ 4868 0834 850100EA 		b	.L33
+ 4869              	.L38:
+ 187:../Jaime/button.c ****                 
+ 188:../Jaime/button.c ****                 case VERIFICAR_CELDA:
+ 189:../Jaime/button.c ****                         /* Primero se verifica si la celda[fila][columna] no es una pista */
+ 190:../Jaime/button.c ****                         if (celda_es_pista(cuadricula[fila][columna]))
+ 4870              		.loc 1 190 0
+ 4871 0838 24369FE5 		ldr	r3, .L75+8
+ 4872 083c 002093E5 		ldr	r2, [r3, #0]
+ 4873 0840 30369FE5 		ldr	r3, .L75+28
+ 4874 0844 0030D3E5 		ldrb	r3, [r3, #0]
+ 4875 0848 FF3003E2 		and	r3, r3, #255
+ 4876 084c 8332A0E1 		mov	r3, r3, asl #5
+ 4877 0850 032082E0 		add	r2, r2, r3
+ 4878 0854 20369FE5 		ldr	r3, .L75+32
+ 4879 0858 0030D3E5 		ldrb	r3, [r3, #0]
+ 4880 085c FF3003E2 		and	r3, r3, #255
+ 4881 0860 8330A0E1 		mov	r3, r3, asl #1
+ 4882 0864 033082E0 		add	r3, r2, r3
+ 4883 0868 B030D3E1 		ldrh	r3, [r3, #0]
+ 4884 086c 0300A0E1 		mov	r0, r3
+ 4885 0870 22FEFFEB 		bl	celda_es_pista
+ 4886 0874 0030A0E1 		mov	r3, r0
+ 4887 0878 000053E3 		cmp	r3, #0
+ 4888 087c 0800000A 		beq	.L50
+ 191:../Jaime/button.c ****                         {
+ 192:../Jaime/button.c ****                                 // Se vuelve al estado INTRODUCIR_FILA
+ 193:../Jaime/button.c ****                                 estado_juego = INTRODUCIR_FILA;
+ 4889              		.loc 1 193 0
+ 4890 0880 D4359FE5 		ldr	r3, .L75
+ 4891 0884 0120A0E3 		mov	r2, #1
+ 4892 0888 0020C3E5 		strb	r2, [r3, #0]
+ 194:../Jaime/button.c ****                                 int_count = 0;
+ 4893              		.loc 1 194 0
+ 4894 088c D8359FE5 		ldr	r3, .L75+16
+ 4895 0890 0020A0E3 		mov	r2, #0
+ 4896 0894 0020C3E5 		strb	r2, [r3, #0]
+ 195:../Jaime/button.c ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array S
+ 4897              		.loc 1 195 0
+ 4898 0898 0F00A0E3 		mov	r0, #15
+ 4899 089c FEFFFFEB 		bl	D8Led_symbol
+ 196:../Jaime/button.c ****                         } 
+ 197:../Jaime/button.c ****                         else
+ 198:../Jaime/button.c ****                         {
+ 199:../Jaime/button.c ****                                 // Si no es pista, se pasa a INTRODUCIR_VALOR
+ 200:../Jaime/button.c ****                                 estado_juego = INTRODUCIR_VALOR;
+ 201:../Jaime/button.c ****                                 int_count = 0;
+ 202:../Jaime/button.c ****                         }
+ 203:../Jaime/button.c ****                         break;
+ 4900              		.loc 1 203 0
+ 4901 08a0 6A0100EA 		b	.L33
+ 4902              	.L50:
+ 200:../Jaime/button.c ****                                 estado_juego = INTRODUCIR_VALOR;
+ 4903              		.loc 1 200 0
+ 4904 08a4 B0359FE5 		ldr	r3, .L75
+ 4905 08a8 0420A0E3 		mov	r2, #4
+ 4906 08ac 0020C3E5 		strb	r2, [r3, #0]
+ 201:../Jaime/button.c ****                                 int_count = 0;
+ 4907              		.loc 1 201 0
+ 4908 08b0 B4359FE5 		ldr	r3, .L75+16
+ 4909 08b4 0020A0E3 		mov	r2, #0
+ 4910 08b8 0020C3E5 		strb	r2, [r3, #0]
+ 4911              		.loc 1 203 0
+ 4912 08bc 630100EA 		b	.L33
+ 4913              	.L39:
+ 204:../Jaime/button.c ****                 
+ 205:../Jaime/button.c ****                 case INTRODUCIR_VALOR:
+ 206:../Jaime/button.c ****                         if (boton_id == EVENTO_BOTON_DERECHO)
+ 4914              		.loc 1 206 0
+ 4915 08c0 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4916 08c4 080053E3 		cmp	r3, #8
+ 4917 08c8 1500001A 		bne	.L52
+ 207:../Jaime/button.c ****                         {
+ 208:../Jaime/button.c ****                                 /* Incrementar valor */
+ 209:../Jaime/button.c ****                                 int_count++;
+ 4918              		.loc 1 209 0
+ 4919 08cc 98359FE5 		ldr	r3, .L75+16
+ 4920 08d0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4921 08d4 FF3003E2 		and	r3, r3, #255
+ 4922 08d8 013083E2 		add	r3, r3, #1
+ 4923 08dc FF2003E2 		and	r2, r3, #255
+ 4924 08e0 84359FE5 		ldr	r3, .L75+16
+ 4925 08e4 0020C3E5 		strb	r2, [r3, #0]
+ 210:../Jaime/button.c ****                                 if (int_count > 9)
+ 4926              		.loc 1 210 0
+ 4927 08e8 7C359FE5 		ldr	r3, .L75+16
+ 4928 08ec 0030D3E5 		ldrb	r3, [r3, #0]
+ 4929 08f0 FF3003E2 		and	r3, r3, #255
+ 4930 08f4 090053E3 		cmp	r3, #9
+ 4931 08f8 0200009A 		bls	.L53
+ 211:../Jaime/button.c ****                                 {
+ 212:../Jaime/button.c ****                                         int_count = 0;
+ 4932              		.loc 1 212 0
+ 4933 08fc 68359FE5 		ldr	r3, .L75+16
+ 4934 0900 0020A0E3 		mov	r2, #0
+ 4935 0904 0020C3E5 		strb	r2, [r3, #0]
+ 4936              	.L53:
+ 213:../Jaime/button.c ****                                 }
+ 214:../Jaime/button.c ****                                 D8Led_symbol(int_count & 0x000f);
+ 4937              		.loc 1 214 0
+ 4938 0908 5C359FE5 		ldr	r3, .L75+16
+ 4939 090c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4940 0910 FF3003E2 		and	r3, r3, #255
+ 4941 0914 0F3003E2 		and	r3, r3, #15
+ 4942 0918 0300A0E1 		mov	r0, r3
+ 4943 091c FEFFFFEB 		bl	D8Led_symbol
+ 215:../Jaime/button.c ****                         }
+ 216:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 217:../Jaime/button.c ****                         {
+ 218:../Jaime/button.c ****                                 /* Confirmar valor e intentar escribir en la celda */
+ 219:../Jaime/button.c ****                                 valor = int_count;  /* Valor a escribir (0-9) */
+ 220:../Jaime/button.c ****                                 
+ 221:../Jaime/button.c ****                                 estado_juego = VERIFICAR_VALOR;
+ 222:../Jaime/button.c ****                                 int_count = 0;
+ 223:../Jaime/button.c ****                         }
+ 224:../Jaime/button.c ****                         break;
+ 4944              		.loc 1 224 0
+ 4945 0920 4A0100EA 		b	.L33
+ 4946              	.L52:
+ 216:../Jaime/button.c ****                         else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 4947              		.loc 1 216 0
+ 4948 0924 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4949 0928 040053E3 		cmp	r3, #4
+ 4950 092c 4601001A 		bne	.L74
+ 219:../Jaime/button.c ****                                 valor = int_count;  /* Valor a escribir (0-9) */
+ 4951              		.loc 1 219 0
+ 4952 0930 34359FE5 		ldr	r3, .L75+16
+ 4953 0934 0030D3E5 		ldrb	r3, [r3, #0]
+ 4954 0938 FF2003E2 		and	r2, r3, #255
+ 4955 093c 3C359FE5 		ldr	r3, .L75+36
+ 4956 0940 0020C3E5 		strb	r2, [r3, #0]
+ 221:../Jaime/button.c ****                                 estado_juego = VERIFICAR_VALOR;
+ 4957              		.loc 1 221 0
+ 4958 0944 10359FE5 		ldr	r3, .L75
+ 4959 0948 0520A0E3 		mov	r2, #5
+ 4960 094c 0020C3E5 		strb	r2, [r3, #0]
+ 222:../Jaime/button.c ****                                 int_count = 0;
+ 4961              		.loc 1 222 0
+ 4962 0950 14359FE5 		ldr	r3, .L75+16
+ 4963 0954 0020A0E3 		mov	r2, #0
+ 4964 0958 0020C3E5 		strb	r2, [r3, #0]
+ 4965              		.loc 1 224 0
+ 4966 095c 3B0100EA 		b	.L33
+ 4967              	.L40:
+ 225:../Jaime/button.c ****                 
+ 226:../Jaime/button.c ****                 case VERIFICAR_VALOR:
+ 227:../Jaime/button.c ****                         /* Guardar valor previo de la celda */
+ 228:../Jaime/button.c ****                         valor_previo = celda_leer_valor(cuadricula[fila][columna]);
+ 4968              		.loc 1 228 0
+ 4969 0960 FC349FE5 		ldr	r3, .L75+8
+ 4970 0964 002093E5 		ldr	r2, [r3, #0]
+ 4971 0968 08359FE5 		ldr	r3, .L75+28
+ 4972 096c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4973 0970 FF3003E2 		and	r3, r3, #255
+ 4974 0974 8332A0E1 		mov	r3, r3, asl #5
+ 4975 0978 032082E0 		add	r2, r2, r3
+ 4976 097c F8349FE5 		ldr	r3, .L75+32
+ 4977 0980 0030D3E5 		ldrb	r3, [r3, #0]
+ 4978 0984 FF3003E2 		and	r3, r3, #255
+ 4979 0988 8330A0E1 		mov	r3, r3, asl #1
+ 4980 098c 033082E0 		add	r3, r2, r3
+ 4981 0990 B030D3E1 		ldrh	r3, [r3, #0]
+ 4982 0994 0300A0E1 		mov	r0, r3
+ 4983 0998 B6FDFFEB 		bl	celda_leer_valor
+ 4984 099c 0030A0E1 		mov	r3, r0
+ 4985 09a0 0320A0E1 		mov	r2, r3
+ 4986 09a4 D8349FE5 		ldr	r3, .L75+40
+ 4987 09a8 0020C3E5 		strb	r2, [r3, #0]
+ 229:../Jaime/button.c ****                         
+ 230:../Jaime/button.c ****                         if (valor == 0)
+ 4988              		.loc 1 230 0
+ 4989 09ac CC349FE5 		ldr	r3, .L75+36
+ 4990 09b0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4991 09b4 FF3003E2 		and	r3, r3, #255
+ 4992 09b8 000053E3 		cmp	r3, #0
+ 4993 09bc 4000001A 		bne	.L55
+ 4994              	.LBB2:
+ 231:../Jaime/button.c ****                         {
+ 232:../Jaime/button.c ****                                 uint8_t f, c;
+ 233:../Jaime/button.c ****                                 
+ 234:../Jaime/button.c ****                                 /* Valor 0 = borrar -> pasar a BORRAR_VALOR */
+ 235:../Jaime/button.c ****                                 /* Limpiar todos los errores previos */
+ 236:../Jaime/button.c ****                                 for (f = 0; f < NUM_FILAS; f++)
+ 4995              		.loc 1 236 0
+ 4996 09c0 0030A0E3 		mov	r3, #0
+ 4997 09c4 0D304BE5 		strb	r3, [fp, #-13]
+ 4998 09c8 160000EA 		b	.L56
+ 4999              	.L59:
+ 237:../Jaime/button.c ****                                 {
+ 238:../Jaime/button.c ****                                         for (c = 0; c < NUM_COLUMNAS; c++)
+ 5000              		.loc 1 238 0
+ 5001 09cc 0030A0E3 		mov	r3, #0
+ 5002 09d0 0E304BE5 		strb	r3, [fp, #-14]
+ 5003 09d4 0D0000EA 		b	.L57
+ 5004              	.L58:
+ 239:../Jaime/button.c ****                                         {
+ 240:../Jaime/button.c ****                                                 celda_limpiar_error(&cuadricula[f][c]);
+ 5005              		.loc 1 240 0 discriminator 2
+ 5006 09d8 84349FE5 		ldr	r3, .L75+8
+ 5007 09dc 003093E5 		ldr	r3, [r3, #0]
+ 5008 09e0 0320A0E1 		mov	r2, r3
+ 5009 09e4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5010 09e8 0312A0E1 		mov	r1, r3, asl #4
+ 5011 09ec 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 5012 09f0 033081E0 		add	r3, r1, r3
+ 5013 09f4 8330A0E1 		mov	r3, r3, asl #1
+ 5014 09f8 033082E0 		add	r3, r2, r3
+ 5015 09fc 0300A0E1 		mov	r0, r3
+ 5016 0a00 DCFDFFEB 		bl	celda_limpiar_error
+ 238:../Jaime/button.c ****                                         for (c = 0; c < NUM_COLUMNAS; c++)
+ 5017              		.loc 1 238 0 discriminator 2
+ 5018 0a04 0E305BE5 		ldrb	r3, [fp, #-14]
+ 5019 0a08 013083E2 		add	r3, r3, #1
+ 5020 0a0c 0E304BE5 		strb	r3, [fp, #-14]
+ 5021              	.L57:
+ 238:../Jaime/button.c ****                                         for (c = 0; c < NUM_COLUMNAS; c++)
+ 5022              		.loc 1 238 0 is_stmt 0 discriminator 1
+ 5023 0a10 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 5024 0a14 0F0053E3 		cmp	r3, #15
+ 5025 0a18 EEFFFF9A 		bls	.L58
+ 236:../Jaime/button.c ****                                 for (f = 0; f < NUM_FILAS; f++)
+ 5026              		.loc 1 236 0 is_stmt 1
+ 5027 0a1c 0D305BE5 		ldrb	r3, [fp, #-13]
+ 5028 0a20 013083E2 		add	r3, r3, #1
+ 5029 0a24 0D304BE5 		strb	r3, [fp, #-13]
+ 5030              	.L56:
+ 236:../Jaime/button.c ****                                 for (f = 0; f < NUM_FILAS; f++)
+ 5031              		.loc 1 236 0 is_stmt 0 discriminator 1
+ 5032 0a28 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5033 0a2c 080053E3 		cmp	r3, #8
+ 5034 0a30 E5FFFF9A 		bls	.L59
+ 241:../Jaime/button.c ****                                         }
+ 242:../Jaime/button.c ****                                 }
+ 243:../Jaime/button.c ****                                 
+ 244:../Jaime/button.c ****                                 /* Borrar el valor de la celda */
+ 245:../Jaime/button.c ****                                 celda_poner_valor(&cuadricula[fila][columna], 0);
+ 5035              		.loc 1 245 0 is_stmt 1
+ 5036 0a34 28349FE5 		ldr	r3, .L75+8
+ 5037 0a38 003093E5 		ldr	r3, [r3, #0]
+ 5038 0a3c 0320A0E1 		mov	r2, r3
+ 5039 0a40 30349FE5 		ldr	r3, .L75+28
+ 5040 0a44 0030D3E5 		ldrb	r3, [r3, #0]
+ 5041 0a48 FF3003E2 		and	r3, r3, #255
+ 5042 0a4c 0312A0E1 		mov	r1, r3, asl #4
+ 5043 0a50 24349FE5 		ldr	r3, .L75+32
+ 5044 0a54 0030D3E5 		ldrb	r3, [r3, #0]
+ 5045 0a58 FF3003E2 		and	r3, r3, #255
+ 5046 0a5c 033081E0 		add	r3, r1, r3
+ 5047 0a60 8330A0E1 		mov	r3, r3, asl #1
+ 5048 0a64 033082E0 		add	r3, r2, r3
+ 5049 0a68 0300A0E1 		mov	r0, r3
+ 5050 0a6c 0010A0E3 		mov	r1, #0
+ 5051 0a70 62FDFFEB 		bl	celda_poner_valor
+ 246:../Jaime/button.c ****                                 
+ 247:../Jaime/button.c ****                                 /* Al borrar un valor, hay que recalcular todos los candidatos */
+ 248:../Jaime/button.c ****                                 celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 5052              		.loc 1 248 0
+ 5053 0a74 E8339FE5 		ldr	r3, .L75+8
+ 5054 0a78 003093E5 		ldr	r3, [r3, #0]
+ 5055 0a7c 0300A0E1 		mov	r0, r3
+ 5056 0a80 FEFFFFEB 		bl	candidatos_actualizar_all
+ 5057 0a84 0020A0E1 		mov	r2, r0
+ 5058 0a88 D8339FE5 		ldr	r3, .L75+12
+ 5059 0a8c 002083E5 		str	r2, [r3, #0]
+ 249:../Jaime/button.c ****                                 
+ 250:../Jaime/button.c ****                                 /* Actualizar la visualización del tablero */
+ 251:../Jaime/button.c ****                                 Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 5060              		.loc 1 251 0
+ 5061 0a90 CC339FE5 		ldr	r3, .L75+8
+ 5062 0a94 003093E5 		ldr	r3, [r3, #0]
+ 5063 0a98 0300A0E1 		mov	r0, r3
+ 5064 0a9c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 252:../Jaime/button.c ****                                 
+ 253:../Jaime/button.c ****                                 /* Volver a introducir fila */
+ 254:../Jaime/button.c ****                                 estado_juego = INTRODUCIR_FILA;
+ 5065              		.loc 1 254 0
+ 5066 0aa0 B4339FE5 		ldr	r3, .L75
+ 5067 0aa4 0120A0E3 		mov	r2, #1
+ 5068 0aa8 0020C3E5 		strb	r2, [r3, #0]
+ 255:../Jaime/button.c ****                                 int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+ 5069              		.loc 1 255 0
+ 5070 0aac B8339FE5 		ldr	r3, .L75+16
+ 5071 0ab0 0920A0E3 		mov	r2, #9
+ 5072 0ab4 0020C3E5 		strb	r2, [r3, #0]
+ 256:../Jaime/button.c ****                                 D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 5073              		.loc 1 256 0
+ 5074 0ab8 0F00A0E3 		mov	r0, #15
+ 5075 0abc FEFFFFEB 		bl	D8Led_symbol
+ 257:../Jaime/button.c ****                                 break;
+ 5076              		.loc 1 257 0
+ 5077 0ac0 E20000EA 		b	.L33
+ 5078              	.L55:
+ 5079              	.LBE2:
+ 258:../Jaime/button.c ****                         }
+ 259:../Jaime/button.c ****                         else
+ 260:../Jaime/button.c ****                         {
+ 261:../Jaime/button.c ****                                 /* Verificar si el valor es candidato */
+ 262:../Jaime/button.c ****                                 if (celda_es_candidato(cuadricula[fila][columna], valor))
+ 5080              		.loc 1 262 0
+ 5081 0ac4 98339FE5 		ldr	r3, .L75+8
+ 5082 0ac8 002093E5 		ldr	r2, [r3, #0]
+ 5083 0acc A4339FE5 		ldr	r3, .L75+28
+ 5084 0ad0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5085 0ad4 FF3003E2 		and	r3, r3, #255
+ 5086 0ad8 8332A0E1 		mov	r3, r3, asl #5
+ 5087 0adc 032082E0 		add	r2, r2, r3
+ 5088 0ae0 94339FE5 		ldr	r3, .L75+32
+ 5089 0ae4 0030D3E5 		ldrb	r3, [r3, #0]
+ 5090 0ae8 FF3003E2 		and	r3, r3, #255
+ 5091 0aec 8330A0E1 		mov	r3, r3, asl #1
+ 5092 0af0 033082E0 		add	r3, r2, r3
+ 5093 0af4 B020D3E1 		ldrh	r2, [r3, #0]
+ 5094 0af8 80339FE5 		ldr	r3, .L75+36
+ 5095 0afc 0030D3E5 		ldrb	r3, [r3, #0]
+ 5096 0b00 FF3003E2 		and	r3, r3, #255
+ 5097 0b04 0200A0E1 		mov	r0, r2
+ 5098 0b08 0310A0E1 		mov	r1, r3
+ 5099 0b0c 67FDFFEB 		bl	celda_es_candidato
+ 5100 0b10 0030A0E1 		mov	r3, r0
+ 5101 0b14 000053E3 		cmp	r3, #0
+ 5102 0b18 5500000A 		beq	.L60
+ 5103              	.LBB3:
+ 263:../Jaime/button.c ****                                 {
+ 264:../Jaime/button.c ****                                         uint8_t f, c;
+ 265:../Jaime/button.c ****                                         
+ 266:../Jaime/button.c ****                                         /* Es candidato: escribir el valor en la celda */
+ 267:../Jaime/button.c ****                                         /* Primero limpiar todos los errores previos */
+ 268:../Jaime/button.c ****                                         for (f = 0; f < NUM_FILAS; f++)
+ 5104              		.loc 1 268 0
+ 5105 0b1c 0030A0E3 		mov	r3, #0
+ 5106 0b20 0F304BE5 		strb	r3, [fp, #-15]
+ 5107 0b24 160000EA 		b	.L61
+ 5108              	.L64:
+ 269:../Jaime/button.c ****                                         {
+ 270:../Jaime/button.c ****                                                 for (c = 0; c < NUM_COLUMNAS; c++)
+ 5109              		.loc 1 270 0
+ 5110 0b28 0030A0E3 		mov	r3, #0
+ 5111 0b2c 10304BE5 		strb	r3, [fp, #-16]
+ 5112 0b30 0D0000EA 		b	.L62
+ 5113              	.L63:
+ 271:../Jaime/button.c ****                                                 {
+ 272:../Jaime/button.c ****                                                         celda_limpiar_error(&cuadricula[f][c]);
+ 5114              		.loc 1 272 0 discriminator 2
+ 5115 0b34 28339FE5 		ldr	r3, .L75+8
+ 5116 0b38 003093E5 		ldr	r3, [r3, #0]
+ 5117 0b3c 0320A0E1 		mov	r2, r3
+ 5118 0b40 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 5119 0b44 0312A0E1 		mov	r1, r3, asl #4
+ 5120 0b48 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 5121 0b4c 033081E0 		add	r3, r1, r3
+ 5122 0b50 8330A0E1 		mov	r3, r3, asl #1
+ 5123 0b54 033082E0 		add	r3, r2, r3
+ 5124 0b58 0300A0E1 		mov	r0, r3
+ 5125 0b5c 85FDFFEB 		bl	celda_limpiar_error
+ 270:../Jaime/button.c ****                                                 for (c = 0; c < NUM_COLUMNAS; c++)
+ 5126              		.loc 1 270 0 discriminator 2
+ 5127 0b60 10305BE5 		ldrb	r3, [fp, #-16]
+ 5128 0b64 013083E2 		add	r3, r3, #1
+ 5129 0b68 10304BE5 		strb	r3, [fp, #-16]
+ 5130              	.L62:
+ 270:../Jaime/button.c ****                                                 for (c = 0; c < NUM_COLUMNAS; c++)
+ 5131              		.loc 1 270 0 is_stmt 0 discriminator 1
+ 5132 0b6c 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 5133 0b70 0F0053E3 		cmp	r3, #15
+ 5134 0b74 EEFFFF9A 		bls	.L63
+ 268:../Jaime/button.c ****                                         for (f = 0; f < NUM_FILAS; f++)
+ 5135              		.loc 1 268 0 is_stmt 1
+ 5136 0b78 0F305BE5 		ldrb	r3, [fp, #-15]
+ 5137 0b7c 013083E2 		add	r3, r3, #1
+ 5138 0b80 0F304BE5 		strb	r3, [fp, #-15]
+ 5139              	.L61:
+ 268:../Jaime/button.c ****                                         for (f = 0; f < NUM_FILAS; f++)
+ 5140              		.loc 1 268 0 is_stmt 0 discriminator 1
+ 5141 0b84 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 5142 0b88 080053E3 		cmp	r3, #8
+ 5143 0b8c E5FFFF9A 		bls	.L64
+ 273:../Jaime/button.c ****                                                 }
+ 274:../Jaime/button.c ****                                         }
+ 275:../Jaime/button.c ****                                         
+ 276:../Jaime/button.c ****                                         celda_poner_valor(&cuadricula[fila][columna], valor);
+ 5144              		.loc 1 276 0 is_stmt 1
+ 5145 0b90 CC329FE5 		ldr	r3, .L75+8
+ 5146 0b94 003093E5 		ldr	r3, [r3, #0]
+ 5147 0b98 0320A0E1 		mov	r2, r3
+ 5148 0b9c D4329FE5 		ldr	r3, .L75+28
+ 5149 0ba0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5150 0ba4 FF3003E2 		and	r3, r3, #255
+ 5151 0ba8 0312A0E1 		mov	r1, r3, asl #4
+ 5152 0bac C8329FE5 		ldr	r3, .L75+32
+ 5153 0bb0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5154 0bb4 FF3003E2 		and	r3, r3, #255
+ 5155 0bb8 033081E0 		add	r3, r1, r3
+ 5156 0bbc 8330A0E1 		mov	r3, r3, asl #1
+ 5157 0bc0 032082E0 		add	r2, r2, r3
+ 5158 0bc4 B4329FE5 		ldr	r3, .L75+36
+ 5159 0bc8 0030D3E5 		ldrb	r3, [r3, #0]
+ 5160 0bcc FF3003E2 		and	r3, r3, #255
+ 5161 0bd0 0200A0E1 		mov	r0, r2
+ 5162 0bd4 0310A0E1 		mov	r1, r3
+ 5163 0bd8 08FDFFEB 		bl	celda_poner_valor
+ 277:../Jaime/button.c ****                                         
+ 278:../Jaime/button.c ****                                         /* Decidir si propagar o actualizar según el caso */
+ 279:../Jaime/button.c ****                                         if (valor_previo != 0)
+ 5164              		.loc 1 279 0
+ 5165 0bdc A0329FE5 		ldr	r3, .L75+40
+ 5166 0be0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5167 0be4 FF3003E2 		and	r3, r3, #255
+ 5168 0be8 000053E3 		cmp	r3, #0
+ 5169 0bec 0700000A 		beq	.L65
+ 280:../Jaime/button.c ****                                         {
+ 281:../Jaime/button.c ****                                                 /* Se modificó un valor previo -> recalcular todo 
+ 282:../Jaime/button.c ****                                                 celdas_vacias = candidatos_actualizar_all(cuadricul
+ 5170              		.loc 1 282 0
+ 5171 0bf0 6C329FE5 		ldr	r3, .L75+8
+ 5172 0bf4 003093E5 		ldr	r3, [r3, #0]
+ 5173 0bf8 0300A0E1 		mov	r0, r3
+ 5174 0bfc FEFFFFEB 		bl	candidatos_actualizar_all
+ 5175 0c00 0020A0E1 		mov	r2, r0
+ 5176 0c04 5C329FE5 		ldr	r3, .L75+12
+ 5177 0c08 002083E5 		str	r2, [r3, #0]
+ 5178 0c0c 0B0000EA 		b	.L66
+ 5179              	.L65:
+ 283:../Jaime/button.c ****                                         }
+ 284:../Jaime/button.c ****                                         else
+ 285:../Jaime/button.c ****                                         {
+ 286:../Jaime/button.c ****                                                 /* Celda vacía -> solo propagar el nuevo valor */
+ 287:../Jaime/button.c ****                                                 candidatos_propagar_arm(cuadricula, fila, columna);
+ 5180              		.loc 1 287 0
+ 5181 0c10 4C329FE5 		ldr	r3, .L75+8
+ 5182 0c14 001093E5 		ldr	r1, [r3, #0]
+ 5183 0c18 58329FE5 		ldr	r3, .L75+28
+ 5184 0c1c 0030D3E5 		ldrb	r3, [r3, #0]
+ 5185 0c20 FF2003E2 		and	r2, r3, #255
+ 5186 0c24 50329FE5 		ldr	r3, .L75+32
+ 5187 0c28 0030D3E5 		ldrb	r3, [r3, #0]
+ 5188 0c2c FF3003E2 		and	r3, r3, #255
+ 5189 0c30 0100A0E1 		mov	r0, r1
+ 5190 0c34 0210A0E1 		mov	r1, r2
+ 5191 0c38 0320A0E1 		mov	r2, r3
+ 5192 0c3c FEFFFFEB 		bl	candidatos_propagar_arm
+ 5193              	.L66:
+ 288:../Jaime/button.c ****                                         }
+ 289:../Jaime/button.c ****                                         
+ 290:../Jaime/button.c ****                                         /* Actualizar la visualización del tablero */
+ 291:../Jaime/button.c ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 5194              		.loc 1 291 0
+ 5195 0c40 1C329FE5 		ldr	r3, .L75+8
+ 5196 0c44 003093E5 		ldr	r3, [r3, #0]
+ 5197 0c48 0300A0E1 		mov	r0, r3
+ 5198 0c4c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 292:../Jaime/button.c ****                                         
+ 293:../Jaime/button.c ****                                         /* Volver a introducir fila */
+ 294:../Jaime/button.c ****                                         estado_juego = INTRODUCIR_FILA;
+ 5199              		.loc 1 294 0
+ 5200 0c50 04329FE5 		ldr	r3, .L75
+ 5201 0c54 0120A0E3 		mov	r2, #1
+ 5202 0c58 0020C3E5 		strb	r2, [r3, #0]
+ 295:../Jaime/button.c ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 5203              		.loc 1 295 0
+ 5204 0c5c 08329FE5 		ldr	r3, .L75+16
+ 5205 0c60 0920A0E3 		mov	r2, #9
+ 5206 0c64 0020C3E5 		strb	r2, [r3, #0]
+ 296:../Jaime/button.c ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 5207              		.loc 1 296 0
+ 5208 0c68 0F00A0E3 		mov	r0, #15
+ 5209 0c6c FEFFFFEB 		bl	D8Led_symbol
+ 5210              	.LBE3:
+ 297:../Jaime/button.c ****                                 }
+ 298:../Jaime/button.c ****                                 else
+ 299:../Jaime/button.c ****                                 {
+ 300:../Jaime/button.c ****                                         /* No es candidato: es un error */
+ 301:../Jaime/button.c ****                                         celda_marcar_error(&cuadricula[fila][columna]);
+ 302:../Jaime/button.c ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
+ 303:../Jaime/button.c ****                                         
+ 304:../Jaime/button.c ****                                         /* Esperar 2 segundos para que la 'E' sea visible */
+ 305:../Jaime/button.c ****                                         Delay(200);
+ 306:../Jaime/button.c ****                                         
+ 307:../Jaime/button.c ****                                         /* Poner el valor incorrecto en la celda para visualizarlo 
+ 308:../Jaime/button.c ****                                         celda_poner_valor(&cuadricula[fila][columna], valor);
+ 309:../Jaime/button.c ****                                         
+ 310:../Jaime/button.c ****                                         /* Actualizar candidatos para reflejar el cambio */
+ 311:../Jaime/button.c ****                                         if (valor_previo != 0)
+ 312:../Jaime/button.c ****                                         {
+ 313:../Jaime/button.c ****                                                 /* Se modificó un valor previo -> recalcular todo 
+ 314:../Jaime/button.c ****                                                 celdas_vacias = candidatos_actualizar_all(cuadricul
+ 315:../Jaime/button.c ****                                         }
+ 316:../Jaime/button.c ****                                         else
+ 317:../Jaime/button.c ****                                         {
+ 318:../Jaime/button.c ****                                                 /* Celda vacía -> propagar el nuevo valor */
+ 319:../Jaime/button.c ****                                                 candidatos_propagar_arm(cuadricula, fila, columna);
+ 320:../Jaime/button.c ****                                         }
+ 321:../Jaime/button.c ****                                         
+ 322:../Jaime/button.c ****                                         /* Marcar TODAS las celdas involucradas en el conflicto */
+ 323:../Jaime/button.c ****                                         marcar_celdas_en_conflicto(fila, columna, valor);
+ 324:../Jaime/button.c ****                                         
+ 325:../Jaime/button.c ****                                         /* Actualizar la visualización del tablero */
+ 326:../Jaime/button.c ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 327:../Jaime/button.c ****                                         
+ 328:../Jaime/button.c ****                                         /* Volver a introducir fila */
+ 329:../Jaime/button.c ****                                         estado_juego = INTRODUCIR_FILA;
+ 330:../Jaime/button.c ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 331:../Jaime/button.c ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 332:../Jaime/button.c ****                                 }
+ 333:../Jaime/button.c ****                         }
+ 334:../Jaime/button.c ****                         break;
+ 5211              		.loc 1 334 0
+ 5212 0c70 760000EA 		b	.L33
+ 5213              	.L60:
+ 301:../Jaime/button.c ****                                         celda_marcar_error(&cuadricula[fila][columna]);
+ 5214              		.loc 1 301 0
+ 5215 0c74 E8319FE5 		ldr	r3, .L75+8
+ 5216 0c78 003093E5 		ldr	r3, [r3, #0]
+ 5217 0c7c 0320A0E1 		mov	r2, r3
+ 5218 0c80 F0319FE5 		ldr	r3, .L75+28
+ 5219 0c84 0030D3E5 		ldrb	r3, [r3, #0]
+ 5220 0c88 FF3003E2 		and	r3, r3, #255
+ 5221 0c8c 0312A0E1 		mov	r1, r3, asl #4
+ 5222 0c90 E4319FE5 		ldr	r3, .L75+32
+ 5223 0c94 0030D3E5 		ldrb	r3, [r3, #0]
+ 5224 0c98 FF3003E2 		and	r3, r3, #255
+ 5225 0c9c 033081E0 		add	r3, r1, r3
+ 5226 0ca0 8330A0E1 		mov	r3, r3, asl #1
+ 5227 0ca4 033082E0 		add	r3, r2, r3
+ 5228 0ca8 0300A0E1 		mov	r0, r3
+ 5229 0cac 22FDFFEB 		bl	celda_marcar_error
+ 302:../Jaime/button.c ****                                         D8Led_symbol(14);  /* Mostrar 'E' de Error */
+ 5230              		.loc 1 302 0
+ 5231 0cb0 0E00A0E3 		mov	r0, #14
+ 5232 0cb4 FEFFFFEB 		bl	D8Led_symbol
+ 305:../Jaime/button.c ****                                         Delay(200);
+ 5233              		.loc 1 305 0
+ 5234 0cb8 C800A0E3 		mov	r0, #200
+ 5235 0cbc FEFFFFEB 		bl	Delay
+ 308:../Jaime/button.c ****                                         celda_poner_valor(&cuadricula[fila][columna], valor);
+ 5236              		.loc 1 308 0
+ 5237 0cc0 9C319FE5 		ldr	r3, .L75+8
+ 5238 0cc4 003093E5 		ldr	r3, [r3, #0]
+ 5239 0cc8 0320A0E1 		mov	r2, r3
+ 5240 0ccc A4319FE5 		ldr	r3, .L75+28
+ 5241 0cd0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5242 0cd4 FF3003E2 		and	r3, r3, #255
+ 5243 0cd8 0312A0E1 		mov	r1, r3, asl #4
+ 5244 0cdc 98319FE5 		ldr	r3, .L75+32
+ 5245 0ce0 0030D3E5 		ldrb	r3, [r3, #0]
+ 5246 0ce4 FF3003E2 		and	r3, r3, #255
+ 5247 0ce8 033081E0 		add	r3, r1, r3
+ 5248 0cec 8330A0E1 		mov	r3, r3, asl #1
+ 5249 0cf0 032082E0 		add	r2, r2, r3
+ 5250 0cf4 84319FE5 		ldr	r3, .L75+36
+ 5251 0cf8 0030D3E5 		ldrb	r3, [r3, #0]
+ 5252 0cfc FF3003E2 		and	r3, r3, #255
+ 5253 0d00 0200A0E1 		mov	r0, r2
+ 5254 0d04 0310A0E1 		mov	r1, r3
+ 5255 0d08 BCFCFFEB 		bl	celda_poner_valor
+ 311:../Jaime/button.c ****                                         if (valor_previo != 0)
+ 5256              		.loc 1 311 0
+ 5257 0d0c 70319FE5 		ldr	r3, .L75+40
+ 5258 0d10 0030D3E5 		ldrb	r3, [r3, #0]
+ 5259 0d14 FF3003E2 		and	r3, r3, #255
+ 5260 0d18 000053E3 		cmp	r3, #0
+ 5261 0d1c 0700000A 		beq	.L68
+ 314:../Jaime/button.c ****                                                 celdas_vacias = candidatos_actualizar_all(cuadricul
+ 5262              		.loc 1 314 0
+ 5263 0d20 3C319FE5 		ldr	r3, .L75+8
+ 5264 0d24 003093E5 		ldr	r3, [r3, #0]
+ 5265 0d28 0300A0E1 		mov	r0, r3
+ 5266 0d2c FEFFFFEB 		bl	candidatos_actualizar_all
+ 5267 0d30 0020A0E1 		mov	r2, r0
+ 5268 0d34 2C319FE5 		ldr	r3, .L75+12
+ 5269 0d38 002083E5 		str	r2, [r3, #0]
+ 5270 0d3c 0B0000EA 		b	.L69
+ 5271              	.L68:
+ 319:../Jaime/button.c ****                                                 candidatos_propagar_arm(cuadricula, fila, columna);
+ 5272              		.loc 1 319 0
+ 5273 0d40 1C319FE5 		ldr	r3, .L75+8
+ 5274 0d44 001093E5 		ldr	r1, [r3, #0]
+ 5275 0d48 28319FE5 		ldr	r3, .L75+28
+ 5276 0d4c 0030D3E5 		ldrb	r3, [r3, #0]
+ 5277 0d50 FF2003E2 		and	r2, r3, #255
+ 5278 0d54 20319FE5 		ldr	r3, .L75+32
+ 5279 0d58 0030D3E5 		ldrb	r3, [r3, #0]
+ 5280 0d5c FF3003E2 		and	r3, r3, #255
+ 5281 0d60 0100A0E1 		mov	r0, r1
+ 5282 0d64 0210A0E1 		mov	r1, r2
+ 5283 0d68 0320A0E1 		mov	r2, r3
+ 5284 0d6c FEFFFFEB 		bl	candidatos_propagar_arm
+ 5285              	.L69:
+ 323:../Jaime/button.c ****                                         marcar_celdas_en_conflicto(fila, columna, valor);
+ 5286              		.loc 1 323 0
+ 5287 0d70 00319FE5 		ldr	r3, .L75+28
+ 5288 0d74 0030D3E5 		ldrb	r3, [r3, #0]
+ 5289 0d78 FF1003E2 		and	r1, r3, #255
+ 5290 0d7c F8309FE5 		ldr	r3, .L75+32
+ 5291 0d80 0030D3E5 		ldrb	r3, [r3, #0]
+ 5292 0d84 FF2003E2 		and	r2, r3, #255
+ 5293 0d88 F0309FE5 		ldr	r3, .L75+36
+ 5294 0d8c 0030D3E5 		ldrb	r3, [r3, #0]
+ 5295 0d90 FF3003E2 		and	r3, r3, #255
+ 5296 0d94 0100A0E1 		mov	r0, r1
+ 5297 0d98 0210A0E1 		mov	r1, r2
+ 5298 0d9c 0320A0E1 		mov	r2, r3
+ 5299 0da0 2FFDFFEB 		bl	marcar_celdas_en_conflicto
+ 326:../Jaime/button.c ****                                         Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 5300              		.loc 1 326 0
+ 5301 0da4 B8309FE5 		ldr	r3, .L75+8
+ 5302 0da8 003093E5 		ldr	r3, [r3, #0]
+ 5303 0dac 0300A0E1 		mov	r0, r3
+ 5304 0db0 FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 329:../Jaime/button.c ****                                         estado_juego = INTRODUCIR_FILA;
+ 5305              		.loc 1 329 0
+ 5306 0db4 A0309FE5 		ldr	r3, .L75
+ 5307 0db8 0120A0E3 		mov	r2, #1
+ 5308 0dbc 0020C3E5 		strb	r2, [r3, #0]
+ 330:../Jaime/button.c ****                                         int_count = 9;  /* Iniciar en 9 para que al incrementar vay
+ 5309              		.loc 1 330 0
+ 5310 0dc0 A4309FE5 		ldr	r3, .L75+16
+ 5311 0dc4 0920A0E3 		mov	r2, #9
+ 5312 0dc8 0020C3E5 		strb	r2, [r3, #0]
+ 331:../Jaime/button.c ****                                         D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 5313              		.loc 1 331 0
+ 5314 0dcc 0F00A0E3 		mov	r0, #15
+ 5315 0dd0 FEFFFFEB 		bl	D8Led_symbol
+ 5316              		.loc 1 334 0
+ 5317 0dd4 1D0000EA 		b	.L33
+ 5318              	.L41:
+ 335:../Jaime/button.c ****                 
+ 336:../Jaime/button.c ****                 case PARTIDA_TERMINADA:
+ 337:../Jaime/button.c ****                         /* Mostrar pantalla de despedida solo una vez */
+ 338:../Jaime/button.c ****                         if (!pantalla_mostrada)
+ 5319              		.loc 1 338 0
+ 5320 0dd8 90309FE5 		ldr	r3, .L75+20
+ 5321 0ddc 0030D3E5 		ldrb	r3, [r3, #0]
+ 5322 0de0 FF3003E2 		and	r3, r3, #255
+ 5323 0de4 000053E3 		cmp	r3, #0
+ 5324 0de8 0700001A 		bne	.L70
+ 339:../Jaime/button.c ****                         {
+ 340:../Jaime/button.c ****                                 /* Usar la función existente de lcd.c */
+ 341:../Jaime/button.c ****                                 Sudoku_Pantalla_Final(tiempo_final);
+ 5325              		.loc 1 341 0
+ 5326 0dec 80309FE5 		ldr	r3, .L75+24
+ 5327 0df0 003093E5 		ldr	r3, [r3, #0]
+ 5328 0df4 0300A0E1 		mov	r0, r3
+ 5329 0df8 FEFFFFEB 		bl	Sudoku_Pantalla_Final
+ 342:../Jaime/button.c ****                                 
+ 343:../Jaime/button.c ****                                 pantalla_mostrada = 1;
+ 5330              		.loc 1 343 0
+ 5331 0dfc 6C309FE5 		ldr	r3, .L75+20
+ 5332 0e00 0120A0E3 		mov	r2, #1
+ 5333 0e04 0020C3E5 		strb	r2, [r3, #0]
+ 344:../Jaime/button.c ****                         }
+ 345:../Jaime/button.c ****                         else
+ 346:../Jaime/button.c ****                         {
+ 347:../Jaime/button.c ****                                 /* Cualquier botón después de mostrar pantalla final reinicia el 
+ 348:../Jaime/button.c ****                                 /* Restaurar la cuadrícula al estado original */
+ 349:../Jaime/button.c ****                                 restaurar_cuadricula_original();
+ 350:../Jaime/button.c ****                                 
+ 351:../Jaime/button.c ****                                 /* Mostrar pantalla inicial */
+ 352:../Jaime/button.c ****                                 Sudoku_Pantalla_Inicial();
+ 353:../Jaime/button.c ****                                 
+ 354:../Jaime/button.c ****                                 /* Volver al estado inicial */
+ 355:../Jaime/button.c ****                                 estado_juego = ESPERANDO_INICIO;
+ 356:../Jaime/button.c ****                                 int_count = 0;
+ 357:../Jaime/button.c ****                                 pantalla_mostrada = 0;
+ 358:../Jaime/button.c ****                         }
+ 359:../Jaime/button.c ****                         break;
+ 5334              		.loc 1 359 0
+ 5335 0e08 100000EA 		b	.L33
+ 5336              	.L70:
+ 349:../Jaime/button.c ****                                 restaurar_cuadricula_original();
+ 5337              		.loc 1 349 0
+ 5338 0e0c E8FCFFEB 		bl	restaurar_cuadricula_original
+ 352:../Jaime/button.c ****                                 Sudoku_Pantalla_Inicial();
+ 5339              		.loc 1 352 0
+ 5340 0e10 FEFFFFEB 		bl	Sudoku_Pantalla_Inicial
+ 355:../Jaime/button.c ****                                 estado_juego = ESPERANDO_INICIO;
+ 5341              		.loc 1 355 0
+ 5342 0e14 40309FE5 		ldr	r3, .L75
+ 5343 0e18 0020A0E3 		mov	r2, #0
+ 5344 0e1c 0020C3E5 		strb	r2, [r3, #0]
+ 356:../Jaime/button.c ****                                 int_count = 0;
+ 5345              		.loc 1 356 0
+ 5346 0e20 44309FE5 		ldr	r3, .L75+16
+ 5347 0e24 0020A0E3 		mov	r2, #0
+ 5348 0e28 0020C3E5 		strb	r2, [r3, #0]
+ 357:../Jaime/button.c ****                                 pantalla_mostrada = 0;
+ 5349              		.loc 1 357 0
+ 5350 0e2c 3C309FE5 		ldr	r3, .L75+20
+ 5351 0e30 0020A0E3 		mov	r2, #0
+ 5352 0e34 0020C3E5 		strb	r2, [r3, #0]
+ 5353              		.loc 1 359 0
+ 5354 0e38 040000EA 		b	.L33
+ 5355              	.L72:
+ 165:../Jaime/button.c ****                         break;
+ 5356              		.loc 1 165 0
+ 5357 0e3c 0000A0E1 		mov	r0, r0	@ nop
+ 5358 0e40 020000EA 		b	.L33
+ 5359              	.L73:
+ 186:../Jaime/button.c ****                         break;
+ 5360              		.loc 1 186 0
+ 5361 0e44 0000A0E1 		mov	r0, r0	@ nop
+ 5362 0e48 000000EA 		b	.L33
+ 5363              	.L74:
+ 224:../Jaime/button.c ****                         break;
+ 5364              		.loc 1 224 0
+ 5365 0e4c 0000A0E1 		mov	r0, r0	@ nop
+ 5366              	.L33:
+ 360:../Jaime/button.c ****         }
+ 361:../Jaime/button.c **** }
+ 5367              		.loc 1 361 0
+ 5368 0e50 0CD04BE2 		sub	sp, fp, #12
+ 5369 0e54 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5370 0e58 1EFF2FE1 		bx	lr
+ 5371              	.L76:
+ 5372              		.align	2
+ 5373              	.L75:
+ 5374 0e5c 00000000 		.word	estado_juego
+ 5375 0e60 08000000 		.word	tiempo_inicio
+ 5376 0e64 00000000 		.word	cuadricula
+ 5377 0e68 00000000 		.word	celdas_vacias
+ 5378 0e6c 01000000 		.word	int_count
+ 5379 0e70 06000000 		.word	pantalla_mostrada
+ 5380 0e74 0C000000 		.word	tiempo_final
+ 5381 0e78 02000000 		.word	fila
+ 5382 0e7c 03000000 		.word	columna
+ 5383 0e80 04000000 		.word	valor
+ 5384 0e84 05000000 		.word	valor_previo
+ 5385              		.cfi_endproc
+ 5386              	.LFE9:
+ 5388              		.align	2
+ 5389              		.global	Eint4567_ISR
+ 5391              	Eint4567_ISR:
+ 5392              	.LFB10:
+ 362:../Jaime/button.c **** 
+ 363:../Jaime/button.c **** /* declaración de función que es rutina de servicio de interrupción
+ 364:../Jaime/button.c ****  * https://gcc.gnu.org/onlinedocs/gcc/ARM-Function-Attributes.html */
+ 365:../Jaime/button.c **** void Eint4567_ISR(void) __attribute__((interrupt("IRQ")));
+ 366:../Jaime/button.c **** 
+ 367:../Jaime/button.c **** /*--- código de funciones ---*/
+ 368:../Jaime/button.c **** void Eint4567_ISR(void)
+ 369:../Jaime/button.c **** {
+ 5393              		.loc 1 369 0
+ 5394              		.cfi_startproc
+ 5395              		@ Interrupt Service Routine.
+ 5396              		@ args = 0, pretend = 0, frame = 8
+ 5397              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5398 0e88 04C02DE5 		str	ip, [sp, #-4]!
+ 5399 0e8c 0DC0A0E1 		mov	ip, sp
+ 5400              	.LCFI18:
+ 5401              		.cfi_def_cfa_register 12
+ 5402 0e90 0FD82DE9 		stmfd	sp!, {r0, r1, r2, r3, fp, ip, lr, pc}
+ 5403 0e94 04B04CE2 		sub	fp, ip, #4
+ 5404              		.cfi_offset 14, -8
+ 5405              		.cfi_offset 13, -12
+ 5406              		.cfi_offset 11, -16
+ 5407              		.cfi_offset 3, -20
+ 5408              		.cfi_offset 2, -24
+ 5409              		.cfi_offset 1, -28
+ 5410              		.cfi_offset 0, -32
+ 5411              	.LCFI19:
+ 5412              		.cfi_def_cfa 11, 4
+ 5413 0e98 08D04DE2 		sub	sp, sp, #8
+ 370:../Jaime/button.c ****         /* Identificar la interrupción (hay dos pulsadores) */
+ 371:../Jaime/button.c ****         unsigned int pending = rEXTINTPND & 0xF;
+ 5414              		.loc 1 371 0
+ 5415 0e9c 8C309FE5 		ldr	r3, .L81
+ 5416 0ea0 003093E5 		ldr	r3, [r3, #0]
+ 5417 0ea4 0F3003E2 		and	r3, r3, #15
+ 5418 0ea8 24300BE5 		str	r3, [fp, #-36]
+ 372:../Jaime/button.c ****         uint8_t boton_id = 0;
+ 5419              		.loc 1 372 0
+ 5420 0eac 0030A0E3 		mov	r3, #0
+ 5421 0eb0 1D304BE5 		strb	r3, [fp, #-29]
+ 373:../Jaime/button.c **** 
+ 374:../Jaime/button.c ****         if (pending & 0x4)
+ 5422              		.loc 1 374 0
+ 5423 0eb4 24301BE5 		ldr	r3, [fp, #-36]
+ 5424 0eb8 043003E2 		and	r3, r3, #4
+ 5425 0ebc 000053E3 		cmp	r3, #0
+ 5426 0ec0 0200000A 		beq	.L78
+ 375:../Jaime/button.c ****         {
+ 376:../Jaime/button.c ****                 boton_id = EVENTO_BOTON_IZQUIERDO;
+ 5427              		.loc 1 376 0
+ 5428 0ec4 0430A0E3 		mov	r3, #4
+ 5429 0ec8 1D304BE5 		strb	r3, [fp, #-29]
+ 5430 0ecc 050000EA 		b	.L79
+ 5431              	.L78:
+ 377:../Jaime/button.c ****         }
+ 378:../Jaime/button.c ****         else if (pending & 0x8)
+ 5432              		.loc 1 378 0
+ 5433 0ed0 24301BE5 		ldr	r3, [fp, #-36]
+ 5434 0ed4 083003E2 		and	r3, r3, #8
+ 5435 0ed8 000053E3 		cmp	r3, #0
+ 5436 0edc 0100000A 		beq	.L79
+ 379:../Jaime/button.c ****         {
+ 380:../Jaime/button.c ****                 boton_id = EVENTO_BOTON_DERECHO;
+ 5437              		.loc 1 380 0
+ 5438 0ee0 0830A0E3 		mov	r3, #8
+ 5439 0ee4 1D304BE5 		strb	r3, [fp, #-29]
+ 5440              	.L79:
+ 381:../Jaime/button.c ****         }
+ 382:../Jaime/button.c **** 
+ 383:../Jaime/button.c ****         if (boton_id != 0U)
+ 5441              		.loc 1 383 0
+ 5442 0ee8 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 5443 0eec 000053E3 		cmp	r3, #0
+ 5444 0ef0 0200000A 		beq	.L80
+ 384:../Jaime/button.c ****         {
+ 385:../Jaime/button.c ****                 /* No registrar la pulsación inicial, solo las confirmadas */
+ 386:../Jaime/button.c **** 
+ 387:../Jaime/button.c ****                 /* Iniciar la máquina de antirrebotes. Si está ocupada, no hacer nada */
+ 388:../Jaime/button.c ****                 timer3_start_antirrebote(boton_id);
+ 5445              		.loc 1 388 0
+ 5446 0ef4 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 5447 0ef8 0300A0E1 		mov	r0, r3
+ 5448 0efc FEFFFFEB 		bl	timer3_start_antirrebote
+ 5449              	.L80:
+ 389:../Jaime/button.c ****         }
+ 390:../Jaime/button.c **** 
+ 391:../Jaime/button.c ****         /* Finalizar ISR */
+ 392:../Jaime/button.c ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
+ 5450              		.loc 1 392 0
+ 5451 0f00 28309FE5 		ldr	r3, .L81
+ 5452 0f04 0F20A0E3 		mov	r2, #15
+ 5453 0f08 002083E5 		str	r2, [r3, #0]
+ 393:../Jaime/button.c ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
+ 5454              		.loc 1 393 0
+ 5455 0f0c 20309FE5 		ldr	r3, .L81+4
+ 5456 0f10 1C209FE5 		ldr	r2, .L81+4
+ 5457 0f14 002092E5 		ldr	r2, [r2, #0]
+ 5458 0f18 022682E3 		orr	r2, r2, #2097152
+ 5459 0f1c 002083E5 		str	r2, [r3, #0]
+ 394:../Jaime/button.c **** }
+ 5460              		.loc 1 394 0
+ 5461 0f20 1CD04BE2 		sub	sp, fp, #28
+ 5462 0f24 0F689DE8 		ldmfd	sp, {r0, r1, r2, r3, fp, sp, lr}
+ 5463 0f28 04C09DE4 		ldmfd	sp!, {ip}
+ 5464 0f2c 04F05EE2 		subs	pc, lr, #4
+ 5465              	.L82:
+ 5466              		.align	2
+ 5467              	.L81:
+ 5468 0f30 5400D201 		.word	30539860
+ 5469 0f34 2400E001 		.word	31457316
+ 5470              		.cfi_endproc
+ 5471              	.LFE10:
+ 5473              		.align	2
+ 5474              		.global	Sudoku_Partida_Terminada
+ 5476              	Sudoku_Partida_Terminada:
+ 5477              	.LFB11:
+ 395:../Jaime/button.c **** /* Función para consultar si la partida está terminada */
+ 396:../Jaime/button.c **** int Sudoku_Partida_Terminada(void)
+ 397:../Jaime/button.c **** {
+ 5478              		.loc 1 397 0
+ 5479              		.cfi_startproc
+ 5480              		@ Function supports interworking.
+ 5481              		@ args = 0, pretend = 0, frame = 0
+ 5482              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5483 0f38 0DC0A0E1 		mov	ip, sp
+ 5484              	.LCFI20:
+ 5485              		.cfi_def_cfa_register 12
+ 5486 0f3c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 5487 0f40 04B04CE2 		sub	fp, ip, #4
+ 5488              		.cfi_offset 14, -8
+ 5489              		.cfi_offset 13, -12
+ 5490              		.cfi_offset 11, -16
+ 5491              	.LCFI21:
+ 5492              		.cfi_def_cfa 11, 4
+ 398:../Jaime/button.c **** 	return (estado_juego == PARTIDA_TERMINADA);
+ 5493              		.loc 1 398 0
+ 5494 0f44 20309FE5 		ldr	r3, .L84
+ 5495 0f48 0030D3E5 		ldrb	r3, [r3, #0]
+ 5496 0f4c FF3003E2 		and	r3, r3, #255
+ 5497 0f50 070053E3 		cmp	r3, #7
+ 5498 0f54 0030A013 		movne	r3, #0
+ 5499 0f58 0130A003 		moveq	r3, #1
+ 399:../Jaime/button.c **** }
+ 5500              		.loc 1 399 0
+ 5501 0f5c 0300A0E1 		mov	r0, r3
+ 5502 0f60 0CD04BE2 		sub	sp, fp, #12
+ 5503 0f64 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5504 0f68 1EFF2FE1 		bx	lr
+ 5505              	.L85:
+ 5506              		.align	2
+ 5507              	.L84:
+ 5508 0f6c 00000000 		.word	estado_juego
+ 5509              		.cfi_endproc
+ 5510              	.LFE11:
+ 5512              		.align	2
+ 5513              		.global	Sudoku_Juego_En_Progreso
+ 5515              	Sudoku_Juego_En_Progreso:
+ 5516              	.LFB12:
+ 400:../Jaime/button.c **** 
+ 401:../Jaime/button.c **** /* Función para consultar si el juego está en progreso */
+ 402:../Jaime/button.c **** int Sudoku_Juego_En_Progreso(void)
+ 403:../Jaime/button.c **** {
+ 5517              		.loc 1 403 0
+ 5518              		.cfi_startproc
+ 5519              		@ Function supports interworking.
+ 5520              		@ args = 0, pretend = 0, frame = 0
+ 5521              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5522 0f70 0DC0A0E1 		mov	ip, sp
+ 5523              	.LCFI22:
+ 5524              		.cfi_def_cfa_register 12
+ 5525 0f74 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 5526 0f78 04B04CE2 		sub	fp, ip, #4
+ 5527              		.cfi_offset 14, -8
+ 5528              		.cfi_offset 13, -12
+ 5529              		.cfi_offset 11, -16
+ 5530              	.LCFI23:
+ 5531              		.cfi_def_cfa 11, 4
+ 404:../Jaime/button.c **** 	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
+ 5532              		.loc 1 404 0
+ 5533 0f7c 3C309FE5 		ldr	r3, .L89
+ 5534 0f80 0030D3E5 		ldrb	r3, [r3, #0]
+ 5535 0f84 FF3003E2 		and	r3, r3, #255
+ 5536 0f88 000053E3 		cmp	r3, #0
+ 5537 0f8c 0600000A 		beq	.L87
+ 5538              		.loc 1 404 0 is_stmt 0 discriminator 1
+ 5539 0f90 28309FE5 		ldr	r3, .L89
+ 5540 0f94 0030D3E5 		ldrb	r3, [r3, #0]
+ 5541 0f98 FF3003E2 		and	r3, r3, #255
+ 5542 0f9c 070053E3 		cmp	r3, #7
+ 5543 0fa0 0100000A 		beq	.L87
+ 5544 0fa4 0130A0E3 		mov	r3, #1
+ 5545 0fa8 000000EA 		b	.L88
+ 5546              	.L87:
+ 5547              		.loc 1 404 0 discriminator 2
+ 5548 0fac 0030A0E3 		mov	r3, #0
+ 5549              	.L88:
+ 405:../Jaime/button.c **** }
+ 5550              		.loc 1 405 0 is_stmt 1 discriminator 3
+ 5551 0fb0 0300A0E1 		mov	r0, r3
+ 5552 0fb4 0CD04BE2 		sub	sp, fp, #12
+ 5553 0fb8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5554 0fbc 1EFF2FE1 		bx	lr
+ 5555              	.L90:
+ 5556              		.align	2
+ 5557              	.L89:
+ 5558 0fc0 00000000 		.word	estado_juego
+ 5559              		.cfi_endproc
+ 5560              	.LFE12:
+ 5562              		.align	2
+ 5563              		.global	Sudoku_Obtener_Tiempo_Inicio
+ 5565              	Sudoku_Obtener_Tiempo_Inicio:
+ 5566              	.LFB13:
+ 406:../Jaime/button.c **** 
+ 407:../Jaime/button.c **** /* Función para obtener el tiempo de inicio de la partida */
+ 408:../Jaime/button.c **** unsigned int Sudoku_Obtener_Tiempo_Inicio(void)
+ 409:../Jaime/button.c **** {
+ 5567              		.loc 1 409 0
+ 5568              		.cfi_startproc
+ 5569              		@ Function supports interworking.
+ 5570              		@ args = 0, pretend = 0, frame = 0
+ 5571              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5572 0fc4 0DC0A0E1 		mov	ip, sp
+ 5573              	.LCFI24:
+ 5574              		.cfi_def_cfa_register 12
+ 5575 0fc8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 5576 0fcc 04B04CE2 		sub	fp, ip, #4
+ 5577              		.cfi_offset 14, -8
+ 5578              		.cfi_offset 13, -12
+ 5579              		.cfi_offset 11, -16
+ 5580              	.LCFI25:
+ 5581              		.cfi_def_cfa 11, 4
+ 410:../Jaime/button.c **** 	return tiempo_inicio;
+ 5582              		.loc 1 410 0
+ 5583 0fd0 10309FE5 		ldr	r3, .L92
+ 5584 0fd4 003093E5 		ldr	r3, [r3, #0]
+ 411:../Jaime/button.c **** }
+ 5585              		.loc 1 411 0
+ 5586 0fd8 0300A0E1 		mov	r0, r3
+ 5587 0fdc 0CD04BE2 		sub	sp, fp, #12
+ 5588 0fe0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5589 0fe4 1EFF2FE1 		bx	lr
+ 5590              	.L93:
+ 5591              		.align	2
+ 5592              	.L92:
+ 5593 0fe8 08000000 		.word	tiempo_inicio
+ 5594              		.cfi_endproc
+ 5595              	.LFE13:
+ 5597              		.align	2
+ 5598              		.global	Eint4567_init
+ 5600              	Eint4567_init:
+ 5601              	.LFB14:
+ 412:../Jaime/button.c **** void Eint4567_init(void)
+ 413:../Jaime/button.c **** {
+ 5602              		.loc 1 413 0
+ 5603              		.cfi_startproc
+ 5604              		@ Function supports interworking.
+ 5605              		@ args = 0, pretend = 0, frame = 0
+ 5606              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5607 0fec 0DC0A0E1 		mov	ip, sp
+ 5608              	.LCFI26:
+ 5609              		.cfi_def_cfa_register 12
+ 5610 0ff0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 5611 0ff4 04B04CE2 		sub	fp, ip, #4
+ 5612              		.cfi_offset 14, -8
+ 5613              		.cfi_offset 13, -12
+ 5614              		.cfi_offset 11, -16
+ 5615              	.LCFI27:
+ 5616              		.cfi_def_cfa 11, 4
+ 414:../Jaime/button.c ****         /* Inicializar el temporizador dedicado a la eliminación de rebotes */
+ 415:../Jaime/button.c ****         timer3_init(boton_confirmado);
+ 5617              		.loc 1 415 0
+ 5618 0ff8 AC009FE5 		ldr	r0, .L95
+ 5619 0ffc FEFFFFEB 		bl	timer3_init
+ 416:../Jaime/button.c **** 
+ 417:../Jaime/button.c ****         /* Configuracion del controlador de interrupciones. Estos registros están definidos en 44b
+ 418:../Jaime/button.c ****         rI_ISPC    = 0x3ffffff;         // Borra INTPND escribiendo 1s en I_ISPC
+ 5620              		.loc 1 418 0
+ 5621 1000 A8309FE5 		ldr	r3, .L95+4
+ 5622 1004 3F23E0E3 		mvn	r2, #-67108864
+ 5623 1008 002083E5 		str	r2, [r3, #0]
+ 419:../Jaime/button.c ****         rEXTINTPND = 0xf;               // Borra EXTINTPND escribiendo 1s en el propio registro
+ 5624              		.loc 1 419 0
+ 5625 100c A0309FE5 		ldr	r3, .L95+8
+ 5626 1010 0F20A0E3 		mov	r2, #15
+ 5627 1014 002083E5 		str	r2, [r3, #0]
+ 420:../Jaime/button.c ****         rINTMOD    = 0x0;               // Configura las lineas como de tipo IRQ
+ 5628              		.loc 1 420 0
+ 5629 1018 98309FE5 		ldr	r3, .L95+12
+ 5630 101c 0020A0E3 		mov	r2, #0
+ 5631 1020 002083E5 		str	r2, [r3, #0]
+ 421:../Jaime/button.c ****         rINTCON    = 0x1;               // Habilita int. vectorizadas y la linea IRQ (FIQ no)
+ 5632              		.loc 1 421 0
+ 5633 1024 1E36A0E3 		mov	r3, #31457280
+ 5634 1028 0120A0E3 		mov	r2, #1
+ 5635 102c 002083E5 		str	r2, [r3, #0]
+ 422:../Jaime/button.c ****         rINTMSK    &= ~(BIT_EINT4567);  // habilitamos interrupcion linea eint4567 en vector de mas
+ 5636              		.loc 1 422 0
+ 5637 1030 84309FE5 		ldr	r3, .L95+16
+ 5638 1034 80209FE5 		ldr	r2, .L95+16
+ 5639 1038 002092E5 		ldr	r2, [r2, #0]
+ 5640 103c 0226C2E3 		bic	r2, r2, #2097152
+ 5641 1040 002083E5 		str	r2, [r3, #0]
+ 423:../Jaime/button.c **** 
+ 424:../Jaime/button.c ****         /* Establece la rutina de servicio para Eint4567 */
+ 425:../Jaime/button.c ****         pISR_EINT4567 = (int) Eint4567_ISR;
+ 5642              		.loc 1 425 0
+ 5643 1044 74309FE5 		ldr	r3, .L95+20
+ 5644 1048 74209FE5 		ldr	r2, .L95+24
+ 5645 104c 002083E5 		str	r2, [r3, #0]
+ 426:../Jaime/button.c **** 
+ 427:../Jaime/button.c ****         /* Configuracion del puerto G */
+ 428:../Jaime/button.c ****         rPCONG  = 0xffff;                       // Establece la funcion de los pines (EINT0-7)
+ 5646              		.loc 1 428 0
+ 5647 1050 70309FE5 		ldr	r3, .L95+28
+ 5648 1054 70209FE5 		ldr	r2, .L95+32
+ 5649 1058 002083E5 		str	r2, [r3, #0]
+ 429:../Jaime/button.c ****         rPUPG   = 0x0;                  // Habilita el "pull up" del puerto
+ 5650              		.loc 1 429 0
+ 5651 105c 6C309FE5 		ldr	r3, .L95+36
+ 5652 1060 0020A0E3 		mov	r2, #0
+ 5653 1064 002083E5 		str	r2, [r3, #0]
+ 430:../Jaime/button.c ****         rEXTINT = rEXTINT | 0x22222222;   // Configura las lineas de int. como de flanco de bajada
+ 5654              		.loc 1 430 0
+ 5655 1068 64209FE5 		ldr	r2, .L95+40
+ 5656 106c 60309FE5 		ldr	r3, .L95+40
+ 5657 1070 001093E5 		ldr	r1, [r3, #0]
+ 5658 1074 5C309FE5 		ldr	r3, .L95+44
+ 5659 1078 033081E1 		orr	r3, r1, r3
+ 5660 107c 003082E5 		str	r3, [r2, #0]
+ 431:../Jaime/button.c **** 
+ 432:../Jaime/button.c ****         /* Por precaucion, se vuelven a borrar los bits de INTPND y EXTINTPND */
+ 433:../Jaime/button.c ****         rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
+ 5661              		.loc 1 433 0
+ 5662 1080 2C309FE5 		ldr	r3, .L95+8
+ 5663 1084 0F20A0E3 		mov	r2, #15
+ 5664 1088 002083E5 		str	r2, [r3, #0]
+ 434:../Jaime/button.c ****         rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
+ 5665              		.loc 1 434 0
+ 5666 108c 1C309FE5 		ldr	r3, .L95+4
+ 5667 1090 18209FE5 		ldr	r2, .L95+4
+ 5668 1094 002092E5 		ldr	r2, [r2, #0]
+ 5669 1098 022682E3 		orr	r2, r2, #2097152
+ 5670 109c 002083E5 		str	r2, [r3, #0]
+ 435:../Jaime/button.c **** }
+ 5671              		.loc 1 435 0
+ 5672 10a0 0CD04BE2 		sub	sp, fp, #12
+ 5673 10a4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5674 10a8 1EFF2FE1 		bx	lr
+ 5675              	.L96:
+ 5676              		.align	2
+ 5677              	.L95:
+ 5678 10ac 00000000 		.word	boton_confirmado
+ 5679 10b0 2400E001 		.word	31457316
+ 5680 10b4 5400D201 		.word	30539860
+ 5681 10b8 0800E001 		.word	31457288
+ 5682 10bc 0C00E001 		.word	31457292
+ 5683 10c0 74FF7F0C 		.word	209715060
+ 5684 10c4 00000000 		.word	Eint4567_ISR
+ 5685 10c8 4000D201 		.word	30539840
+ 5686 10cc FFFF0000 		.word	65535
+ 5687 10d0 4800D201 		.word	30539848
+ 5688 10d4 5000D201 		.word	30539856
+ 5689 10d8 22222222 		.word	572662306
+ 5690              		.cfi_endproc
+ 5691              	.LFE14:
+ 5693              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 button.c
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:2987   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:2989   .text:00000000 celda_poner_valor
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3040   .text:00000078 celda_leer_valor
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3075   .text:000000b0 celda_es_candidato
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3116   .text:00000100 celda_es_pista
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3152   .text:0000013c celda_marcar_error
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3188   .text:00000178 celda_limpiar_error
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3223   .bss:00000000 estado_juego
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3224   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3225   .bss:00000001 int_count
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3227   .bss:00000002 fila
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3229   .bss:00000003 columna
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3231   .bss:00000004 valor
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3233   .bss:00000005 valor_previo
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3235   .bss:00000006 pantalla_mostrada
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3238   .bss:00000008 tiempo_inicio
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3241   .bss:0000000c tiempo_final
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3244   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3247   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3395   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3543   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3691   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3837   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3840   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:3989   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4137   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4285   .text:000001b4 restaurar_cuadricula_original
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4356   .text:0000025c $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4361   .text:00000264 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4363   .text:00000264 marcar_celdas_en_conflicto
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4634   .text:00000598 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4639   .text:000005a0 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4641   .text:000005a0 boton_confirmado
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4680   .text:000005f8 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:4690   .text:00000618 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5374   .text:00000e5c $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5388   .text:00000e88 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5391   .text:00000e88 Eint4567_ISR
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5468   .text:00000f30 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5473   .text:00000f38 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5476   .text:00000f38 Sudoku_Partida_Terminada
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5508   .text:00000f6c $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5512   .text:00000f70 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5515   .text:00000f70 Sudoku_Juego_En_Progreso
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5558   .text:00000fc0 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5562   .text:00000fc4 $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5565   .text:00000fc4 Sudoku_Obtener_Tiempo_Inicio
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5593   .text:00000fe8 $d
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5597   .text:00000fec $a
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5600   .text:00000fec Eint4567_init
+C:\Users\jaime\AppData\Local\Temp\cc74rNBY.s:5678   .text:000010ac $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+cuadricula
+timer2_count
+cola_depuracion
+candidatos_actualizar_all
+Sudoku_Dibujar_Tablero
+Sudoku_Actualizar_Tablero_Completo
+D8Led_symbol
+candidatos_propagar_arm
+Delay
+Sudoku_Pantalla_Final
+Sudoku_Pantalla_Inicial
+celdas_vacias
+timer3_start_antirrebote
+timer3_init

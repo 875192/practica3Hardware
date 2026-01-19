@@ -1,0 +1,1865 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"sudoku_lcd.c"
+  21              	.Ltext0:
+  22              		.file 1 "../sudoku_lcd.c"
+ 2083              		.align	2
+ 2084              	.LC0:
+ 2085 0000 5355444F 		.ascii	"SUDOKU\000"
+ 2085      4B5500
+ 2086 0007 00       		.align	2
+ 2087              	.LC1:
+ 2088 0008 494E5354 		.ascii	"INSTRUCCIONES:\000"
+ 2088      52554343 
+ 2088      494F4E45 
+ 2088      533A00
+ 2089 0017 00       		.align	2
+ 2090              	.LC2:
+ 2091 0018 312E2042 		.ascii	"1. Boton IZQ: Navegar\000"
+ 2091      6F746F6E 
+ 2091      20495A51 
+ 2091      3A204E61 
+ 2091      76656761 
+ 2092 002e 0000     		.align	2
+ 2093              	.LC3:
+ 2094 0030 322E2042 		.ascii	"2. Boton DER: Confirmar\000"
+ 2094      6F746F6E 
+ 2094      20444552 
+ 2094      3A20436F 
+ 2094      6E666972 
+ 2095              		.align	2
+ 2096              	.LC4:
+ 2097 0048 332E2054 		.ascii	"3. Teclado: Introducir\000"
+ 2097      65636C61 
+ 2097      646F3A20 
+ 2097      496E7472 
+ 2097      6F647563 
+ 2098 005f 00       		.align	2
+ 2099              	.LC5:
+ 2100 0060 2020206E 		.ascii	"   numeros (0-9)\000"
+ 2100      756D6572 
+ 2100      6F732028 
+ 2100      302D3929 
+ 2100      00
+ 2101 0071 000000   		.align	2
+ 2102              	.LC6:
+ 2103 0074 342E2043 		.ascii	"4. Completar tablero\000"
+ 2103      6F6D706C 
+ 2103      65746172 
+ 2103      20746162 
+ 2103      6C65726F 
+ 2104 0089 000000   		.align	2
+ 2105              	.LC7:
+ 2106 008c 352E2046 		.ascii	"5. Fila 0: Salir\000"
+ 2106      696C6120 
+ 2106      303A2053 
+ 2106      616C6972 
+ 2106      00
+ 2107 009d 000000   		.align	2
+ 2108              	.LC8:
+ 2109 00a0 50756C73 		.ascii	"Pulse un boton\000"
+ 2109      6520756E 
+ 2109      20626F74 
+ 2109      6F6E00
+ 2110 00af 00       		.align	2
+ 2111              	.LC9:
+ 2112 00b0 70617261 		.ascii	"para jugar\000"
+ 2112      206A7567 
+ 2112      617200
+ 2113              		.text
+ 2114              		.align	2
+ 2115              		.global	sudoku_mostrar_pantalla_inicial
+ 2117              	sudoku_mostrar_pantalla_inicial:
+ 2118              	.LFB2:
+   1:../sudoku_lcd.c **** /*
+   2:../sudoku_lcd.c ****  * Asignatura: Proyecto hardware
+   3:../sudoku_lcd.c ****  * Fecha: 09/12/2025
+   4:../sudoku_lcd.c ****  * Autores: Claudia Mateo Cuellar
+   5:../sudoku_lcd.c ****  * Archivo: sudoku_lcd.c
+   6:../sudoku_lcd.c ****  * Descripción: Interfaz gráfica del juego Sudoku en LCD
+   7:../sudoku_lcd.c ****  */
+   8:../sudoku_lcd.c **** 
+   9:../sudoku_lcd.c **** #include "sudoku_lcd.h"
+  10:../sudoku_lcd.c **** #include "lcd.h"
+  11:../sudoku_lcd.c **** #include "celda.h"
+  12:../sudoku_lcd.c **** #include "sudoku_2025.h"
+  13:../sudoku_lcd.c **** #include "tableros.h"
+  14:../sudoku_lcd.c **** #include "def.h"
+  15:../sudoku_lcd.c **** 
+  16:../sudoku_lcd.c **** /* Definiciones de diseño */
+  17:../sudoku_lcd.c **** #define TABLERO_SIZE 216      // Tamaño del tablero (216x216 píxeles, múltiplo de 9)
+  18:../sudoku_lcd.c **** #define CELDA_SIZE 24         // Tamaño de cada celda (216/9 = 24 píxeles)
+  19:../sudoku_lcd.c **** #define TABLERO_X0 52         // Posición X inicial del tablero (centrado en 320px)
+  20:../sudoku_lcd.c **** #define TABLERO_Y0 12         // Posición Y inicial del tablero (centrado en 240px)
+  21:../sudoku_lcd.c **** #define MARGEN_NUMERO 8       // Margen para los números de fila/columna
+  22:../sudoku_lcd.c **** #define GROSOR_LINEA_FINA 1   // Grosor de líneas normales
+  23:../sudoku_lcd.c **** #define GROSOR_LINEA_GRUESA 2 // Grosor de líneas de región 3x3
+  24:../sudoku_lcd.c **** 
+  25:../sudoku_lcd.c **** /* Definiciones para candidatos */
+  26:../sudoku_lcd.c **** #define CANDIDATO_GRID_SIZE 7  // Tamaño de cada subcuadrícula para candidatos (24/3 ≈ 7)
+  27:../sudoku_lcd.c **** #define CANDIDATO_OFFSET 2     // Offset desde el borde de la celda
+  28:../sudoku_lcd.c **** #define CANDIDATO_MARCA_SIZE 1 // Tamaño del punto que marca el candidato
+  29:../sudoku_lcd.c **** 
+  30:../sudoku_lcd.c **** /* Colores */
+  31:../sudoku_lcd.c **** #define COLOR_FONDO WHITE
+  32:../sudoku_lcd.c **** #define COLOR_LINEA BLACK
+  33:../sudoku_lcd.c **** #define COLOR_PISTA BLACK
+  34:../sudoku_lcd.c **** #define COLOR_USUARIO DARKGRAY
+  35:../sudoku_lcd.c **** #define COLOR_ERROR 0x0C     // Rojo oscuro
+  36:../sudoku_lcd.c **** #define COLOR_SELECCION 0x06 // Gris claro para selección
+  37:../sudoku_lcd.c **** #define COLOR_CANDIDATO 0x08 // Gris medio para candidatos
+  38:../sudoku_lcd.c **** 
+  39:../sudoku_lcd.c **** /**
+  40:../sudoku_lcd.c ****  * Muestra la pantalla inicial con instrucciones
+  41:../sudoku_lcd.c ****  */
+  42:../sudoku_lcd.c **** void sudoku_mostrar_pantalla_inicial(void)
+  43:../sudoku_lcd.c **** {
+ 2119              		.loc 1 43 0
+ 2120              		.cfi_startproc
+ 2121              		@ Function supports interworking.
+ 2122              		@ args = 0, pretend = 0, frame = 0
+ 2123              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2124 0000 0DC0A0E1 		mov	ip, sp
+ 2125              	.LCFI0:
+ 2126              		.cfi_def_cfa_register 12
+ 2127 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2128 0008 04B04CE2 		sub	fp, ip, #4
+ 2129              		.cfi_offset 14, -8
+ 2130              		.cfi_offset 13, -12
+ 2131              		.cfi_offset 11, -16
+ 2132              	.LCFI1:
+ 2133              		.cfi_def_cfa 11, 4
+  44:../sudoku_lcd.c ****     Lcd_Clr();
+ 2134              		.loc 1 44 0
+ 2135 000c FEFFFFEB 		bl	Lcd_Clr
+  45:../sudoku_lcd.c **** 
+  46:../sudoku_lcd.c ****     /* Título */
+  47:../sudoku_lcd.c ****     Lcd_DspAscII8x16(100, 20, BLACK, (INT8U *)"SUDOKU");
+ 2136              		.loc 1 47 0
+ 2137 0010 6400A0E3 		mov	r0, #100
+ 2138 0014 1410A0E3 		mov	r1, #20
+ 2139 0018 0F20A0E3 		mov	r2, #15
+ 2140 001c C4309FE5 		ldr	r3, .L2
+ 2141 0020 FEFFFFEB 		bl	Lcd_DspAscII8x16
+  48:../sudoku_lcd.c **** 
+  49:../sudoku_lcd.c ****     /* Instrucciones */
+  50:../sudoku_lcd.c ****     Lcd_DspAscII6x8(40, 60, BLACK, (INT8U *)"INSTRUCCIONES:");
+ 2142              		.loc 1 50 0
+ 2143 0024 2800A0E3 		mov	r0, #40
+ 2144 0028 3C10A0E3 		mov	r1, #60
+ 2145 002c 0F20A0E3 		mov	r2, #15
+ 2146 0030 B4309FE5 		ldr	r3, .L2+4
+ 2147 0034 FEFFFFEB 		bl	Lcd_DspAscII6x8
+  51:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 80, BLACK, (INT8U *)"1. Boton IZQ: Navegar");
+ 2148              		.loc 1 51 0
+ 2149 0038 1400A0E3 		mov	r0, #20
+ 2150 003c 5010A0E3 		mov	r1, #80
+ 2151 0040 0F20A0E3 		mov	r2, #15
+ 2152 0044 A4309FE5 		ldr	r3, .L2+8
+ 2153 0048 FEFFFFEB 		bl	Lcd_DspAscII6x8
+  52:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 95, BLACK, (INT8U *)"2. Boton DER: Confirmar");
+ 2154              		.loc 1 52 0
+ 2155 004c 1400A0E3 		mov	r0, #20
+ 2156 0050 5F10A0E3 		mov	r1, #95
+ 2157 0054 0F20A0E3 		mov	r2, #15
+ 2158 0058 94309FE5 		ldr	r3, .L2+12
+ 2159 005c FEFFFFEB 		bl	Lcd_DspAscII6x8
+  53:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 110, BLACK, (INT8U *)"3. Teclado: Introducir");
+ 2160              		.loc 1 53 0
+ 2161 0060 1400A0E3 		mov	r0, #20
+ 2162 0064 6E10A0E3 		mov	r1, #110
+ 2163 0068 0F20A0E3 		mov	r2, #15
+ 2164 006c 84309FE5 		ldr	r3, .L2+16
+ 2165 0070 FEFFFFEB 		bl	Lcd_DspAscII6x8
+  54:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 125, BLACK, (INT8U *)"   numeros (0-9)"); // Cambio: 0-9 en lugar de 1-9
+ 2166              		.loc 1 54 0
+ 2167 0074 1400A0E3 		mov	r0, #20
+ 2168 0078 7D10A0E3 		mov	r1, #125
+ 2169 007c 0F20A0E3 		mov	r2, #15
+ 2170 0080 74309FE5 		ldr	r3, .L2+20
+ 2171 0084 FEFFFFEB 		bl	Lcd_DspAscII6x8
+  55:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 140, BLACK, (INT8U *)"4. Completar tablero");
+ 2172              		.loc 1 55 0
+ 2173 0088 1400A0E3 		mov	r0, #20
+ 2174 008c 8C10A0E3 		mov	r1, #140
+ 2175 0090 0F20A0E3 		mov	r2, #15
+ 2176 0094 64309FE5 		ldr	r3, .L2+24
+ 2177 0098 FEFFFFEB 		bl	Lcd_DspAscII6x8
+  56:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 155, BLACK, (INT8U *)"5. Fila 0: Salir"); // Nueva instrucción
+ 2178              		.loc 1 56 0
+ 2179 009c 1400A0E3 		mov	r0, #20
+ 2180 00a0 9B10A0E3 		mov	r1, #155
+ 2181 00a4 0F20A0E3 		mov	r2, #15
+ 2182 00a8 54309FE5 		ldr	r3, .L2+28
+ 2183 00ac FEFFFFEB 		bl	Lcd_DspAscII6x8
+  57:../sudoku_lcd.c **** 
+  58:../sudoku_lcd.c ****     /* Mensaje para iniciar */
+  59:../sudoku_lcd.c ****     Lcd_DspAscII8x16(30, 180, BLACK, (INT8U *)"Pulse un boton");
+ 2184              		.loc 1 59 0
+ 2185 00b0 1E00A0E3 		mov	r0, #30
+ 2186 00b4 B410A0E3 		mov	r1, #180
+ 2187 00b8 0F20A0E3 		mov	r2, #15
+ 2188 00bc 44309FE5 		ldr	r3, .L2+32
+ 2189 00c0 FEFFFFEB 		bl	Lcd_DspAscII8x16
+  60:../sudoku_lcd.c ****     Lcd_DspAscII8x16(50, 200, BLACK, (INT8U *)"para jugar");
+ 2190              		.loc 1 60 0
+ 2191 00c4 3200A0E3 		mov	r0, #50
+ 2192 00c8 C810A0E3 		mov	r1, #200
+ 2193 00cc 0F20A0E3 		mov	r2, #15
+ 2194 00d0 34309FE5 		ldr	r3, .L2+36
+ 2195 00d4 FEFFFFEB 		bl	Lcd_DspAscII8x16
+  61:../sudoku_lcd.c **** 
+  62:../sudoku_lcd.c ****     Lcd_Dma_Trans();
+ 2196              		.loc 1 62 0
+ 2197 00d8 FEFFFFEB 		bl	Lcd_Dma_Trans
+  63:../sudoku_lcd.c **** }
+ 2198              		.loc 1 63 0
+ 2199 00dc 0CD04BE2 		sub	sp, fp, #12
+ 2200 00e0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2201 00e4 1EFF2FE1 		bx	lr
+ 2202              	.L3:
+ 2203              		.align	2
+ 2204              	.L2:
+ 2205 00e8 00000000 		.word	.LC0
+ 2206 00ec 08000000 		.word	.LC1
+ 2207 00f0 18000000 		.word	.LC2
+ 2208 00f4 30000000 		.word	.LC3
+ 2209 00f8 48000000 		.word	.LC4
+ 2210 00fc 60000000 		.word	.LC5
+ 2211 0100 74000000 		.word	.LC6
+ 2212 0104 8C000000 		.word	.LC7
+ 2213 0108 A0000000 		.word	.LC8
+ 2214 010c B0000000 		.word	.LC9
+ 2215              		.cfi_endproc
+ 2216              	.LFE2:
+ 2218              		.section	.rodata
+ 2219 00bb 00       		.align	2
+ 2220              	.LC10:
+ 2221 00bc 5469656D 		.ascii	"Tiempo:\000"
+ 2221      706F3A00 
+ 2222              		.align	2
+ 2223              	.LC11:
+ 2224 00c4 30303A30 		.ascii	"00:00\000"
+ 2224      3000
+ 2225 00ca 0000     		.align	2
+ 2226              	.LC12:
+ 2227 00cc 46696C61 		.ascii	"Fila 0: Acabar partida\000"
+ 2227      20303A20 
+ 2227      41636162 
+ 2227      61722070 
+ 2227      61727469 
+ 2228              		.text
+ 2229              		.align	2
+ 2230              		.global	sudoku_dibujar_marco_tablero
+ 2232              	sudoku_dibujar_marco_tablero:
+ 2233              	.LFB3:
+  64:../sudoku_lcd.c **** 
+  65:../sudoku_lcd.c **** /**
+  66:../sudoku_lcd.c ****  * Dibuja el marco del tablero con líneas y números
+  67:../sudoku_lcd.c ****  */
+  68:../sudoku_lcd.c **** void sudoku_dibujar_marco_tablero(void)
+  69:../sudoku_lcd.c **** {
+ 2234              		.loc 1 69 0
+ 2235              		.cfi_startproc
+ 2236              		@ Function supports interworking.
+ 2237              		@ args = 0, pretend = 0, frame = 16
+ 2238              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2239 0110 0DC0A0E1 		mov	ip, sp
+ 2240              	.LCFI2:
+ 2241              		.cfi_def_cfa_register 12
+ 2242 0114 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2243 0118 04B04CE2 		sub	fp, ip, #4
+ 2244              		.cfi_offset 14, -8
+ 2245              		.cfi_offset 13, -12
+ 2246              		.cfi_offset 11, -16
+ 2247              	.LCFI3:
+ 2248              		.cfi_def_cfa 11, 4
+ 2249 011c 18D04DE2 		sub	sp, sp, #24
+  70:../sudoku_lcd.c ****     uint8_t i;
+  71:../sudoku_lcd.c ****     INT8U numero_str[2];
+  72:../sudoku_lcd.c ****     numero_str[1] = '\0';
+ 2250              		.loc 1 72 0
+ 2251 0120 0030A0E3 		mov	r3, #0
+ 2252 0124 1B304BE5 		strb	r3, [fp, #-27]
+  73:../sudoku_lcd.c **** 
+  74:../sudoku_lcd.c ****     /* Dibujar líneas horizontales */
+  75:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2253              		.loc 1 75 0
+ 2254 0128 0030A0E3 		mov	r3, #0
+ 2255 012c 0D304BE5 		strb	r3, [fp, #-13]
+ 2256 0130 280000EA 		b	.L5
+ 2257              	.L8:
+ 2258              	.LBB2:
+  76:../sudoku_lcd.c ****     {
+  77:../sudoku_lcd.c ****         INT16U y = TABLERO_Y0 + i * CELDA_SIZE;
+ 2259              		.loc 1 77 0
+ 2260 0134 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2261 0138 0338A0E1 		mov	r3, r3, asl #16
+ 2262 013c 2338A0E1 		mov	r3, r3, lsr #16
+ 2263 0140 0320A0E1 		mov	r2, r3	@ movhi
+ 2264 0144 8220A0E1 		mov	r2, r2, asl #1
+ 2265 0148 033082E0 		add	r3, r2, r3
+ 2266 014c 8331A0E1 		mov	r3, r3, asl #3
+ 2267 0150 0338A0E1 		mov	r3, r3, asl #16
+ 2268 0154 2338A0E1 		mov	r3, r3, lsr #16
+ 2269 0158 0C3083E2 		add	r3, r3, #12
+ 2270 015c B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+  78:../sudoku_lcd.c ****         INT8U grosor = (i % 3 == 0) ? GROSOR_LINEA_GRUESA : GROSOR_LINEA_FINA;
+ 2271              		.loc 1 78 0
+ 2272 0160 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2273 0164 70329FE5 		ldr	r3, .L17
+ 2274 0168 921383E0 		umull	r1, r3, r2, r3
+ 2275 016c A310A0E1 		mov	r1, r3, lsr #1
+ 2276 0170 0130A0E1 		mov	r3, r1
+ 2277 0174 8330A0E1 		mov	r3, r3, asl #1
+ 2278 0178 013083E0 		add	r3, r3, r1
+ 2279 017c 023063E0 		rsb	r3, r3, r2
+ 2280 0180 FF3003E2 		and	r3, r3, #255
+ 2281 0184 000053E3 		cmp	r3, #0
+ 2282 0188 0100001A 		bne	.L6
+ 2283              		.loc 1 78 0 is_stmt 0 discriminator 1
+ 2284 018c 0230A0E3 		mov	r3, #2
+ 2285 0190 000000EA 		b	.L7
+ 2286              	.L6:
+ 2287              		.loc 1 78 0 discriminator 2
+ 2288 0194 0130A0E3 		mov	r3, #1
+ 2289              	.L7:
+ 2290              		.loc 1 78 0 discriminator 3
+ 2291 0198 11304BE5 		strb	r3, [fp, #-17]
+  79:../sudoku_lcd.c ****         Lcd_Draw_HLine(TABLERO_X0, TABLERO_X0 + TABLERO_SIZE, y, COLOR_LINEA, grosor);
+ 2292              		.loc 1 79 0 is_stmt 1 discriminator 3
+ 2293 019c B0315BE1 		ldrh	r3, [fp, #-16]
+ 2294 01a0 11205BE5 		ldrb	r2, [fp, #-17]	@ zero_extendqisi2
+ 2295 01a4 0228A0E1 		mov	r2, r2, asl #16
+ 2296 01a8 2228A0E1 		mov	r2, r2, lsr #16
+ 2297 01ac 0338A0E1 		mov	r3, r3, asl #16
+ 2298 01b0 4338A0E1 		mov	r3, r3, asr #16
+ 2299 01b4 00208DE5 		str	r2, [sp, #0]
+ 2300 01b8 3400A0E3 		mov	r0, #52
+ 2301 01bc 431FA0E3 		mov	r1, #268
+ 2302 01c0 0320A0E1 		mov	r2, r3
+ 2303 01c4 0F30A0E3 		mov	r3, #15
+ 2304 01c8 FEFFFFEB 		bl	Lcd_Draw_HLine
+ 2305              	.LBE2:
+  75:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2306              		.loc 1 75 0 discriminator 3
+ 2307 01cc 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2308 01d0 013083E2 		add	r3, r3, #1
+ 2309 01d4 0D304BE5 		strb	r3, [fp, #-13]
+ 2310              	.L5:
+  75:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2311              		.loc 1 75 0 is_stmt 0 discriminator 1
+ 2312 01d8 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2313 01dc 090053E3 		cmp	r3, #9
+ 2314 01e0 D3FFFF9A 		bls	.L8
+  80:../sudoku_lcd.c ****     }
+  81:../sudoku_lcd.c **** 
+  82:../sudoku_lcd.c ****     /* Dibujar líneas verticales */
+  83:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2315              		.loc 1 83 0 is_stmt 1
+ 2316 01e4 0030A0E3 		mov	r3, #0
+ 2317 01e8 0D304BE5 		strb	r3, [fp, #-13]
+ 2318 01ec 280000EA 		b	.L9
+ 2319              	.L12:
+ 2320              	.LBB3:
+  84:../sudoku_lcd.c ****     {
+  85:../sudoku_lcd.c ****         INT16U x = TABLERO_X0 + i * CELDA_SIZE;
+ 2321              		.loc 1 85 0
+ 2322 01f0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2323 01f4 0338A0E1 		mov	r3, r3, asl #16
+ 2324 01f8 2338A0E1 		mov	r3, r3, lsr #16
+ 2325 01fc 0320A0E1 		mov	r2, r3	@ movhi
+ 2326 0200 8220A0E1 		mov	r2, r2, asl #1
+ 2327 0204 033082E0 		add	r3, r2, r3
+ 2328 0208 8331A0E1 		mov	r3, r3, asl #3
+ 2329 020c 0338A0E1 		mov	r3, r3, asl #16
+ 2330 0210 2338A0E1 		mov	r3, r3, lsr #16
+ 2331 0214 343083E2 		add	r3, r3, #52
+ 2332 0218 B4314BE1 		strh	r3, [fp, #-20]	@ movhi
+  86:../sudoku_lcd.c ****         INT8U grosor = (i % 3 == 0) ? GROSOR_LINEA_GRUESA : GROSOR_LINEA_FINA;
+ 2333              		.loc 1 86 0
+ 2334 021c 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 2335 0220 B4319FE5 		ldr	r3, .L17
+ 2336 0224 921383E0 		umull	r1, r3, r2, r3
+ 2337 0228 A310A0E1 		mov	r1, r3, lsr #1
+ 2338 022c 0130A0E1 		mov	r3, r1
+ 2339 0230 8330A0E1 		mov	r3, r3, asl #1
+ 2340 0234 013083E0 		add	r3, r3, r1
+ 2341 0238 023063E0 		rsb	r3, r3, r2
+ 2342 023c FF3003E2 		and	r3, r3, #255
+ 2343 0240 000053E3 		cmp	r3, #0
+ 2344 0244 0100001A 		bne	.L10
+ 2345              		.loc 1 86 0 is_stmt 0 discriminator 1
+ 2346 0248 0230A0E3 		mov	r3, #2
+ 2347 024c 000000EA 		b	.L11
+ 2348              	.L10:
+ 2349              		.loc 1 86 0 discriminator 2
+ 2350 0250 0130A0E3 		mov	r3, #1
+ 2351              	.L11:
+ 2352              		.loc 1 86 0 discriminator 3
+ 2353 0254 15304BE5 		strb	r3, [fp, #-21]
+  87:../sudoku_lcd.c ****         Lcd_Draw_VLine(TABLERO_Y0, TABLERO_Y0 + TABLERO_SIZE, x, COLOR_LINEA, grosor);
+ 2354              		.loc 1 87 0 is_stmt 1 discriminator 3
+ 2355 0258 B4315BE1 		ldrh	r3, [fp, #-20]
+ 2356 025c 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 2357 0260 0228A0E1 		mov	r2, r2, asl #16
+ 2358 0264 2228A0E1 		mov	r2, r2, lsr #16
+ 2359 0268 0338A0E1 		mov	r3, r3, asl #16
+ 2360 026c 4338A0E1 		mov	r3, r3, asr #16
+ 2361 0270 00208DE5 		str	r2, [sp, #0]
+ 2362 0274 0C00A0E3 		mov	r0, #12
+ 2363 0278 E410A0E3 		mov	r1, #228
+ 2364 027c 0320A0E1 		mov	r2, r3
+ 2365 0280 0F30A0E3 		mov	r3, #15
+ 2366 0284 FEFFFFEB 		bl	Lcd_Draw_VLine
+ 2367              	.LBE3:
+  83:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2368              		.loc 1 83 0 discriminator 3
+ 2369 0288 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2370 028c 013083E2 		add	r3, r3, #1
+ 2371 0290 0D304BE5 		strb	r3, [fp, #-13]
+ 2372              	.L9:
+  83:../sudoku_lcd.c ****     for (i = 0; i <= 9; i++)
+ 2373              		.loc 1 83 0 is_stmt 0 discriminator 1
+ 2374 0294 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2375 0298 090053E3 		cmp	r3, #9
+ 2376 029c D3FFFF9A 		bls	.L12
+  88:../sudoku_lcd.c ****     }
+  89:../sudoku_lcd.c **** 
+  90:../sudoku_lcd.c ****     /* Dibujar números de fila (1-9) a la izquierda */
+  91:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2377              		.loc 1 91 0 is_stmt 1
+ 2378 02a0 0030A0E3 		mov	r3, #0
+ 2379 02a4 0D304BE5 		strb	r3, [fp, #-13]
+ 2380 02a8 180000EA 		b	.L13
+ 2381              	.L14:
+ 2382              	.LBB4:
+  92:../sudoku_lcd.c ****     {
+  93:../sudoku_lcd.c ****         numero_str[0] = '1' + i;
+ 2383              		.loc 1 93 0 discriminator 2
+ 2384 02ac 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2385 02b0 313083E2 		add	r3, r3, #49
+ 2386 02b4 FF3003E2 		and	r3, r3, #255
+ 2387 02b8 1C304BE5 		strb	r3, [fp, #-28]
+  94:../sudoku_lcd.c ****         INT16U y = TABLERO_Y0 + i * CELDA_SIZE + CELDA_SIZE / 2 - 4;
+ 2388              		.loc 1 94 0 discriminator 2
+ 2389 02bc 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2390 02c0 013083E2 		add	r3, r3, #1
+ 2391 02c4 0338A0E1 		mov	r3, r3, asl #16
+ 2392 02c8 2338A0E1 		mov	r3, r3, lsr #16
+ 2393 02cc 0320A0E1 		mov	r2, r3	@ movhi
+ 2394 02d0 8220A0E1 		mov	r2, r2, asl #1
+ 2395 02d4 033082E0 		add	r3, r2, r3
+ 2396 02d8 8331A0E1 		mov	r3, r3, asl #3
+ 2397 02dc 0338A0E1 		mov	r3, r3, asl #16
+ 2398 02e0 2338A0E1 		mov	r3, r3, lsr #16
+ 2399 02e4 043043E2 		sub	r3, r3, #4
+ 2400 02e8 B8314BE1 		strh	r3, [fp, #-24]	@ movhi
+  95:../sudoku_lcd.c ****         Lcd_DspAscII6x8(TABLERO_X0 - 15, y, COLOR_LINEA, numero_str);
+ 2401              		.loc 1 95 0 discriminator 2
+ 2402 02ec B8215BE1 		ldrh	r2, [fp, #-24]
+ 2403 02f0 1C304BE2 		sub	r3, fp, #28
+ 2404 02f4 2500A0E3 		mov	r0, #37
+ 2405 02f8 0210A0E1 		mov	r1, r2
+ 2406 02fc 0F20A0E3 		mov	r2, #15
+ 2407 0300 FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 2408              	.LBE4:
+  91:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2409              		.loc 1 91 0 discriminator 2
+ 2410 0304 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2411 0308 013083E2 		add	r3, r3, #1
+ 2412 030c 0D304BE5 		strb	r3, [fp, #-13]
+ 2413              	.L13:
+  91:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2414              		.loc 1 91 0 is_stmt 0 discriminator 1
+ 2415 0310 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2416 0314 080053E3 		cmp	r3, #8
+ 2417 0318 E3FFFF9A 		bls	.L14
+  96:../sudoku_lcd.c ****     }
+  97:../sudoku_lcd.c **** 
+  98:../sudoku_lcd.c ****     /* Dibujar números de columna (1-9) arriba */
+  99:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2418              		.loc 1 99 0 is_stmt 1
+ 2419 031c 0030A0E3 		mov	r3, #0
+ 2420 0320 0D304BE5 		strb	r3, [fp, #-13]
+ 2421 0324 170000EA 		b	.L15
+ 2422              	.L16:
+ 2423              	.LBB5:
+ 100:../sudoku_lcd.c ****     {
+ 101:../sudoku_lcd.c ****         numero_str[0] = '1' + i;
+ 2424              		.loc 1 101 0 discriminator 2
+ 2425 0328 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2426 032c 313083E2 		add	r3, r3, #49
+ 2427 0330 FF3003E2 		and	r3, r3, #255
+ 2428 0334 1C304BE5 		strb	r3, [fp, #-28]
+ 102:../sudoku_lcd.c ****         INT16U x = TABLERO_X0 + i * CELDA_SIZE + CELDA_SIZE / 2 - 3;
+ 2429              		.loc 1 102 0 discriminator 2
+ 2430 0338 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2431 033c 0338A0E1 		mov	r3, r3, asl #16
+ 2432 0340 2338A0E1 		mov	r3, r3, lsr #16
+ 2433 0344 0320A0E1 		mov	r2, r3	@ movhi
+ 2434 0348 8220A0E1 		mov	r2, r2, asl #1
+ 2435 034c 033082E0 		add	r3, r2, r3
+ 2436 0350 8331A0E1 		mov	r3, r3, asl #3
+ 2437 0354 0338A0E1 		mov	r3, r3, asl #16
+ 2438 0358 2338A0E1 		mov	r3, r3, lsr #16
+ 2439 035c 3D3083E2 		add	r3, r3, #61
+ 2440 0360 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 103:../sudoku_lcd.c ****         Lcd_DspAscII6x8(x, TABLERO_Y0 - 10, COLOR_LINEA, numero_str);
+ 2441              		.loc 1 103 0 discriminator 2
+ 2442 0364 BA215BE1 		ldrh	r2, [fp, #-26]
+ 2443 0368 1C304BE2 		sub	r3, fp, #28
+ 2444 036c 0200A0E1 		mov	r0, r2
+ 2445 0370 0210A0E3 		mov	r1, #2
+ 2446 0374 0F20A0E3 		mov	r2, #15
+ 2447 0378 FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 2448              	.LBE5:
+  99:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2449              		.loc 1 99 0 discriminator 2
+ 2450 037c 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2451 0380 013083E2 		add	r3, r3, #1
+ 2452 0384 0D304BE5 		strb	r3, [fp, #-13]
+ 2453              	.L15:
+  99:../sudoku_lcd.c ****     for (i = 0; i < 9; i++)
+ 2454              		.loc 1 99 0 is_stmt 0 discriminator 1
+ 2455 0388 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2456 038c 080053E3 		cmp	r3, #8
+ 2457 0390 E4FFFF9A 		bls	.L16
+ 104:../sudoku_lcd.c ****     }
+ 105:../sudoku_lcd.c **** 
+ 106:../sudoku_lcd.c ****     /* Dibujar etiqueta y tiempo en la esquina superior derecha */
+ 107:../sudoku_lcd.c ****     Lcd_DspAscII6x8(270, 2, BLACK, (INT8U *)"Tiempo:");
+ 2458              		.loc 1 107 0 is_stmt 1
+ 2459 0394 44009FE5 		ldr	r0, .L17+4
+ 2460 0398 0210A0E3 		mov	r1, #2
+ 2461 039c 0F20A0E3 		mov	r2, #15
+ 2462 03a0 3C309FE5 		ldr	r3, .L17+8
+ 2463 03a4 FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 108:../sudoku_lcd.c ****     Lcd_DspAscII6x8(275, 12, BLACK, (INT8U *)"00:00");
+ 2464              		.loc 1 108 0
+ 2465 03a8 38009FE5 		ldr	r0, .L17+12
+ 2466 03ac 0C10A0E3 		mov	r1, #12
+ 2467 03b0 0F20A0E3 		mov	r2, #15
+ 2468 03b4 30309FE5 		ldr	r3, .L17+16
+ 2469 03b8 FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 109:../sudoku_lcd.c **** 
+ 110:../sudoku_lcd.c ****     /* Leyenda para salir del juego */
+ 111:../sudoku_lcd.c ****     Lcd_DspAscII6x8(20, 230, BLACK, (INT8U *)"Fila 0: Acabar partida");
+ 2470              		.loc 1 111 0
+ 2471 03bc 1400A0E3 		mov	r0, #20
+ 2472 03c0 E610A0E3 		mov	r1, #230
+ 2473 03c4 0F20A0E3 		mov	r2, #15
+ 2474 03c8 20309FE5 		ldr	r3, .L17+20
+ 2475 03cc FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 112:../sudoku_lcd.c **** }
+ 2476              		.loc 1 112 0
+ 2477 03d0 0CD04BE2 		sub	sp, fp, #12
+ 2478 03d4 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2479 03d8 1EFF2FE1 		bx	lr
+ 2480              	.L18:
+ 2481              		.align	2
+ 2482              	.L17:
+ 2483 03dc ABAAAAAA 		.word	-1431655765
+ 2484 03e0 0E010000 		.word	270
+ 2485 03e4 BC000000 		.word	.LC10
+ 2486 03e8 13010000 		.word	275
+ 2487 03ec C4000000 		.word	.LC11
+ 2488 03f0 CC000000 		.word	.LC12
+ 2489              		.cfi_endproc
+ 2490              	.LFE3:
+ 2492              		.align	2
+ 2494              	sudoku_dibujar_candidatos:
+ 2495              	.LFB4:
+ 113:../sudoku_lcd.c **** 
+ 114:../sudoku_lcd.c **** /**
+ 115:../sudoku_lcd.c ****  * Dibuja los candidatos en una celda vacía
+ 116:../sudoku_lcd.c ****  * @param fila: fila del tablero (0-8)
+ 117:../sudoku_lcd.c ****  * @param columna: columna del tablero (0-8)
+ 118:../sudoku_lcd.c ****  * @param candidatos: vector de bits con candidatos (bit 0 = candidato 1, etc.)
+ 119:../sudoku_lcd.c ****  *                   Un 0 en el bit indica que ES candidato
+ 120:../sudoku_lcd.c ****  *                   Un 1 en el bit indica que NO es candidato
+ 121:../sudoku_lcd.c ****  */
+ 122:../sudoku_lcd.c **** static void sudoku_dibujar_candidatos(uint8_t fila, uint8_t columna, uint16_t candidatos)
+ 123:../sudoku_lcd.c **** {
+ 2496              		.loc 1 123 0
+ 2497              		.cfi_startproc
+ 2498              		@ Function supports interworking.
+ 2499              		@ args = 0, pretend = 0, frame = 24
+ 2500              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2501 03f4 0DC0A0E1 		mov	ip, sp
+ 2502              	.LCFI4:
+ 2503              		.cfi_def_cfa_register 12
+ 2504 03f8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2505 03fc 04B04CE2 		sub	fp, ip, #4
+ 2506              		.cfi_offset 14, -8
+ 2507              		.cfi_offset 13, -12
+ 2508              		.cfi_offset 11, -16
+ 2509              	.LCFI5:
+ 2510              		.cfi_def_cfa 11, 4
+ 2511 0400 20D04DE2 		sub	sp, sp, #32
+ 2512 0404 0230A0E1 		mov	r3, r2
+ 2513 0408 0020A0E1 		mov	r2, r0
+ 2514 040c 1D204BE5 		strb	r2, [fp, #-29]
+ 2515 0410 0120A0E1 		mov	r2, r1
+ 2516 0414 1E204BE5 		strb	r2, [fp, #-30]
+ 2517 0418 B0324BE1 		strh	r3, [fp, #-32]	@ movhi
+ 124:../sudoku_lcd.c ****     uint8_t num;
+ 125:../sudoku_lcd.c ****     INT16U base_x = TABLERO_X0 + columna * CELDA_SIZE + CANDIDATO_OFFSET;
+ 2518              		.loc 1 125 0
+ 2519 041c 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 2520 0420 0338A0E1 		mov	r3, r3, asl #16
+ 2521 0424 2338A0E1 		mov	r3, r3, lsr #16
+ 2522 0428 0320A0E1 		mov	r2, r3	@ movhi
+ 2523 042c 8220A0E1 		mov	r2, r2, asl #1
+ 2524 0430 033082E0 		add	r3, r2, r3
+ 2525 0434 8331A0E1 		mov	r3, r3, asl #3
+ 2526 0438 0338A0E1 		mov	r3, r3, asl #16
+ 2527 043c 2338A0E1 		mov	r3, r3, lsr #16
+ 2528 0440 363083E2 		add	r3, r3, #54
+ 2529 0444 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 126:../sudoku_lcd.c ****     INT16U base_y = TABLERO_Y0 + fila * CELDA_SIZE + CANDIDATO_OFFSET;
+ 2530              		.loc 1 126 0
+ 2531 0448 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2532 044c 0338A0E1 		mov	r3, r3, asl #16
+ 2533 0450 2338A0E1 		mov	r3, r3, lsr #16
+ 2534 0454 0320A0E1 		mov	r2, r3	@ movhi
+ 2535 0458 8220A0E1 		mov	r2, r2, asl #1
+ 2536 045c 033082E0 		add	r3, r2, r3
+ 2537 0460 8331A0E1 		mov	r3, r3, asl #3
+ 2538 0464 0338A0E1 		mov	r3, r3, asl #16
+ 2539 0468 2338A0E1 		mov	r3, r3, lsr #16
+ 2540 046c 0E3083E2 		add	r3, r3, #14
+ 2541 0470 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 127:../sudoku_lcd.c **** 
+ 128:../sudoku_lcd.c ****     /* Posiciones en la cuadrícula 3x3 para cada número 1-9:
+ 129:../sudoku_lcd.c ****      * 1 2 3
+ 130:../sudoku_lcd.c ****      * 4 5 6
+ 131:../sudoku_lcd.c ****      * 7 8 9
+ 132:../sudoku_lcd.c ****      */
+ 133:../sudoku_lcd.c ****     for (num = 1; num <= 9; num++)
+ 2542              		.loc 1 133 0
+ 2543 0474 0130A0E3 		mov	r3, #1
+ 2544 0478 0D304BE5 		strb	r3, [fp, #-13]
+ 2545 047c 600000EA 		b	.L20
+ 2546              	.L22:
+ 2547              	.LBB6:
+ 134:../sudoku_lcd.c ****     {
+ 135:../sudoku_lcd.c ****         uint8_t es_candidato = ((candidatos & (1 << (num - 1))) == 0) ? 1 : 0;
+ 2548              		.loc 1 135 0
+ 2549 0480 B0225BE1 		ldrh	r2, [fp, #-32]
+ 2550 0484 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2551 0488 013043E2 		sub	r3, r3, #1
+ 2552 048c 5233A0E1 		mov	r3, r2, asr r3
+ 2553 0490 013003E2 		and	r3, r3, #1
+ 2554 0494 000053E3 		cmp	r3, #0
+ 2555 0498 0030A013 		movne	r3, #0
+ 2556 049c 0130A003 		moveq	r3, #1
+ 2557 04a0 13304BE5 		strb	r3, [fp, #-19]
+ 136:../sudoku_lcd.c **** 
+ 137:../sudoku_lcd.c ****         if (es_candidato)
+ 2558              		.loc 1 137 0
+ 2559 04a4 13305BE5 		ldrb	r3, [fp, #-19]	@ zero_extendqisi2
+ 2560 04a8 000053E3 		cmp	r3, #0
+ 2561 04ac 5100000A 		beq	.L21
+ 2562              	.LBB7:
+ 138:../sudoku_lcd.c ****         {
+ 139:../sudoku_lcd.c ****             /* Calcular posición en la cuadrícula 3x3 */
+ 140:../sudoku_lcd.c ****             uint8_t grid_row = (num - 1) / 3; /* 0, 0, 0, 1, 1, 1, 2, 2, 2 */
+ 2563              		.loc 1 140 0
+ 2564 04b0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2565 04b4 013043E2 		sub	r3, r3, #1
+ 2566 04b8 5C219FE5 		ldr	r2, .L23
+ 2567 04bc 9302C2E0 		smull	r0, r2, r3, r2
+ 2568 04c0 C33FA0E1 		mov	r3, r3, asr #31
+ 2569 04c4 023063E0 		rsb	r3, r3, r2
+ 2570 04c8 14304BE5 		strb	r3, [fp, #-20]
+ 141:../sudoku_lcd.c ****             uint8_t grid_col = (num - 1) % 3; /* 0, 1, 2, 0, 1, 2, 0, 1, 2 */
+ 2571              		.loc 1 141 0
+ 2572 04cc 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2573 04d0 011043E2 		sub	r1, r3, #1
+ 2574 04d4 40319FE5 		ldr	r3, .L23
+ 2575 04d8 9301C2E0 		smull	r0, r2, r3, r1
+ 2576 04dc C13FA0E1 		mov	r3, r1, asr #31
+ 2577 04e0 022063E0 		rsb	r2, r3, r2
+ 2578 04e4 0230A0E1 		mov	r3, r2
+ 2579 04e8 8330A0E1 		mov	r3, r3, asl #1
+ 2580 04ec 023083E0 		add	r3, r3, r2
+ 2581 04f0 012063E0 		rsb	r2, r3, r1
+ 2582 04f4 0230A0E1 		mov	r3, r2
+ 2583 04f8 15304BE5 		strb	r3, [fp, #-21]
+ 142:../sudoku_lcd.c **** 
+ 143:../sudoku_lcd.c ****             INT16U x = base_x + grid_col * CANDIDATO_GRID_SIZE + CANDIDATO_GRID_SIZE / 2;
+ 2584              		.loc 1 143 0
+ 2585 04fc 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 2586 0500 0338A0E1 		mov	r3, r3, asl #16
+ 2587 0504 2338A0E1 		mov	r3, r3, lsr #16
+ 2588 0508 0320A0E1 		mov	r2, r3	@ movhi
+ 2589 050c 8221A0E1 		mov	r2, r2, asl #3
+ 2590 0510 023063E0 		rsb	r3, r3, r2
+ 2591 0514 0338A0E1 		mov	r3, r3, asl #16
+ 2592 0518 2328A0E1 		mov	r2, r3, lsr #16
+ 2593 051c B0315BE1 		ldrh	r3, [fp, #-16]	@ movhi
+ 2594 0520 033082E0 		add	r3, r2, r3
+ 2595 0524 0338A0E1 		mov	r3, r3, asl #16
+ 2596 0528 2338A0E1 		mov	r3, r3, lsr #16
+ 2597 052c 033083E2 		add	r3, r3, #3
+ 2598 0530 B8314BE1 		strh	r3, [fp, #-24]	@ movhi
+ 144:../sudoku_lcd.c ****             INT16U y = base_y + grid_row * CANDIDATO_GRID_SIZE + CANDIDATO_GRID_SIZE / 2;
+ 2599              		.loc 1 144 0
+ 2600 0534 14305BE5 		ldrb	r3, [fp, #-20]	@ zero_extendqisi2
+ 2601 0538 0338A0E1 		mov	r3, r3, asl #16
+ 2602 053c 2338A0E1 		mov	r3, r3, lsr #16
+ 2603 0540 0320A0E1 		mov	r2, r3	@ movhi
+ 2604 0544 8221A0E1 		mov	r2, r2, asl #3
+ 2605 0548 023063E0 		rsb	r3, r3, r2
+ 2606 054c 0338A0E1 		mov	r3, r3, asl #16
+ 2607 0550 2328A0E1 		mov	r2, r3, lsr #16
+ 2608 0554 B2315BE1 		ldrh	r3, [fp, #-18]	@ movhi
+ 2609 0558 033082E0 		add	r3, r2, r3
+ 2610 055c 0338A0E1 		mov	r3, r3, asl #16
+ 2611 0560 2338A0E1 		mov	r3, r3, lsr #16
+ 2612 0564 033083E2 		add	r3, r3, #3
+ 2613 0568 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 145:../sudoku_lcd.c **** 
+ 146:../sudoku_lcd.c ****             /* Dibujar un pequeño punto o círculo para marcar el candidato */
+ 147:../sudoku_lcd.c ****             /* Como no tenemos función de círculo, dibujamos un cuadrado pequeño */
+ 148:../sudoku_lcd.c ****             LcdClrRect(x - CANDIDATO_MARCA_SIZE, y - CANDIDATO_MARCA_SIZE,
+ 2614              		.loc 1 148 0
+ 2615 056c B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 2616 0570 013043E2 		sub	r3, r3, #1
+ 2617 0574 0338A0E1 		mov	r3, r3, asl #16
+ 2618 0578 2338A0E1 		mov	r3, r3, lsr #16
+ 2619 057c 0338A0E1 		mov	r3, r3, asl #16
+ 2620 0580 2308A0E1 		mov	r0, r3, lsr #16
+ 2621 0584 BA315BE1 		ldrh	r3, [fp, #-26]	@ movhi
+ 2622 0588 013043E2 		sub	r3, r3, #1
+ 2623 058c 0338A0E1 		mov	r3, r3, asl #16
+ 2624 0590 2338A0E1 		mov	r3, r3, lsr #16
+ 2625 0594 0338A0E1 		mov	r3, r3, asl #16
+ 2626 0598 2318A0E1 		mov	r1, r3, lsr #16
+ 2627 059c B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 2628 05a0 013083E2 		add	r3, r3, #1
+ 2629 05a4 0338A0E1 		mov	r3, r3, asl #16
+ 2630 05a8 2338A0E1 		mov	r3, r3, lsr #16
+ 2631 05ac 0338A0E1 		mov	r3, r3, asl #16
+ 2632 05b0 2328A0E1 		mov	r2, r3, lsr #16
+ 2633 05b4 BA315BE1 		ldrh	r3, [fp, #-26]	@ movhi
+ 2634 05b8 013083E2 		add	r3, r3, #1
+ 2635 05bc 0338A0E1 		mov	r3, r3, asl #16
+ 2636 05c0 2338A0E1 		mov	r3, r3, lsr #16
+ 2637 05c4 0338A0E1 		mov	r3, r3, asl #16
+ 2638 05c8 2338A0E1 		mov	r3, r3, lsr #16
+ 2639 05cc 0008A0E1 		mov	r0, r0, asl #16
+ 2640 05d0 4008A0E1 		mov	r0, r0, asr #16
+ 2641 05d4 0118A0E1 		mov	r1, r1, asl #16
+ 2642 05d8 4118A0E1 		mov	r1, r1, asr #16
+ 2643 05dc 0228A0E1 		mov	r2, r2, asl #16
+ 2644 05e0 4228A0E1 		mov	r2, r2, asr #16
+ 2645 05e4 0338A0E1 		mov	r3, r3, asl #16
+ 2646 05e8 4338A0E1 		mov	r3, r3, asr #16
+ 2647 05ec 08C0A0E3 		mov	ip, #8
+ 2648 05f0 00C08DE5 		str	ip, [sp, #0]
+ 2649 05f4 FEFFFFEB 		bl	LcdClrRect
+ 2650              	.L21:
+ 2651              	.LBE7:
+ 2652              	.LBE6:
+ 133:../sudoku_lcd.c ****     for (num = 1; num <= 9; num++)
+ 2653              		.loc 1 133 0
+ 2654 05f8 0D305BE5 		ldrb	r3, [fp, #-13]
+ 2655 05fc 013083E2 		add	r3, r3, #1
+ 2656 0600 0D304BE5 		strb	r3, [fp, #-13]
+ 2657              	.L20:
+ 133:../sudoku_lcd.c ****     for (num = 1; num <= 9; num++)
+ 2658              		.loc 1 133 0 is_stmt 0 discriminator 1
+ 2659 0604 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 2660 0608 090053E3 		cmp	r3, #9
+ 2661 060c 9BFFFF9A 		bls	.L22
+ 149:../sudoku_lcd.c ****                        x + CANDIDATO_MARCA_SIZE, y + CANDIDATO_MARCA_SIZE,
+ 150:../sudoku_lcd.c ****                        COLOR_CANDIDATO);
+ 151:../sudoku_lcd.c ****         }
+ 152:../sudoku_lcd.c ****     }
+ 153:../sudoku_lcd.c **** }
+ 2662              		.loc 1 153 0 is_stmt 1
+ 2663 0610 0CD04BE2 		sub	sp, fp, #12
+ 2664 0614 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2665 0618 1EFF2FE1 		bx	lr
+ 2666              	.L24:
+ 2667              		.align	2
+ 2668              	.L23:
+ 2669 061c 56555555 		.word	1431655766
+ 2670              		.cfi_endproc
+ 2671              	.LFE4:
+ 2673              		.align	2
+ 2674              		.global	sudoku_dibujar_celda_completa
+ 2676              	sudoku_dibujar_celda_completa:
+ 2677              	.LFB5:
+ 154:../sudoku_lcd.c **** 
+ 155:../sudoku_lcd.c **** /**
+ 156:../sudoku_lcd.c ****  * Dibuja un número en una celda específica
+ 157:../sudoku_lcd.c ****  * @param fila: fila del tablero (0-8)
+ 158:../sudoku_lcd.c ****  * @param columna: columna del tablero (0-8)
+ 159:../sudoku_lcd.c ****  * @param valor: valor a mostrar (1-9, 0 para vacío)
+ 160:../sudoku_lcd.c ****  * @param es_pista: 1 si es una pista inicial, 0 si la introdujo el usuario
+ 161:../sudoku_lcd.c ****  * @param es_error: 1 si el valor es erróneo
+ 162:../sudoku_lcd.c ****  * @param candidatos: vector de candidatos (solo usado si valor == 0)
+ 163:../sudoku_lcd.c ****  */
+ 164:../sudoku_lcd.c **** void sudoku_dibujar_celda_completa(uint8_t fila, uint8_t columna, uint8_t valor,
+ 165:../sudoku_lcd.c ****                                    uint8_t es_pista, uint8_t es_error, uint16_t candidatos)
+ 166:../sudoku_lcd.c **** {
+ 2678              		.loc 1 166 0
+ 2679              		.cfi_startproc
+ 2680              		@ Function supports interworking.
+ 2681              		@ args = 8, pretend = 0, frame = 24
+ 2682              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2683 0620 0DC0A0E1 		mov	ip, sp
+ 2684              	.LCFI6:
+ 2685              		.cfi_def_cfa_register 12
+ 2686 0624 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2687 0628 04B04CE2 		sub	fp, ip, #4
+ 2688              		.cfi_offset 14, -8
+ 2689              		.cfi_offset 13, -12
+ 2690              		.cfi_offset 11, -16
+ 2691              	.LCFI7:
+ 2692              		.cfi_def_cfa 11, 4
+ 2693 062c 20D04DE2 		sub	sp, sp, #32
+ 2694 0630 1D004BE5 		strb	r0, [fp, #-29]
+ 2695 0634 1E104BE5 		strb	r1, [fp, #-30]
+ 2696 0638 1F204BE5 		strb	r2, [fp, #-31]
+ 2697 063c 20304BE5 		strb	r3, [fp, #-32]
+ 167:../sudoku_lcd.c ****     INT16U x = TABLERO_X0 + columna * CELDA_SIZE + CELDA_SIZE / 2 - 4;
+ 2698              		.loc 1 167 0
+ 2699 0640 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 2700 0644 0338A0E1 		mov	r3, r3, asl #16
+ 2701 0648 2338A0E1 		mov	r3, r3, lsr #16
+ 2702 064c 0320A0E1 		mov	r2, r3	@ movhi
+ 2703 0650 8220A0E1 		mov	r2, r2, asl #1
+ 2704 0654 033082E0 		add	r3, r2, r3
+ 2705 0658 8331A0E1 		mov	r3, r3, asl #3
+ 2706 065c 0338A0E1 		mov	r3, r3, asl #16
+ 2707 0660 2338A0E1 		mov	r3, r3, lsr #16
+ 2708 0664 3C3083E2 		add	r3, r3, #60
+ 2709 0668 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 168:../sudoku_lcd.c ****     INT16U y = TABLERO_Y0 + fila * CELDA_SIZE + CELDA_SIZE / 2 - 4;
+ 2710              		.loc 1 168 0
+ 2711 066c 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2712 0670 013083E2 		add	r3, r3, #1
+ 2713 0674 0338A0E1 		mov	r3, r3, asl #16
+ 2714 0678 2338A0E1 		mov	r3, r3, lsr #16
+ 2715 067c 0320A0E1 		mov	r2, r3	@ movhi
+ 2716 0680 8220A0E1 		mov	r2, r2, asl #1
+ 2717 0684 033082E0 		add	r3, r2, r3
+ 2718 0688 8331A0E1 		mov	r3, r3, asl #3
+ 2719 068c 0338A0E1 		mov	r3, r3, asl #16
+ 2720 0690 2338A0E1 		mov	r3, r3, lsr #16
+ 2721 0694 043043E2 		sub	r3, r3, #4
+ 2722 0698 B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 169:../sudoku_lcd.c ****     INT8U numero_str[2];
+ 170:../sudoku_lcd.c ****     INT8U color;
+ 171:../sudoku_lcd.c ****     INT8U color_fondo = WHITE; // Fondo blanco normal
+ 2723              		.loc 1 171 0
+ 2724 069c 0030A0E3 		mov	r3, #0
+ 2725 06a0 0E304BE5 		strb	r3, [fp, #-14]
+ 172:../sudoku_lcd.c **** 
+ 173:../sudoku_lcd.c ****     /* Si hay error, usar fondo negro (inversión) */
+ 174:../sudoku_lcd.c ****     if (es_error)
+ 2726              		.loc 1 174 0
+ 2727 06a4 0430DBE5 		ldrb	r3, [fp, #4]	@ zero_extendqisi2
+ 2728 06a8 000053E3 		cmp	r3, #0
+ 2729 06ac 0100000A 		beq	.L26
+ 175:../sudoku_lcd.c ****     {
+ 176:../sudoku_lcd.c ****         color_fondo = BLACK; // Fondo negro para errores
+ 2730              		.loc 1 176 0
+ 2731 06b0 0F30A0E3 		mov	r3, #15
+ 2732 06b4 0E304BE5 		strb	r3, [fp, #-14]
+ 2733              	.L26:
+ 177:../sudoku_lcd.c ****     }
+ 178:../sudoku_lcd.c **** 
+ 179:../sudoku_lcd.c ****     /* Limpiar la celda primero */
+ 180:../sudoku_lcd.c ****     LcdClrRect(TABLERO_X0 + columna * CELDA_SIZE + 2,
+ 2734              		.loc 1 180 0
+ 2735 06b8 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 2736 06bc 0338A0E1 		mov	r3, r3, asl #16
+ 2737 06c0 2338A0E1 		mov	r3, r3, lsr #16
+ 2738 06c4 0320A0E1 		mov	r2, r3	@ movhi
+ 2739 06c8 8220A0E1 		mov	r2, r2, asl #1
+ 2740 06cc 033082E0 		add	r3, r2, r3
+ 2741 06d0 8331A0E1 		mov	r3, r3, asl #3
+ 2742 06d4 0338A0E1 		mov	r3, r3, asl #16
+ 2743 06d8 2338A0E1 		mov	r3, r3, lsr #16
+ 2744 06dc 363083E2 		add	r3, r3, #54
+ 2745 06e0 0338A0E1 		mov	r3, r3, asl #16
+ 2746 06e4 2338A0E1 		mov	r3, r3, lsr #16
+ 2747 06e8 0338A0E1 		mov	r3, r3, asl #16
+ 2748 06ec 2308A0E1 		mov	r0, r3, lsr #16
+ 2749 06f0 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2750 06f4 0338A0E1 		mov	r3, r3, asl #16
+ 2751 06f8 2338A0E1 		mov	r3, r3, lsr #16
+ 2752 06fc 0320A0E1 		mov	r2, r3	@ movhi
+ 2753 0700 8220A0E1 		mov	r2, r2, asl #1
+ 2754 0704 033082E0 		add	r3, r2, r3
+ 2755 0708 8331A0E1 		mov	r3, r3, asl #3
+ 2756 070c 0338A0E1 		mov	r3, r3, asl #16
+ 2757 0710 2338A0E1 		mov	r3, r3, lsr #16
+ 2758 0714 0E3083E2 		add	r3, r3, #14
+ 2759 0718 0338A0E1 		mov	r3, r3, asl #16
+ 2760 071c 2338A0E1 		mov	r3, r3, lsr #16
+ 2761 0720 0338A0E1 		mov	r3, r3, asl #16
+ 2762 0724 2318A0E1 		mov	r1, r3, lsr #16
+ 2763 0728 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 2764 072c 013083E2 		add	r3, r3, #1
+ 2765 0730 0338A0E1 		mov	r3, r3, asl #16
+ 2766 0734 2338A0E1 		mov	r3, r3, lsr #16
+ 2767 0738 0320A0E1 		mov	r2, r3	@ movhi
+ 2768 073c 8220A0E1 		mov	r2, r2, asl #1
+ 2769 0740 033082E0 		add	r3, r2, r3
+ 2770 0744 8331A0E1 		mov	r3, r3, asl #3
+ 2771 0748 0338A0E1 		mov	r3, r3, asl #16
+ 2772 074c 2338A0E1 		mov	r3, r3, lsr #16
+ 2773 0750 323083E2 		add	r3, r3, #50
+ 2774 0754 0338A0E1 		mov	r3, r3, asl #16
+ 2775 0758 2338A0E1 		mov	r3, r3, lsr #16
+ 2776 075c 0338A0E1 		mov	r3, r3, asl #16
+ 2777 0760 2328A0E1 		mov	r2, r3, lsr #16
+ 2778 0764 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2779 0768 013083E2 		add	r3, r3, #1
+ 2780 076c 0338A0E1 		mov	r3, r3, asl #16
+ 2781 0770 2338A0E1 		mov	r3, r3, lsr #16
+ 2782 0774 03C0A0E1 		mov	ip, r3	@ movhi
+ 2783 0778 8CC0A0E1 		mov	ip, ip, asl #1
+ 2784 077c 03308CE0 		add	r3, ip, r3
+ 2785 0780 8331A0E1 		mov	r3, r3, asl #3
+ 2786 0784 0338A0E1 		mov	r3, r3, asl #16
+ 2787 0788 2338A0E1 		mov	r3, r3, lsr #16
+ 2788 078c 0A3083E2 		add	r3, r3, #10
+ 2789 0790 0338A0E1 		mov	r3, r3, asl #16
+ 2790 0794 2338A0E1 		mov	r3, r3, lsr #16
+ 2791 0798 0338A0E1 		mov	r3, r3, asl #16
+ 2792 079c 2338A0E1 		mov	r3, r3, lsr #16
+ 2793 07a0 0008A0E1 		mov	r0, r0, asl #16
+ 2794 07a4 4008A0E1 		mov	r0, r0, asr #16
+ 2795 07a8 0118A0E1 		mov	r1, r1, asl #16
+ 2796 07ac 4118A0E1 		mov	r1, r1, asr #16
+ 2797 07b0 0228A0E1 		mov	r2, r2, asl #16
+ 2798 07b4 4228A0E1 		mov	r2, r2, asr #16
+ 2799 07b8 0338A0E1 		mov	r3, r3, asl #16
+ 2800 07bc 4338A0E1 		mov	r3, r3, asr #16
+ 2801 07c0 0EC05BE5 		ldrb	ip, [fp, #-14]	@ zero_extendqisi2
+ 2802 07c4 00C08DE5 		str	ip, [sp, #0]
+ 2803 07c8 FEFFFFEB 		bl	LcdClrRect
+ 181:../sudoku_lcd.c ****                TABLERO_Y0 + fila * CELDA_SIZE + 2,
+ 182:../sudoku_lcd.c ****                TABLERO_X0 + (columna + 1) * CELDA_SIZE - 2,
+ 183:../sudoku_lcd.c ****                TABLERO_Y0 + (fila + 1) * CELDA_SIZE - 2,
+ 184:../sudoku_lcd.c ****                color_fondo);
+ 185:../sudoku_lcd.c **** 
+ 186:../sudoku_lcd.c ****     /* Si hay error, dibujar un BORDE MUY GRUESO */
+ 187:../sudoku_lcd.c ****     if (es_error)
+ 2804              		.loc 1 187 0
+ 2805 07cc 0430DBE5 		ldrb	r3, [fp, #4]	@ zero_extendqisi2
+ 2806 07d0 000053E3 		cmp	r3, #0
+ 2807 07d4 9300000A 		beq	.L27
+ 2808              	.LBB8:
+ 188:../sudoku_lcd.c ****     {
+ 189:../sudoku_lcd.c ****         INT16U x0 = TABLERO_X0 + columna * CELDA_SIZE;
+ 2809              		.loc 1 189 0
+ 2810 07d8 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 2811 07dc 0338A0E1 		mov	r3, r3, asl #16
+ 2812 07e0 2338A0E1 		mov	r3, r3, lsr #16
+ 2813 07e4 0320A0E1 		mov	r2, r3	@ movhi
+ 2814 07e8 8220A0E1 		mov	r2, r2, asl #1
+ 2815 07ec 033082E0 		add	r3, r2, r3
+ 2816 07f0 8331A0E1 		mov	r3, r3, asl #3
+ 2817 07f4 0338A0E1 		mov	r3, r3, asl #16
+ 2818 07f8 2338A0E1 		mov	r3, r3, lsr #16
+ 2819 07fc 343083E2 		add	r3, r3, #52
+ 2820 0800 B4314BE1 		strh	r3, [fp, #-20]	@ movhi
+ 190:../sudoku_lcd.c ****         INT16U y0 = TABLERO_Y0 + fila * CELDA_SIZE;
+ 2821              		.loc 1 190 0
+ 2822 0804 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 2823 0808 0338A0E1 		mov	r3, r3, asl #16
+ 2824 080c 2338A0E1 		mov	r3, r3, lsr #16
+ 2825 0810 0320A0E1 		mov	r2, r3	@ movhi
+ 2826 0814 8220A0E1 		mov	r2, r2, asl #1
+ 2827 0818 033082E0 		add	r3, r2, r3
+ 2828 081c 8331A0E1 		mov	r3, r3, asl #3
+ 2829 0820 0338A0E1 		mov	r3, r3, asl #16
+ 2830 0824 2338A0E1 		mov	r3, r3, lsr #16
+ 2831 0828 0C3083E2 		add	r3, r3, #12
+ 2832 082c B6314BE1 		strh	r3, [fp, #-22]	@ movhi
+ 191:../sudoku_lcd.c ****         INT16U x1 = x0 + CELDA_SIZE - 1;
+ 2833              		.loc 1 191 0
+ 2834 0830 B4315BE1 		ldrh	r3, [fp, #-20]	@ movhi
+ 2835 0834 173083E2 		add	r3, r3, #23
+ 2836 0838 B8314BE1 		strh	r3, [fp, #-24]	@ movhi
+ 192:../sudoku_lcd.c ****         INT16U y1 = y0 + CELDA_SIZE - 1;
+ 2837              		.loc 1 192 0
+ 2838 083c B6315BE1 		ldrh	r3, [fp, #-22]	@ movhi
+ 2839 0840 173083E2 		add	r3, r3, #23
+ 2840 0844 BA314BE1 		strh	r3, [fp, #-26]	@ movhi
+ 193:../sudoku_lcd.c **** 
+ 194:../sudoku_lcd.c ****         // Dibujar múltiples bordes para hacerlo MUY grueso
+ 195:../sudoku_lcd.c ****         Lcd_Draw_Box(x0, y0, x1, y1, BLACK);
+ 2841              		.loc 1 195 0
+ 2842 0848 B4015BE1 		ldrh	r0, [fp, #-20]
+ 2843 084c B6115BE1 		ldrh	r1, [fp, #-22]
+ 2844 0850 B8215BE1 		ldrh	r2, [fp, #-24]
+ 2845 0854 BA315BE1 		ldrh	r3, [fp, #-26]
+ 2846 0858 0008A0E1 		mov	r0, r0, asl #16
+ 2847 085c 4008A0E1 		mov	r0, r0, asr #16
+ 2848 0860 0118A0E1 		mov	r1, r1, asl #16
+ 2849 0864 4118A0E1 		mov	r1, r1, asr #16
+ 2850 0868 0228A0E1 		mov	r2, r2, asl #16
+ 2851 086c 4228A0E1 		mov	r2, r2, asr #16
+ 2852 0870 0338A0E1 		mov	r3, r3, asl #16
+ 2853 0874 4338A0E1 		mov	r3, r3, asr #16
+ 2854 0878 0FC0A0E3 		mov	ip, #15
+ 2855 087c 00C08DE5 		str	ip, [sp, #0]
+ 2856 0880 FEFFFFEB 		bl	Lcd_Draw_Box
+ 196:../sudoku_lcd.c ****         Lcd_Draw_Box(x0 + 1, y0 + 1, x1 - 1, y1 - 1, BLACK);
+ 2857              		.loc 1 196 0
+ 2858 0884 B4315BE1 		ldrh	r3, [fp, #-20]	@ movhi
+ 2859 0888 013083E2 		add	r3, r3, #1
+ 2860 088c 0338A0E1 		mov	r3, r3, asl #16
+ 2861 0890 2338A0E1 		mov	r3, r3, lsr #16
+ 2862 0894 0338A0E1 		mov	r3, r3, asl #16
+ 2863 0898 2308A0E1 		mov	r0, r3, lsr #16
+ 2864 089c B6315BE1 		ldrh	r3, [fp, #-22]	@ movhi
+ 2865 08a0 013083E2 		add	r3, r3, #1
+ 2866 08a4 0338A0E1 		mov	r3, r3, asl #16
+ 2867 08a8 2338A0E1 		mov	r3, r3, lsr #16
+ 2868 08ac 0338A0E1 		mov	r3, r3, asl #16
+ 2869 08b0 2318A0E1 		mov	r1, r3, lsr #16
+ 2870 08b4 B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 2871 08b8 013043E2 		sub	r3, r3, #1
+ 2872 08bc 0338A0E1 		mov	r3, r3, asl #16
+ 2873 08c0 2338A0E1 		mov	r3, r3, lsr #16
+ 2874 08c4 0338A0E1 		mov	r3, r3, asl #16
+ 2875 08c8 2328A0E1 		mov	r2, r3, lsr #16
+ 2876 08cc BA315BE1 		ldrh	r3, [fp, #-26]	@ movhi
+ 2877 08d0 013043E2 		sub	r3, r3, #1
+ 2878 08d4 0338A0E1 		mov	r3, r3, asl #16
+ 2879 08d8 2338A0E1 		mov	r3, r3, lsr #16
+ 2880 08dc 0338A0E1 		mov	r3, r3, asl #16
+ 2881 08e0 2338A0E1 		mov	r3, r3, lsr #16
+ 2882 08e4 0008A0E1 		mov	r0, r0, asl #16
+ 2883 08e8 4008A0E1 		mov	r0, r0, asr #16
+ 2884 08ec 0118A0E1 		mov	r1, r1, asl #16
+ 2885 08f0 4118A0E1 		mov	r1, r1, asr #16
+ 2886 08f4 0228A0E1 		mov	r2, r2, asl #16
+ 2887 08f8 4228A0E1 		mov	r2, r2, asr #16
+ 2888 08fc 0338A0E1 		mov	r3, r3, asl #16
+ 2889 0900 4338A0E1 		mov	r3, r3, asr #16
+ 2890 0904 0FC0A0E3 		mov	ip, #15
+ 2891 0908 00C08DE5 		str	ip, [sp, #0]
+ 2892 090c FEFFFFEB 		bl	Lcd_Draw_Box
+ 197:../sudoku_lcd.c ****         Lcd_Draw_Box(x0 + 2, y0 + 2, x1 - 2, y1 - 2, BLACK);
+ 2893              		.loc 1 197 0
+ 2894 0910 B4315BE1 		ldrh	r3, [fp, #-20]	@ movhi
+ 2895 0914 023083E2 		add	r3, r3, #2
+ 2896 0918 0338A0E1 		mov	r3, r3, asl #16
+ 2897 091c 2338A0E1 		mov	r3, r3, lsr #16
+ 2898 0920 0338A0E1 		mov	r3, r3, asl #16
+ 2899 0924 2308A0E1 		mov	r0, r3, lsr #16
+ 2900 0928 B6315BE1 		ldrh	r3, [fp, #-22]	@ movhi
+ 2901 092c 023083E2 		add	r3, r3, #2
+ 2902 0930 0338A0E1 		mov	r3, r3, asl #16
+ 2903 0934 2338A0E1 		mov	r3, r3, lsr #16
+ 2904 0938 0338A0E1 		mov	r3, r3, asl #16
+ 2905 093c 2318A0E1 		mov	r1, r3, lsr #16
+ 2906 0940 B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 2907 0944 023043E2 		sub	r3, r3, #2
+ 2908 0948 0338A0E1 		mov	r3, r3, asl #16
+ 2909 094c 2338A0E1 		mov	r3, r3, lsr #16
+ 2910 0950 0338A0E1 		mov	r3, r3, asl #16
+ 2911 0954 2328A0E1 		mov	r2, r3, lsr #16
+ 2912 0958 BA315BE1 		ldrh	r3, [fp, #-26]	@ movhi
+ 2913 095c 023043E2 		sub	r3, r3, #2
+ 2914 0960 0338A0E1 		mov	r3, r3, asl #16
+ 2915 0964 2338A0E1 		mov	r3, r3, lsr #16
+ 2916 0968 0338A0E1 		mov	r3, r3, asl #16
+ 2917 096c 2338A0E1 		mov	r3, r3, lsr #16
+ 2918 0970 0008A0E1 		mov	r0, r0, asl #16
+ 2919 0974 4008A0E1 		mov	r0, r0, asr #16
+ 2920 0978 0118A0E1 		mov	r1, r1, asl #16
+ 2921 097c 4118A0E1 		mov	r1, r1, asr #16
+ 2922 0980 0228A0E1 		mov	r2, r2, asl #16
+ 2923 0984 4228A0E1 		mov	r2, r2, asr #16
+ 2924 0988 0338A0E1 		mov	r3, r3, asl #16
+ 2925 098c 4338A0E1 		mov	r3, r3, asr #16
+ 2926 0990 0FC0A0E3 		mov	ip, #15
+ 2927 0994 00C08DE5 		str	ip, [sp, #0]
+ 2928 0998 FEFFFFEB 		bl	Lcd_Draw_Box
+ 198:../sudoku_lcd.c ****         Lcd_Draw_Box(x0 + 3, y0 + 3, x1 - 3, y1 - 3, BLACK);
+ 2929              		.loc 1 198 0
+ 2930 099c B4315BE1 		ldrh	r3, [fp, #-20]	@ movhi
+ 2931 09a0 033083E2 		add	r3, r3, #3
+ 2932 09a4 0338A0E1 		mov	r3, r3, asl #16
+ 2933 09a8 2338A0E1 		mov	r3, r3, lsr #16
+ 2934 09ac 0338A0E1 		mov	r3, r3, asl #16
+ 2935 09b0 2308A0E1 		mov	r0, r3, lsr #16
+ 2936 09b4 B6315BE1 		ldrh	r3, [fp, #-22]	@ movhi
+ 2937 09b8 033083E2 		add	r3, r3, #3
+ 2938 09bc 0338A0E1 		mov	r3, r3, asl #16
+ 2939 09c0 2338A0E1 		mov	r3, r3, lsr #16
+ 2940 09c4 0338A0E1 		mov	r3, r3, asl #16
+ 2941 09c8 2318A0E1 		mov	r1, r3, lsr #16
+ 2942 09cc B8315BE1 		ldrh	r3, [fp, #-24]	@ movhi
+ 2943 09d0 033043E2 		sub	r3, r3, #3
+ 2944 09d4 0338A0E1 		mov	r3, r3, asl #16
+ 2945 09d8 2338A0E1 		mov	r3, r3, lsr #16
+ 2946 09dc 0338A0E1 		mov	r3, r3, asl #16
+ 2947 09e0 2328A0E1 		mov	r2, r3, lsr #16
+ 2948 09e4 BA315BE1 		ldrh	r3, [fp, #-26]	@ movhi
+ 2949 09e8 033043E2 		sub	r3, r3, #3
+ 2950 09ec 0338A0E1 		mov	r3, r3, asl #16
+ 2951 09f0 2338A0E1 		mov	r3, r3, lsr #16
+ 2952 09f4 0338A0E1 		mov	r3, r3, asl #16
+ 2953 09f8 2338A0E1 		mov	r3, r3, lsr #16
+ 2954 09fc 0008A0E1 		mov	r0, r0, asl #16
+ 2955 0a00 4008A0E1 		mov	r0, r0, asr #16
+ 2956 0a04 0118A0E1 		mov	r1, r1, asl #16
+ 2957 0a08 4118A0E1 		mov	r1, r1, asr #16
+ 2958 0a0c 0228A0E1 		mov	r2, r2, asl #16
+ 2959 0a10 4228A0E1 		mov	r2, r2, asr #16
+ 2960 0a14 0338A0E1 		mov	r3, r3, asl #16
+ 2961 0a18 4338A0E1 		mov	r3, r3, asr #16
+ 2962 0a1c 0FC0A0E3 		mov	ip, #15
+ 2963 0a20 00C08DE5 		str	ip, [sp, #0]
+ 2964 0a24 FEFFFFEB 		bl	Lcd_Draw_Box
+ 2965              	.L27:
+ 2966              	.LBE8:
+ 199:../sudoku_lcd.c ****     }
+ 200:../sudoku_lcd.c **** 
+ 201:../sudoku_lcd.c ****     /* Si hay valor, dibujarlo */
+ 202:../sudoku_lcd.c ****     if (valor > 0 && valor <= 9)
+ 2967              		.loc 1 202 0
+ 2968 0a28 1F305BE5 		ldrb	r3, [fp, #-31]	@ zero_extendqisi2
+ 2969 0a2c 000053E3 		cmp	r3, #0
+ 2970 0a30 1C00000A 		beq	.L28
+ 2971              		.loc 1 202 0 is_stmt 0 discriminator 1
+ 2972 0a34 1F305BE5 		ldrb	r3, [fp, #-31]	@ zero_extendqisi2
+ 2973 0a38 090053E3 		cmp	r3, #9
+ 2974 0a3c 1900008A 		bhi	.L28
+ 203:../sudoku_lcd.c ****     {
+ 204:../sudoku_lcd.c ****         numero_str[0] = '0' + valor;
+ 2975              		.loc 1 204 0 is_stmt 1
+ 2976 0a40 1F305BE5 		ldrb	r3, [fp, #-31]
+ 2977 0a44 303083E2 		add	r3, r3, #48
+ 2978 0a48 FF3003E2 		and	r3, r3, #255
+ 2979 0a4c 1C304BE5 		strb	r3, [fp, #-28]
+ 205:../sudoku_lcd.c ****         numero_str[1] = '\0';
+ 2980              		.loc 1 205 0
+ 2981 0a50 0030A0E3 		mov	r3, #0
+ 2982 0a54 1B304BE5 		strb	r3, [fp, #-27]
+ 206:../sudoku_lcd.c **** 
+ 207:../sudoku_lcd.c ****         /* Determinar color del texto */
+ 208:../sudoku_lcd.c ****         if (es_error)
+ 2983              		.loc 1 208 0
+ 2984 0a58 0430DBE5 		ldrb	r3, [fp, #4]	@ zero_extendqisi2
+ 2985 0a5c 000053E3 		cmp	r3, #0
+ 2986 0a60 0200000A 		beq	.L29
+ 209:../sudoku_lcd.c ****         {
+ 210:../sudoku_lcd.c ****             color = WHITE; // Texto blanco sobre fondo negro
+ 2987              		.loc 1 210 0
+ 2988 0a64 0030A0E3 		mov	r3, #0
+ 2989 0a68 0D304BE5 		strb	r3, [fp, #-13]
+ 2990 0a6c 070000EA 		b	.L30
+ 2991              	.L29:
+ 211:../sudoku_lcd.c ****         }
+ 212:../sudoku_lcd.c ****         else if (es_pista)
+ 2992              		.loc 1 212 0
+ 2993 0a70 20305BE5 		ldrb	r3, [fp, #-32]	@ zero_extendqisi2
+ 2994 0a74 000053E3 		cmp	r3, #0
+ 2995 0a78 0200000A 		beq	.L31
+ 213:../sudoku_lcd.c ****         {
+ 214:../sudoku_lcd.c ****             color = BLACK; // Pistas en negro
+ 2996              		.loc 1 214 0
+ 2997 0a7c 0F30A0E3 		mov	r3, #15
+ 2998 0a80 0D304BE5 		strb	r3, [fp, #-13]
+ 2999 0a84 010000EA 		b	.L30
+ 3000              	.L31:
+ 215:../sudoku_lcd.c ****         }
+ 216:../sudoku_lcd.c ****         else
+ 217:../sudoku_lcd.c ****         {
+ 218:../sudoku_lcd.c ****             color = DARKGRAY; // Valores usuario en gris
+ 3001              		.loc 1 218 0
+ 3002 0a88 0A30A0E3 		mov	r3, #10
+ 3003 0a8c 0D304BE5 		strb	r3, [fp, #-13]
+ 3004              	.L30:
+ 219:../sudoku_lcd.c ****         }
+ 220:../sudoku_lcd.c **** 
+ 221:../sudoku_lcd.c ****         Lcd_DspAscII6x8(x, y, color, numero_str);
+ 3005              		.loc 1 221 0
+ 3006 0a90 B0015BE1 		ldrh	r0, [fp, #-16]
+ 3007 0a94 B2115BE1 		ldrh	r1, [fp, #-18]
+ 3008 0a98 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 3009 0a9c 1C304BE2 		sub	r3, fp, #28
+ 3010 0aa0 FEFFFFEB 		bl	Lcd_DspAscII6x8
+ 3011 0aa4 060000EA 		b	.L25
+ 3012              	.L28:
+ 222:../sudoku_lcd.c ****     }
+ 223:../sudoku_lcd.c ****     else
+ 224:../sudoku_lcd.c ****     {
+ 225:../sudoku_lcd.c ****         /* Celda vacía: mostrar candidatos */
+ 226:../sudoku_lcd.c ****         sudoku_dibujar_candidatos(fila, columna, candidatos);
+ 3013              		.loc 1 226 0
+ 3014 0aa8 1D105BE5 		ldrb	r1, [fp, #-29]	@ zero_extendqisi2
+ 3015 0aac 1E205BE5 		ldrb	r2, [fp, #-30]	@ zero_extendqisi2
+ 3016 0ab0 B830DBE1 		ldrh	r3, [fp, #8]
+ 3017 0ab4 0100A0E1 		mov	r0, r1
+ 3018 0ab8 0210A0E1 		mov	r1, r2
+ 3019 0abc 0320A0E1 		mov	r2, r3
+ 3020 0ac0 4BFEFFEB 		bl	sudoku_dibujar_candidatos
+ 3021              	.L25:
+ 227:../sudoku_lcd.c ****     }
+ 228:../sudoku_lcd.c **** }
+ 3022              		.loc 1 228 0
+ 3023 0ac4 0CD04BE2 		sub	sp, fp, #12
+ 3024 0ac8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3025 0acc 1EFF2FE1 		bx	lr
+ 3026              		.cfi_endproc
+ 3027              	.LFE5:
+ 3029              		.align	2
+ 3030              		.global	sudoku_dibujar_numero_celda
+ 3032              	sudoku_dibujar_numero_celda:
+ 3033              	.LFB6:
+ 229:../sudoku_lcd.c **** 
+ 230:../sudoku_lcd.c **** /**
+ 231:../sudoku_lcd.c ****  * Dibuja un número en una celda específica (versión antigua - mantener compatibilidad)
+ 232:../sudoku_lcd.c ****  */
+ 233:../sudoku_lcd.c **** void sudoku_dibujar_numero_celda(uint8_t fila, uint8_t columna, uint8_t valor,
+ 234:../sudoku_lcd.c ****                                  uint8_t es_pista, uint8_t es_error)
+ 235:../sudoku_lcd.c **** {
+ 3034              		.loc 1 235 0
+ 3035              		.cfi_startproc
+ 3036              		@ Function supports interworking.
+ 3037              		@ args = 4, pretend = 0, frame = 8
+ 3038              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3039 0ad0 0DC0A0E1 		mov	ip, sp
+ 3040              	.LCFI8:
+ 3041              		.cfi_def_cfa_register 12
+ 3042 0ad4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3043 0ad8 04B04CE2 		sub	fp, ip, #4
+ 3044              		.cfi_offset 14, -8
+ 3045              		.cfi_offset 13, -12
+ 3046              		.cfi_offset 11, -16
+ 3047              	.LCFI9:
+ 3048              		.cfi_def_cfa 11, 4
+ 3049 0adc 10D04DE2 		sub	sp, sp, #16
+ 3050 0ae0 0D004BE5 		strb	r0, [fp, #-13]
+ 3051 0ae4 0E104BE5 		strb	r1, [fp, #-14]
+ 3052 0ae8 0F204BE5 		strb	r2, [fp, #-15]
+ 3053 0aec 10304BE5 		strb	r3, [fp, #-16]
+ 236:../sudoku_lcd.c ****     /* Por compatibilidad, llamar a la versión completa con candidatos = 0x1FF (todos no candidato
+ 237:../sudoku_lcd.c ****     sudoku_dibujar_celda_completa(fila, columna, valor, es_pista, es_error, 0x1FF);
+ 3054              		.loc 1 237 0
+ 3055 0af0 0D005BE5 		ldrb	r0, [fp, #-13]	@ zero_extendqisi2
+ 3056 0af4 0E105BE5 		ldrb	r1, [fp, #-14]	@ zero_extendqisi2
+ 3057 0af8 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 3058 0afc 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 3059 0b00 04C0DBE5 		ldrb	ip, [fp, #4]	@ zero_extendqisi2
+ 3060 0b04 00C08DE5 		str	ip, [sp, #0]
+ 3061 0b08 10C09FE5 		ldr	ip, .L34
+ 3062 0b0c 04C08DE5 		str	ip, [sp, #4]
+ 3063 0b10 FEFFFFEB 		bl	sudoku_dibujar_celda_completa
+ 238:../sudoku_lcd.c **** }
+ 3064              		.loc 1 238 0
+ 3065 0b14 0CD04BE2 		sub	sp, fp, #12
+ 3066 0b18 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3067 0b1c 1EFF2FE1 		bx	lr
+ 3068              	.L35:
+ 3069              		.align	2
+ 3070              	.L34:
+ 3071 0b20 FF010000 		.word	511
+ 3072              		.cfi_endproc
+ 3073              	.LFE6:
+ 3075              		.align	2
+ 3076              		.global	sudoku_resaltar_celda
+ 3078              	sudoku_resaltar_celda:
+ 3079              	.LFB7:
+ 239:../sudoku_lcd.c **** 
+ 240:../sudoku_lcd.c **** /**
+ 241:../sudoku_lcd.c ****  * Resalta una celda (para mostrar la selección actual)
+ 242:../sudoku_lcd.c ****  * @param fila: fila del tablero (0-8)
+ 243:../sudoku_lcd.c ****  * @param columna: columna del tablero (0-8)
+ 244:../sudoku_lcd.c ****  * @param resaltar: 1 para resaltar, 0 para quitar resaltado
+ 245:../sudoku_lcd.c ****  */
+ 246:../sudoku_lcd.c **** void sudoku_resaltar_celda(uint8_t fila, uint8_t columna, uint8_t resaltar)
+ 247:../sudoku_lcd.c **** {
+ 3080              		.loc 1 247 0
+ 3081              		.cfi_startproc
+ 3082              		@ Function supports interworking.
+ 3083              		@ args = 0, pretend = 0, frame = 24
+ 3084              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3085 0b24 0DC0A0E1 		mov	ip, sp
+ 3086              	.LCFI10:
+ 3087              		.cfi_def_cfa_register 12
+ 3088 0b28 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3089 0b2c 04B04CE2 		sub	fp, ip, #4
+ 3090              		.cfi_offset 14, -8
+ 3091              		.cfi_offset 13, -12
+ 3092              		.cfi_offset 11, -16
+ 3093              	.LCFI11:
+ 3094              		.cfi_def_cfa 11, 4
+ 3095 0b30 20D04DE2 		sub	sp, sp, #32
+ 3096 0b34 0230A0E1 		mov	r3, r2
+ 3097 0b38 0020A0E1 		mov	r2, r0
+ 3098 0b3c 1D204BE5 		strb	r2, [fp, #-29]
+ 3099 0b40 0120A0E1 		mov	r2, r1
+ 3100 0b44 1E204BE5 		strb	r2, [fp, #-30]
+ 3101 0b48 1F304BE5 		strb	r3, [fp, #-31]
+ 248:../sudoku_lcd.c ****     INT16U x0 = TABLERO_X0 + columna * CELDA_SIZE + 1;
+ 3102              		.loc 1 248 0
+ 3103 0b4c 1E305BE5 		ldrb	r3, [fp, #-30]	@ zero_extendqisi2
+ 3104 0b50 0338A0E1 		mov	r3, r3, asl #16
+ 3105 0b54 2338A0E1 		mov	r3, r3, lsr #16
+ 3106 0b58 0320A0E1 		mov	r2, r3	@ movhi
+ 3107 0b5c 8220A0E1 		mov	r2, r2, asl #1
+ 3108 0b60 033082E0 		add	r3, r2, r3
+ 3109 0b64 8331A0E1 		mov	r3, r3, asl #3
+ 3110 0b68 0338A0E1 		mov	r3, r3, asl #16
+ 3111 0b6c 2338A0E1 		mov	r3, r3, lsr #16
+ 3112 0b70 353083E2 		add	r3, r3, #53
+ 3113 0b74 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+ 249:../sudoku_lcd.c ****     INT16U y0 = TABLERO_Y0 + fila * CELDA_SIZE + 1;
+ 3114              		.loc 1 249 0
+ 3115 0b78 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 3116 0b7c 0338A0E1 		mov	r3, r3, asl #16
+ 3117 0b80 2338A0E1 		mov	r3, r3, lsr #16
+ 3118 0b84 0320A0E1 		mov	r2, r3	@ movhi
+ 3119 0b88 8220A0E1 		mov	r2, r2, asl #1
+ 3120 0b8c 033082E0 		add	r3, r2, r3
+ 3121 0b90 8331A0E1 		mov	r3, r3, asl #3
+ 3122 0b94 0338A0E1 		mov	r3, r3, asl #16
+ 3123 0b98 2338A0E1 		mov	r3, r3, lsr #16
+ 3124 0b9c 0D3083E2 		add	r3, r3, #13
+ 3125 0ba0 B0314BE1 		strh	r3, [fp, #-16]	@ movhi
+ 250:../sudoku_lcd.c ****     INT16U x1 = x0 + CELDA_SIZE - 2;
+ 3126              		.loc 1 250 0
+ 3127 0ba4 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 3128 0ba8 163083E2 		add	r3, r3, #22
+ 3129 0bac B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 251:../sudoku_lcd.c ****     INT16U y1 = y0 + CELDA_SIZE - 2;
+ 3130              		.loc 1 251 0
+ 3131 0bb0 B0315BE1 		ldrh	r3, [fp, #-16]	@ movhi
+ 3132 0bb4 163083E2 		add	r3, r3, #22
+ 3133 0bb8 B4314BE1 		strh	r3, [fp, #-20]	@ movhi
+ 252:../sudoku_lcd.c ****     INT8U color = resaltar ? COLOR_SELECCION : COLOR_FONDO;
+ 3134              		.loc 1 252 0
+ 3135 0bbc 1F305BE5 		ldrb	r3, [fp, #-31]	@ zero_extendqisi2
+ 3136 0bc0 000053E3 		cmp	r3, #0
+ 3137 0bc4 0100000A 		beq	.L37
+ 3138              		.loc 1 252 0 is_stmt 0 discriminator 1
+ 3139 0bc8 0630A0E3 		mov	r3, #6
+ 3140 0bcc 000000EA 		b	.L38
+ 3141              	.L37:
+ 3142              		.loc 1 252 0 discriminator 2
+ 3143 0bd0 0030A0E3 		mov	r3, #0
+ 3144              	.L38:
+ 3145              		.loc 1 252 0 discriminator 3
+ 3146 0bd4 15304BE5 		strb	r3, [fp, #-21]
+ 253:../sudoku_lcd.c **** 
+ 254:../sudoku_lcd.c ****     /* Dibujar un borde interno en la celda */
+ 255:../sudoku_lcd.c ****     Lcd_Draw_HLine(x0, x1, y0, color, 1);
+ 3147              		.loc 1 255 0 is_stmt 1 discriminator 3
+ 3148 0bd8 BE105BE1 		ldrh	r1, [fp, #-14]
+ 3149 0bdc B2215BE1 		ldrh	r2, [fp, #-18]
+ 3150 0be0 B0315BE1 		ldrh	r3, [fp, #-16]
+ 3151 0be4 0118A0E1 		mov	r1, r1, asl #16
+ 3152 0be8 4108A0E1 		mov	r0, r1, asr #16
+ 3153 0bec 0228A0E1 		mov	r2, r2, asl #16
+ 3154 0bf0 4218A0E1 		mov	r1, r2, asr #16
+ 3155 0bf4 0338A0E1 		mov	r3, r3, asl #16
+ 3156 0bf8 4328A0E1 		mov	r2, r3, asr #16
+ 3157 0bfc 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3158 0c00 01C0A0E3 		mov	ip, #1
+ 3159 0c04 00C08DE5 		str	ip, [sp, #0]
+ 3160 0c08 FEFFFFEB 		bl	Lcd_Draw_HLine
+ 256:../sudoku_lcd.c ****     Lcd_Draw_HLine(x0, x1, y1, color, 1);
+ 3161              		.loc 1 256 0 discriminator 3
+ 3162 0c0c BE105BE1 		ldrh	r1, [fp, #-14]
+ 3163 0c10 B2215BE1 		ldrh	r2, [fp, #-18]
+ 3164 0c14 B4315BE1 		ldrh	r3, [fp, #-20]
+ 3165 0c18 0118A0E1 		mov	r1, r1, asl #16
+ 3166 0c1c 4108A0E1 		mov	r0, r1, asr #16
+ 3167 0c20 0228A0E1 		mov	r2, r2, asl #16
+ 3168 0c24 4218A0E1 		mov	r1, r2, asr #16
+ 3169 0c28 0338A0E1 		mov	r3, r3, asl #16
+ 3170 0c2c 4328A0E1 		mov	r2, r3, asr #16
+ 3171 0c30 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3172 0c34 01C0A0E3 		mov	ip, #1
+ 3173 0c38 00C08DE5 		str	ip, [sp, #0]
+ 3174 0c3c FEFFFFEB 		bl	Lcd_Draw_HLine
+ 257:../sudoku_lcd.c ****     Lcd_Draw_VLine(y0, y1, x0, color, 1);
+ 3175              		.loc 1 257 0 discriminator 3
+ 3176 0c40 B0115BE1 		ldrh	r1, [fp, #-16]
+ 3177 0c44 B4215BE1 		ldrh	r2, [fp, #-20]
+ 3178 0c48 BE305BE1 		ldrh	r3, [fp, #-14]
+ 3179 0c4c 0118A0E1 		mov	r1, r1, asl #16
+ 3180 0c50 4108A0E1 		mov	r0, r1, asr #16
+ 3181 0c54 0228A0E1 		mov	r2, r2, asl #16
+ 3182 0c58 4218A0E1 		mov	r1, r2, asr #16
+ 3183 0c5c 0338A0E1 		mov	r3, r3, asl #16
+ 3184 0c60 4328A0E1 		mov	r2, r3, asr #16
+ 3185 0c64 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3186 0c68 01C0A0E3 		mov	ip, #1
+ 3187 0c6c 00C08DE5 		str	ip, [sp, #0]
+ 3188 0c70 FEFFFFEB 		bl	Lcd_Draw_VLine
+ 258:../sudoku_lcd.c ****     Lcd_Draw_VLine(y0, y1, x1, color, 1);
+ 3189              		.loc 1 258 0 discriminator 3
+ 3190 0c74 B0115BE1 		ldrh	r1, [fp, #-16]
+ 3191 0c78 B4215BE1 		ldrh	r2, [fp, #-20]
+ 3192 0c7c B2315BE1 		ldrh	r3, [fp, #-18]
+ 3193 0c80 0118A0E1 		mov	r1, r1, asl #16
+ 3194 0c84 4108A0E1 		mov	r0, r1, asr #16
+ 3195 0c88 0228A0E1 		mov	r2, r2, asl #16
+ 3196 0c8c 4218A0E1 		mov	r1, r2, asr #16
+ 3197 0c90 0338A0E1 		mov	r3, r3, asl #16
+ 3198 0c94 4328A0E1 		mov	r2, r3, asr #16
+ 3199 0c98 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3200 0c9c 01C0A0E3 		mov	ip, #1
+ 3201 0ca0 00C08DE5 		str	ip, [sp, #0]
+ 3202 0ca4 FEFFFFEB 		bl	Lcd_Draw_VLine
+ 259:../sudoku_lcd.c **** }
+ 3203              		.loc 1 259 0 discriminator 3
+ 3204 0ca8 0CD04BE2 		sub	sp, fp, #12
+ 3205 0cac 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3206 0cb0 1EFF2FE1 		bx	lr
+ 3207              		.cfi_endproc
+ 3208              	.LFE7:
+ 3210              		.align	2
+ 3211              		.global	sudoku_dibujar_tablero_completo
+ 3213              	sudoku_dibujar_tablero_completo:
+ 3214              	.LFB8:
+ 260:../sudoku_lcd.c **** 
+ 261:../sudoku_lcd.c **** /**
+ 262:../sudoku_lcd.c ****  * Dibuja todo el tablero con sus valores actuales
+ 263:../sudoku_lcd.c ****  * @param cuadricula: matriz del sudoku
+ 264:../sudoku_lcd.c ****  */
+ 265:../sudoku_lcd.c **** void sudoku_dibujar_tablero_completo(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS])
+ 266:../sudoku_lcd.c **** {
+ 3215              		.loc 1 266 0
+ 3216              		.cfi_startproc
+ 3217              		@ Function supports interworking.
+ 3218              		@ args = 0, pretend = 0, frame = 16
+ 3219              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3220 0cb4 0DC0A0E1 		mov	ip, sp
+ 3221              	.LCFI12:
+ 3222              		.cfi_def_cfa_register 12
+ 3223 0cb8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3224 0cbc 04B04CE2 		sub	fp, ip, #4
+ 3225              		.cfi_offset 14, -8
+ 3226              		.cfi_offset 13, -12
+ 3227              		.cfi_offset 11, -16
+ 3228              	.LCFI13:
+ 3229              		.cfi_def_cfa 11, 4
+ 3230 0cc0 18D04DE2 		sub	sp, sp, #24
+ 3231 0cc4 18000BE5 		str	r0, [fp, #-24]
+ 267:../sudoku_lcd.c ****     uint8_t fila, columna;
+ 268:../sudoku_lcd.c ****     uint8_t valor;
+ 269:../sudoku_lcd.c ****     uint8_t es_pista;
+ 270:../sudoku_lcd.c ****     uint8_t es_error;
+ 271:../sudoku_lcd.c ****     uint16_t candidatos;
+ 272:../sudoku_lcd.c **** 
+ 273:../sudoku_lcd.c ****     /* Limpiar pantalla */
+ 274:../sudoku_lcd.c ****     Lcd_Clr();
+ 3232              		.loc 1 274 0
+ 3233 0cc8 FEFFFFEB 		bl	Lcd_Clr
+ 275:../sudoku_lcd.c **** 
+ 276:../sudoku_lcd.c ****     /* Dibujar marco con líneas y números */
+ 277:../sudoku_lcd.c ****     sudoku_dibujar_marco_tablero();
+ 3234              		.loc 1 277 0
+ 3235 0ccc FEFFFFEB 		bl	sudoku_dibujar_marco_tablero
+ 278:../sudoku_lcd.c **** 
+ 279:../sudoku_lcd.c ****     /* Dibujar todos los valores */
+ 280:../sudoku_lcd.c ****     for (fila = 0; fila < 9; fila++)
+ 3236              		.loc 1 280 0
+ 3237 0cd0 0030A0E3 		mov	r3, #0
+ 3238 0cd4 0D304BE5 		strb	r3, [fp, #-13]
+ 3239 0cd8 440000EA 		b	.L40
+ 3240              	.L43:
+ 281:../sudoku_lcd.c ****     {
+ 282:../sudoku_lcd.c ****         for (columna = 0; columna < 9; columna++)
+ 3241              		.loc 1 282 0
+ 3242 0cdc 0030A0E3 		mov	r3, #0
+ 3243 0ce0 0E304BE5 		strb	r3, [fp, #-14]
+ 3244 0ce4 3B0000EA 		b	.L41
+ 3245              	.L42:
+ 283:../sudoku_lcd.c ****         {
+ 284:../sudoku_lcd.c ****             valor = celda_leer_valor(cuadricula[fila][columna]);
+ 3246              		.loc 1 284 0 discriminator 2
+ 3247 0ce8 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3248 0cec 8332A0E1 		mov	r3, r3, asl #5
+ 3249 0cf0 18201BE5 		ldr	r2, [fp, #-24]
+ 3250 0cf4 032082E0 		add	r2, r2, r3
+ 3251 0cf8 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3252 0cfc 8330A0E1 		mov	r3, r3, asl #1
+ 3253 0d00 033082E0 		add	r3, r2, r3
+ 3254 0d04 B030D3E1 		ldrh	r3, [r3, #0]
+ 3255 0d08 0300A0E1 		mov	r0, r3
+ 3256 0d0c FEFFFFEB 		bl	celda_leer_valor
+ 3257 0d10 0030A0E1 		mov	r3, r0
+ 3258 0d14 0F304BE5 		strb	r3, [fp, #-15]
+ 285:../sudoku_lcd.c ****             es_pista = (cuadricula[fila][columna] & (1 << 4)) ? 1 : 0; // bit 4
+ 3259              		.loc 1 285 0 discriminator 2
+ 3260 0d18 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3261 0d1c 8332A0E1 		mov	r3, r3, asl #5
+ 3262 0d20 18201BE5 		ldr	r2, [fp, #-24]
+ 3263 0d24 032082E0 		add	r2, r2, r3
+ 3264 0d28 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3265 0d2c 8330A0E1 		mov	r3, r3, asl #1
+ 3266 0d30 033082E0 		add	r3, r2, r3
+ 3267 0d34 B030D3E1 		ldrh	r3, [r3, #0]
+ 3268 0d38 103003E2 		and	r3, r3, #16
+ 3269 0d3c 000053E3 		cmp	r3, #0
+ 3270 0d40 0030A003 		moveq	r3, #0
+ 3271 0d44 0130A013 		movne	r3, #1
+ 3272 0d48 10304BE5 		strb	r3, [fp, #-16]
+ 286:../sudoku_lcd.c ****             es_error = (cuadricula[fila][columna] & (1 << 5)) ? 1 : 0; // bit 5
+ 3273              		.loc 1 286 0 discriminator 2
+ 3274 0d4c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3275 0d50 8332A0E1 		mov	r3, r3, asl #5
+ 3276 0d54 18201BE5 		ldr	r2, [fp, #-24]
+ 3277 0d58 032082E0 		add	r2, r2, r3
+ 3278 0d5c 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3279 0d60 8330A0E1 		mov	r3, r3, asl #1
+ 3280 0d64 033082E0 		add	r3, r2, r3
+ 3281 0d68 B030D3E1 		ldrh	r3, [r3, #0]
+ 3282 0d6c 203003E2 		and	r3, r3, #32
+ 3283 0d70 000053E3 		cmp	r3, #0
+ 3284 0d74 0030A003 		moveq	r3, #0
+ 3285 0d78 0130A013 		movne	r3, #1
+ 3286 0d7c 11304BE5 		strb	r3, [fp, #-17]
+ 287:../sudoku_lcd.c ****             candidatos = (cuadricula[fila][columna] >> 7) & 0x1FF;     // bits [15:7]
+ 3287              		.loc 1 287 0 discriminator 2
+ 3288 0d80 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3289 0d84 8332A0E1 		mov	r3, r3, asl #5
+ 3290 0d88 18201BE5 		ldr	r2, [fp, #-24]
+ 3291 0d8c 032082E0 		add	r2, r2, r3
+ 3292 0d90 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3293 0d94 8330A0E1 		mov	r3, r3, asl #1
+ 3294 0d98 033082E0 		add	r3, r2, r3
+ 3295 0d9c B030D3E1 		ldrh	r3, [r3, #0]
+ 3296 0da0 A333A0E1 		mov	r3, r3, lsr #7
+ 3297 0da4 B4314BE1 		strh	r3, [fp, #-20]	@ movhi
+ 288:../sudoku_lcd.c **** 
+ 289:../sudoku_lcd.c ****             sudoku_dibujar_celda_completa(fila, columna, valor, es_pista, es_error, candidatos);
+ 3298              		.loc 1 289 0 discriminator 2
+ 3299 0da8 0D005BE5 		ldrb	r0, [fp, #-13]	@ zero_extendqisi2
+ 3300 0dac 0E105BE5 		ldrb	r1, [fp, #-14]	@ zero_extendqisi2
+ 3301 0db0 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 3302 0db4 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 3303 0db8 11C05BE5 		ldrb	ip, [fp, #-17]	@ zero_extendqisi2
+ 3304 0dbc 00C08DE5 		str	ip, [sp, #0]
+ 3305 0dc0 B4C15BE1 		ldrh	ip, [fp, #-20]
+ 3306 0dc4 04C08DE5 		str	ip, [sp, #4]
+ 3307 0dc8 FEFFFFEB 		bl	sudoku_dibujar_celda_completa
+ 282:../sudoku_lcd.c ****         for (columna = 0; columna < 9; columna++)
+ 3308              		.loc 1 282 0 discriminator 2
+ 3309 0dcc 0E305BE5 		ldrb	r3, [fp, #-14]
+ 3310 0dd0 013083E2 		add	r3, r3, #1
+ 3311 0dd4 0E304BE5 		strb	r3, [fp, #-14]
+ 3312              	.L41:
+ 282:../sudoku_lcd.c ****         for (columna = 0; columna < 9; columna++)
+ 3313              		.loc 1 282 0 is_stmt 0 discriminator 1
+ 3314 0dd8 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3315 0ddc 080053E3 		cmp	r3, #8
+ 3316 0de0 C0FFFF9A 		bls	.L42
+ 280:../sudoku_lcd.c ****     for (fila = 0; fila < 9; fila++)
+ 3317              		.loc 1 280 0 is_stmt 1
+ 3318 0de4 0D305BE5 		ldrb	r3, [fp, #-13]
+ 3319 0de8 013083E2 		add	r3, r3, #1
+ 3320 0dec 0D304BE5 		strb	r3, [fp, #-13]
+ 3321              	.L40:
+ 280:../sudoku_lcd.c ****     for (fila = 0; fila < 9; fila++)
+ 3322              		.loc 1 280 0 is_stmt 0 discriminator 1
+ 3323 0df0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3324 0df4 080053E3 		cmp	r3, #8
+ 3325 0df8 B7FFFF9A 		bls	.L43
+ 290:../sudoku_lcd.c ****         }
+ 291:../sudoku_lcd.c ****     }
+ 292:../sudoku_lcd.c **** 
+ 293:../sudoku_lcd.c ****     /* Transferir buffer virtual a pantalla */
+ 294:../sudoku_lcd.c ****     Lcd_Dma_Trans();
+ 3326              		.loc 1 294 0 is_stmt 1
+ 3327 0dfc FEFFFFEB 		bl	Lcd_Dma_Trans
+ 295:../sudoku_lcd.c **** }
+ 3328              		.loc 1 295 0
+ 3329 0e00 0CD04BE2 		sub	sp, fp, #12
+ 3330 0e04 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3331 0e08 1EFF2FE1 		bx	lr
+ 3332              		.cfi_endproc
+ 3333              	.LFE8:
+ 3335              		.align	2
+ 3336              		.global	sudoku_actualizar_celda
+ 3338              	sudoku_actualizar_celda:
+ 3339              	.LFB9:
+ 296:../sudoku_lcd.c **** 
+ 297:../sudoku_lcd.c **** /**
+ 298:../sudoku_lcd.c ****  * Actualiza una celda individual en pantalla
+ 299:../sudoku_lcd.c ****  * @param cuadricula: matriz del sudoku
+ 300:../sudoku_lcd.c ****  * @param fila: fila a actualizar (0-8)
+ 301:../sudoku_lcd.c ****  * @param columna: columna a actualizar (0-8)
+ 302:../sudoku_lcd.c ****  */
+ 303:../sudoku_lcd.c **** void sudoku_actualizar_celda(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS],
+ 304:../sudoku_lcd.c ****                              uint8_t fila, uint8_t columna)
+ 305:../sudoku_lcd.c **** {
+ 3340              		.loc 1 305 0
+ 3341              		.cfi_startproc
+ 3342              		@ Function supports interworking.
+ 3343              		@ args = 0, pretend = 0, frame = 16
+ 3344              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3345 0e0c 0DC0A0E1 		mov	ip, sp
+ 3346              	.LCFI14:
+ 3347              		.cfi_def_cfa_register 12
+ 3348 0e10 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3349 0e14 04B04CE2 		sub	fp, ip, #4
+ 3350              		.cfi_offset 14, -8
+ 3351              		.cfi_offset 13, -12
+ 3352              		.cfi_offset 11, -16
+ 3353              	.LCFI15:
+ 3354              		.cfi_def_cfa 11, 4
+ 3355 0e18 18D04DE2 		sub	sp, sp, #24
+ 3356 0e1c 18000BE5 		str	r0, [fp, #-24]
+ 3357 0e20 0230A0E1 		mov	r3, r2
+ 3358 0e24 0120A0E1 		mov	r2, r1
+ 3359 0e28 19204BE5 		strb	r2, [fp, #-25]
+ 3360 0e2c 1A304BE5 		strb	r3, [fp, #-26]
+ 306:../sudoku_lcd.c ****     uint8_t valor;
+ 307:../sudoku_lcd.c ****     uint8_t es_pista;
+ 308:../sudoku_lcd.c ****     uint8_t es_error;
+ 309:../sudoku_lcd.c ****     uint16_t candidatos;
+ 310:../sudoku_lcd.c **** 
+ 311:../sudoku_lcd.c ****     valor = celda_leer_valor(cuadricula[fila][columna]);
+ 3361              		.loc 1 311 0
+ 3362 0e30 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 3363 0e34 8332A0E1 		mov	r3, r3, asl #5
+ 3364 0e38 18201BE5 		ldr	r2, [fp, #-24]
+ 3365 0e3c 032082E0 		add	r2, r2, r3
+ 3366 0e40 1A305BE5 		ldrb	r3, [fp, #-26]	@ zero_extendqisi2
+ 3367 0e44 8330A0E1 		mov	r3, r3, asl #1
+ 3368 0e48 033082E0 		add	r3, r2, r3
+ 3369 0e4c B030D3E1 		ldrh	r3, [r3, #0]
+ 3370 0e50 0300A0E1 		mov	r0, r3
+ 3371 0e54 FEFFFFEB 		bl	celda_leer_valor
+ 3372 0e58 0030A0E1 		mov	r3, r0
+ 3373 0e5c 0D304BE5 		strb	r3, [fp, #-13]
+ 312:../sudoku_lcd.c ****     es_pista = (cuadricula[fila][columna] & (1 << 4)) ? 1 : 0; // bit 4
+ 3374              		.loc 1 312 0
+ 3375 0e60 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 3376 0e64 8332A0E1 		mov	r3, r3, asl #5
+ 3377 0e68 18201BE5 		ldr	r2, [fp, #-24]
+ 3378 0e6c 032082E0 		add	r2, r2, r3
+ 3379 0e70 1A305BE5 		ldrb	r3, [fp, #-26]	@ zero_extendqisi2
+ 3380 0e74 8330A0E1 		mov	r3, r3, asl #1
+ 3381 0e78 033082E0 		add	r3, r2, r3
+ 3382 0e7c B030D3E1 		ldrh	r3, [r3, #0]
+ 3383 0e80 103003E2 		and	r3, r3, #16
+ 3384 0e84 000053E3 		cmp	r3, #0
+ 3385 0e88 0030A003 		moveq	r3, #0
+ 3386 0e8c 0130A013 		movne	r3, #1
+ 3387 0e90 0E304BE5 		strb	r3, [fp, #-14]
+ 313:../sudoku_lcd.c ****     es_error = (cuadricula[fila][columna] & (1 << 5)) ? 1 : 0; // bit 5
+ 3388              		.loc 1 313 0
+ 3389 0e94 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 3390 0e98 8332A0E1 		mov	r3, r3, asl #5
+ 3391 0e9c 18201BE5 		ldr	r2, [fp, #-24]
+ 3392 0ea0 032082E0 		add	r2, r2, r3
+ 3393 0ea4 1A305BE5 		ldrb	r3, [fp, #-26]	@ zero_extendqisi2
+ 3394 0ea8 8330A0E1 		mov	r3, r3, asl #1
+ 3395 0eac 033082E0 		add	r3, r2, r3
+ 3396 0eb0 B030D3E1 		ldrh	r3, [r3, #0]
+ 3397 0eb4 203003E2 		and	r3, r3, #32
+ 3398 0eb8 000053E3 		cmp	r3, #0
+ 3399 0ebc 0030A003 		moveq	r3, #0
+ 3400 0ec0 0130A013 		movne	r3, #1
+ 3401 0ec4 0F304BE5 		strb	r3, [fp, #-15]
+ 314:../sudoku_lcd.c ****     candidatos = (cuadricula[fila][columna] >> 7) & 0x1FF;     // bits [15:7]
+ 3402              		.loc 1 314 0
+ 3403 0ec8 19305BE5 		ldrb	r3, [fp, #-25]	@ zero_extendqisi2
+ 3404 0ecc 8332A0E1 		mov	r3, r3, asl #5
+ 3405 0ed0 18201BE5 		ldr	r2, [fp, #-24]
+ 3406 0ed4 032082E0 		add	r2, r2, r3
+ 3407 0ed8 1A305BE5 		ldrb	r3, [fp, #-26]	@ zero_extendqisi2
+ 3408 0edc 8330A0E1 		mov	r3, r3, asl #1
+ 3409 0ee0 033082E0 		add	r3, r2, r3
+ 3410 0ee4 B030D3E1 		ldrh	r3, [r3, #0]
+ 3411 0ee8 A333A0E1 		mov	r3, r3, lsr #7
+ 3412 0eec B2314BE1 		strh	r3, [fp, #-18]	@ movhi
+ 315:../sudoku_lcd.c **** 
+ 316:../sudoku_lcd.c ****     sudoku_dibujar_celda_completa(fila, columna, valor, es_pista, es_error, candidatos);
+ 3413              		.loc 1 316 0
+ 3414 0ef0 19005BE5 		ldrb	r0, [fp, #-25]	@ zero_extendqisi2
+ 3415 0ef4 1A105BE5 		ldrb	r1, [fp, #-26]	@ zero_extendqisi2
+ 3416 0ef8 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 3417 0efc 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3418 0f00 0FC05BE5 		ldrb	ip, [fp, #-15]	@ zero_extendqisi2
+ 3419 0f04 00C08DE5 		str	ip, [sp, #0]
+ 3420 0f08 B2C15BE1 		ldrh	ip, [fp, #-18]
+ 3421 0f0c 04C08DE5 		str	ip, [sp, #4]
+ 3422 0f10 FEFFFFEB 		bl	sudoku_dibujar_celda_completa
+ 317:../sudoku_lcd.c ****     Lcd_Dma_Trans();
+ 3423              		.loc 1 317 0
+ 3424 0f14 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 318:../sudoku_lcd.c **** }
+ 3425              		.loc 1 318 0
+ 3426 0f18 0CD04BE2 		sub	sp, fp, #12
+ 3427 0f1c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3428 0f20 1EFF2FE1 		bx	lr
+ 3429              		.cfi_endproc
+ 3430              	.LFE9:
+ 3432              		.section	.rodata
+ 3433 00e3 00       		.align	2
+ 3434              	.LC13:
+ 3435 00e4 46454C49 		.ascii	"FELICIDADES!\000"
+ 3435      43494441 
+ 3435      44455321 
+ 3435      00
+ 3436 00f1 000000   		.text
+ 3437              		.align	2
+ 3438              		.global	sudoku_mostrar_victoria
+ 3440              	sudoku_mostrar_victoria:
+ 3441              	.LFB10:
+ 319:../sudoku_lcd.c **** 
+ 320:../sudoku_lcd.c **** /**
+ 321:../sudoku_lcd.c ****  * Muestra un mensaje de victoria
+ 322:../sudoku_lcd.c ****  */
+ 323:../sudoku_lcd.c **** void sudoku_mostrar_victoria(void)
+ 324:../sudoku_lcd.c **** {
+ 3442              		.loc 1 324 0
+ 3443              		.cfi_startproc
+ 3444              		@ Function supports interworking.
+ 3445              		@ args = 0, pretend = 0, frame = 0
+ 3446              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3447 0f24 0DC0A0E1 		mov	ip, sp
+ 3448              	.LCFI16:
+ 3449              		.cfi_def_cfa_register 12
+ 3450 0f28 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3451 0f2c 04B04CE2 		sub	fp, ip, #4
+ 3452              		.cfi_offset 14, -8
+ 3453              		.cfi_offset 13, -12
+ 3454              		.cfi_offset 11, -16
+ 3455              	.LCFI17:
+ 3456              		.cfi_def_cfa 11, 4
+ 3457 0f30 08D04DE2 		sub	sp, sp, #8
+ 325:../sudoku_lcd.c ****     /* Mensaje de victoria en la parte inferior de la pantalla */
+ 326:../sudoku_lcd.c ****     LcdClrRect(0, 220, 319, 239, COLOR_SELECCION);
+ 3458              		.loc 1 326 0
+ 3459 0f34 0630A0E3 		mov	r3, #6
+ 3460 0f38 00308DE5 		str	r3, [sp, #0]
+ 3461 0f3c 0000A0E3 		mov	r0, #0
+ 3462 0f40 DC10A0E3 		mov	r1, #220
+ 3463 0f44 28209FE5 		ldr	r2, .L46
+ 3464 0f48 EF30A0E3 		mov	r3, #239
+ 3465 0f4c FEFFFFEB 		bl	LcdClrRect
+ 327:../sudoku_lcd.c ****     Lcd_DspAscII8x16(80, 224, BLACK, (INT8U *)"FELICIDADES!");
+ 3466              		.loc 1 327 0
+ 3467 0f50 5000A0E3 		mov	r0, #80
+ 3468 0f54 E010A0E3 		mov	r1, #224
+ 3469 0f58 0F20A0E3 		mov	r2, #15
+ 3470 0f5c 14309FE5 		ldr	r3, .L46+4
+ 3471 0f60 FEFFFFEB 		bl	Lcd_DspAscII8x16
+ 328:../sudoku_lcd.c ****     Lcd_Dma_Trans();
+ 3472              		.loc 1 328 0
+ 3473 0f64 FEFFFFEB 		bl	Lcd_Dma_Trans
+ 329:../sudoku_lcd.c **** }
+ 3474              		.loc 1 329 0
+ 3475 0f68 0CD04BE2 		sub	sp, fp, #12
+ 3476 0f6c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3477 0f70 1EFF2FE1 		bx	lr
+ 3478              	.L47:
+ 3479              		.align	2
+ 3480              	.L46:
+ 3481 0f74 3F010000 		.word	319
+ 3482 0f78 E4000000 		.word	.LC13
+ 3483              		.cfi_endproc
+ 3484              	.LFE10:
+ 3486              		.align	2
+ 3487              		.global	sudoku_iniciar_juego
+ 3489              	sudoku_iniciar_juego:
+ 3490              	.LFB11:
+ 330:../sudoku_lcd.c **** 
+ 331:../sudoku_lcd.c **** /**
+ 332:../sudoku_lcd.c ****  * Inicializa el tablero para jugar
+ 333:../sudoku_lcd.c ****  * @param cuadricula: matriz del sudoku a utilizar
+ 334:../sudoku_lcd.c ****  */
+ 335:../sudoku_lcd.c **** void sudoku_iniciar_juego(CELDA cuadricula[NUM_FILAS][NUM_COLUMNAS])
+ 336:../sudoku_lcd.c **** {
+ 3491              		.loc 1 336 0
+ 3492              		.cfi_startproc
+ 3493              		@ Function supports interworking.
+ 3494              		@ args = 0, pretend = 0, frame = 8
+ 3495              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3496 0f7c 0DC0A0E1 		mov	ip, sp
+ 3497              	.LCFI18:
+ 3498              		.cfi_def_cfa_register 12
+ 3499 0f80 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3500 0f84 04B04CE2 		sub	fp, ip, #4
+ 3501              		.cfi_offset 14, -8
+ 3502              		.cfi_offset 13, -12
+ 3503              		.cfi_offset 11, -16
+ 3504              	.LCFI19:
+ 3505              		.cfi_def_cfa 11, 4
+ 3506 0f88 08D04DE2 		sub	sp, sp, #8
+ 3507 0f8c 10000BE5 		str	r0, [fp, #-16]
+ 337:../sudoku_lcd.c ****     /* Mostrar pantalla inicial */
+ 338:../sudoku_lcd.c ****     sudoku_mostrar_pantalla_inicial();
+ 3508              		.loc 1 338 0
+ 3509 0f90 FEFFFFEB 		bl	sudoku_mostrar_pantalla_inicial
+ 339:../sudoku_lcd.c **** 
+ 340:../sudoku_lcd.c ****     /* Aquí esperaríamos a que el usuario pulse un botón */
+ 341:../sudoku_lcd.c ****     /* Esa lógica estará en button.c */
+ 342:../sudoku_lcd.c **** 
+ 343:../sudoku_lcd.c ****     /* Después se dibujará el tablero completo */
+ 344:../sudoku_lcd.c ****     /* sudoku_dibujar_tablero_completo(cuadricula); */
+ 345:../sudoku_lcd.c **** }...
+ 3510              		.loc 1 345 0
+ 3511 0f94 0CD04BE2 		sub	sp, fp, #12
+ 3512 0f98 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3513 0f9c 1EFF2FE1 		bx	lr
+ 3514              		.cfi_endproc
+ 3515              	.LFE11:
+ 3517              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sudoku_lcd.c
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2083   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2114   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2117   .text:00000000 sudoku_mostrar_pantalla_inicial
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2205   .text:000000e8 $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2229   .text:00000110 $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2232   .text:00000110 sudoku_dibujar_marco_tablero
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2483   .text:000003dc $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2492   .text:000003f4 $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2494   .text:000003f4 sudoku_dibujar_candidatos
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2669   .text:0000061c $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2673   .text:00000620 $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:2676   .text:00000620 sudoku_dibujar_celda_completa
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3032   .text:00000ad0 sudoku_dibujar_numero_celda
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3071   .text:00000b20 $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3075   .text:00000b24 $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3078   .text:00000b24 sudoku_resaltar_celda
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3213   .text:00000cb4 sudoku_dibujar_tablero_completo
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3338   .text:00000e0c sudoku_actualizar_celda
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3440   .text:00000f24 sudoku_mostrar_victoria
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3481   .text:00000f74 $d
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3486   .text:00000f7c $a
+C:\Users\jaime\AppData\Local\Temp\cctFREHR.s:3489   .text:00000f7c sudoku_iniciar_juego
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+Lcd_Clr
+Lcd_DspAscII8x16
+Lcd_DspAscII6x8
+Lcd_Dma_Trans
+Lcd_Draw_HLine
+Lcd_Draw_VLine
+LcdClrRect
+Lcd_Draw_Box
+celda_leer_valor

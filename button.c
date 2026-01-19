@@ -29,6 +29,10 @@ static volatile uint8_t pantalla_mostrada = 0;  /* Flag para mostrar pantalla in
 static volatile uint32_t tiempo_inicio = 0;  /* Tiempo de inicio de la partida actual */
 static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la partida */
 
+/*--- Variables para interacción con touchscreen ---*/
+static volatile uint8_t celda_fila_touch = 0;  /* Fila seleccionada por touchscreen */
+static volatile uint8_t celda_col_touch = 0;   /* Columna seleccionada por touchscreen */
+
 /* Declaración externa de la cuadrícula del juego */
 extern CELDA (*cuadricula)[NUM_COLUMNAS];
 extern int celdas_vacias;
@@ -402,6 +406,249 @@ int Sudoku_Partida_Terminada(void)
 int Sudoku_Juego_En_Progreso(void)
 {
 	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Cambiar_Estado
+* func:		Cambia el estado de la máquina de estados del juego
+* para:		nuevo_estado - Estado al que cambiar (de tipo EstadoSudoku)
+* ret:		none
+*********************************************************************************************/
+void Sudoku_Cambiar_Estado(int nuevo_estado)
+{
+	estado_juego = (EstadoSudoku)nuevo_estado;
+	
+	/* Actualizar 8LED según el nuevo estado */
+	switch (estado_juego)
+	{
+		case INTRODUCIR_FILA:
+			D8Led_symbol(15);  /* 'F' de Fila */
+			int_count = 0;
+			break;
+			
+		case INTRODUCIR_COLUMNA:
+			D8Led_symbol(12);  /* 'C' de Columna */
+			int_count = 0;
+			break;
+			
+		case INTRODUCIR_VALOR:
+			/* Mostrar 0 para indicar que se puede introducir valor */
+			D8Led_symbol(0);
+			int_count = 0;
+			break;
+			
+		case BORRAR_VALOR:
+			/* Mostrar 0 al borrar */
+			D8Led_symbol(0);
+			break;
+			
+		case VERIFICAR_VALOR:
+		case VERIFICAR_CELDA:
+			/* No cambiar el 8LED durante verificación */
+			break;
+			
+		default:
+			/* Otros estados no cambian el 8LED */
+			break;
+	}
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Obtener_Estado
+* func:		Obtiene el estado actual de la máquina de estados del juego
+* para:		none
+* ret:		Estado actual (int que representa EstadoSudoku)
+*********************************************************************************************/
+int Sudoku_Obtener_Estado(void)
+{
+	return (int)estado_juego;
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Insertar_Valor_Touch
+* func:		Inserta un valor en una celda desde el touchscreen (integración con máquina de estados)
+* para:		fila, col - posición de la celda
+*           valor - valor a insertar (1-9)
+* ret:		none
+* comment:	Esta función se llama desde lcd.c cuando el usuario toca un número
+*           Maneja la transición de estados: INTRODUCIR_VALOR -> VERIFICAR_VALOR
+*********************************************************************************************/
+void Sudoku_Insertar_Valor_Touch(int fila_param, int col_param, int valor_param)
+{
+	INT8U f, c;
+	
+	/* Guardar la celda seleccionada */
+	celda_fila_touch = fila_param;
+	celda_col_touch = col_param;
+	
+	/* Verificar que estamos en el estado correcto */
+	if (estado_juego == INTRODUCIR_VALOR)
+	{
+		/* Verificar si es una celda válida y no es pista */
+		if (fila_param < NUM_FILAS && col_param < NUM_FILAS && 
+		    !celda_es_pista(cuadricula[fila_param][col_param]))
+		{
+			/* Guardar el valor previo */
+			valor_previo = celda_leer_valor(cuadricula[fila_param][col_param]);
+			valor = valor_param;
+			fila = fila_param;
+			columna = col_param;
+			
+			/* Transición a VERIFICAR_VALOR */
+			estado_juego = VERIFICAR_VALOR;
+			
+			/* Ejecutar la lógica de verificación */
+			/* Limpiar todos los errores previos */
+			for (f = 0; f < NUM_FILAS; f++)
+			{
+				for (c = 0; c < NUM_COLUMNAS; c++)
+				{
+					celda_limpiar_error(&cuadricula[f][c]);
+				}
+			}
+			
+			/* Verificar si el valor es un candidato válido */
+			if (celda_es_candidato(cuadricula[fila][columna], valor))
+			{
+				/* Es candidato: escribir el valor */
+				celda_poner_valor(&cuadricula[fila][columna], valor);
+				
+				/* Actualizar candidatos */
+				if (valor_previo != 0)
+				{
+					/* Se modificó un valor previo -> recalcular todo */
+					celdas_vacias = candidatos_actualizar_all(cuadricula);
+				}
+				else
+				{
+					/* Celda vacía -> propagar */
+					candidatos_propagar_arm(cuadricula, fila, columna);
+					celdas_vacias--;
+				}
+				
+				/* Verificar si se completó el Sudoku */
+				if (celdas_vacias == 0)
+				{
+					/* ¡Sudoku completado! */
+					tiempo_final = timer2_count();
+					estado_juego = PARTIDA_TERMINADA;
+				}
+				else
+				{
+					/* Volver a INTRODUCIR_VALOR para permitir seguir jugando */
+					estado_juego = INTRODUCIR_VALOR;
+					D8Led_symbol(0);  /* Mostrar 0 para nuevo valor */
+				}
+			}
+			else
+			{
+				/* No es candidato: ERROR */
+				celda_marcar_error(&cuadricula[fila][columna]);
+				celda_poner_valor(&cuadricula[fila][columna], valor);
+				
+				/* Actualizar candidatos */
+				if (valor_previo != 0)
+				{
+					celdas_vacias = candidatos_actualizar_all(cuadricula);
+				}
+				else
+				{
+					candidatos_propagar_arm(cuadricula, fila, columna);
+				}
+				
+				/* Marcar TODAS las celdas con conflicto */
+				/* Buscar en la misma fila */
+				for (c = 0; c < NUM_COLUMNAS; c++)
+				{
+					if (c != columna && celda_leer_valor(cuadricula[fila][c]) == valor)
+					{
+						celda_marcar_error(&cuadricula[fila][c]);
+					}
+				}
+				
+				/* Buscar en la misma columna */
+				for (f = 0; f < NUM_FILAS; f++)
+				{
+					if (f != fila && celda_leer_valor(cuadricula[f][columna]) == valor)
+					{
+						celda_marcar_error(&cuadricula[f][columna]);
+					}
+				}
+				
+				/* Buscar en la misma región 3x3 */
+				INT8U region_fila_inicio = (fila / 3) * 3;
+				INT8U region_col_inicio = (columna / 3) * 3;
+				
+				for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+				{
+					for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+					{
+						if ((f != fila || c != columna) && celda_leer_valor(cuadricula[f][c]) == valor)
+						{
+							celda_marcar_error(&cuadricula[f][c]);
+						}
+					}
+				}
+				
+				/* Volver a INTRODUCIR_VALOR */
+				estado_juego = INTRODUCIR_VALOR;
+				D8Led_symbol(14);  /* Mostrar 'E' de Error */
+			}
+		}
+	}
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Borrar_Valor_Touch
+* func:		Borra el valor de una celda desde el touchscreen
+* para:		fila, col - posición de la celda
+* ret:		none
+* comment:	Esta función se llama desde lcd.c cuando el usuario toca "Borrar"
+*           Establece valor=0 y pasa a VERIFICAR_VALOR para que maneje el borrado
+*********************************************************************************************/
+void Sudoku_Borrar_Valor_Touch(int fila_param, int col_param)
+{
+	INT8U f, c;
+	
+	/* Verificar que estamos en el estado correcto */
+	if (estado_juego == INTRODUCIR_VALOR)
+	{
+		/* Verificar que no sea una pista */
+		if (fila_param < NUM_FILAS && col_param < NUM_FILAS && 
+		    !celda_es_pista(cuadricula[fila_param][col_param]))
+		{
+			/* Guardar valor previo */
+			valor_previo = celda_leer_valor(cuadricula[fila_param][col_param]);
+			
+			/* Establecer las variables para el borrado */
+			fila = fila_param;
+			columna = col_param;
+			valor = 0;  /* Valor 0 indica borrado */
+			
+			/* Transición a VERIFICAR_VALOR */
+			estado_juego = VERIFICAR_VALOR;
+			
+			/* Ejecutar la lógica de verificación (detectará valor=0 y borrará) */
+			/* Limpiar todos los errores previos */
+			for (f = 0; f < NUM_FILAS; f++)
+			{
+				for (c = 0; c < NUM_COLUMNAS; c++)
+				{
+					celda_limpiar_error(&cuadricula[f][c]);
+				}
+			}
+			
+			/* Borrar el valor de la celda */
+			celda_poner_valor(&cuadricula[fila][columna], 0);
+			
+			/* Al borrar un valor, hay que recalcular todos los candidatos */
+			celdas_vacias = candidatos_actualizar_all(cuadricula);
+			
+			/* Volver a INTRODUCIR_VALOR */
+			estado_juego = INTRODUCIR_VALOR;
+			D8Led_symbol(0);  /* Mostrar 0 tras borrar */
+		}
+	}
 }
 
 /* Función para obtener el tiempo de inicio de la partida */

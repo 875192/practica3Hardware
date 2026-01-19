@@ -384,29 +384,50 @@ static void ts_read_raw(int *xr, int *yr)
 
 /*********************************************************************************************
 * name:     get_cal_point
-* func:     Muestra cruz, espera 12 toques y captura promedio con filtrado de extremos
+* func:     5 toques × 20 muestras = 100 muestras totales con filtrado robusto
 *********************************************************************************************/
 static void get_cal_point(int lcd_x, int lcd_y, int *ts_x, int *ts_y)
 {
-    int i, j;
-    int samples_x[12], samples_y[12];
+    int i, j, k;
+    int samples_x[100], samples_y[100];  // 5 toques × 20 muestras = 100
     int sum_x = 0, sum_y = 0;
     int temp;
+    int sample_idx = 0;
     
     draw_cross(lcd_x, lcd_y);
     Lcd_Dma_Trans();
-    Delay(80);  // Delay más largo para permitir posicionamiento preciso
+    Delay(80);
     
-    // Tomar 12 muestras
-    for (i = 0; i < 12; i++)
+    // Tomar 5 toques, cada uno con 20 muestras capturadas rápidamente
+    for (k = 0; k < 5; k++)
     {
-        ts_read_raw(&samples_x[i], &samples_y[i]);
-        Delay(25);  // Pausa entre muestras para mejor estabilización
+        // Esperar el toque inicial (solo UNA vez por toque)
+        ts_wait_for_touch();
+        Delay(50);  // Estabilizar tras primer contacto
+        
+        // Ahora simplemente capturar 20 muestras rápidas del valor actual
+        // Sin esperar g_ts_ready entre ellas - el touchscreen sigue actualizando
+        for (i = 0; i < 20; i++)
+        {
+            // Capturar el valor actual directamente
+            samples_x[sample_idx] = g_ts_raw_x;
+            samples_y[sample_idx] = g_ts_raw_y;
+            sample_idx++;
+            
+            // Pequeño delay entre lecturas para tener algo de variación
+            Delay(10);
+        }
+        
+        // Esperar a que levante el dedo antes del siguiente toque
+        if (k < 4) {  // No esperar tras el último toque
+            Delay(200);
+            g_ts_ready = 0;  // Resetear para el próximo toque
+        }
     }
     
     // Ordenar muestras X (bubble sort)
-    for (i = 0; i < 11; i++) {
-        for (j = 0; j < 11 - i; j++) {
+    for (i = 0; i < 99; i++) {
+        for (j = 0; j < 99 - i; j++) {
             if (samples_x[j] > samples_x[j + 1]) {
                 temp = samples_x[j];
                 samples_x[j] = samples_x[j + 1];
@@ -416,8 +437,8 @@ static void get_cal_point(int lcd_x, int lcd_y, int *ts_x, int *ts_y)
     }
     
     // Ordenar muestras Y
-    for (i = 0; i < 11; i++) {
-        for (j = 0; j < 11 - i; j++) {
+    for (i = 0; i < 99; i++) {
+        for (j = 0; j < 99 - i; j++) {
             if (samples_y[j] > samples_y[j + 1]) {
                 temp = samples_y[j];
                 samples_y[j] = samples_y[j + 1];
@@ -426,14 +447,14 @@ static void get_cal_point(int lcd_x, int lcd_y, int *ts_x, int *ts_y)
         }
     }
     
-    // Promediar las 8 muestras centrales (descartando 2 mínimas y 2 máximas)
-    for (i = 2; i < 10; i++) {
+    // Promediar las 60 muestras centrales (descartando 20 mínimas y 20 máximas)
+    for (i = 20; i < 80; i++) {
         sum_x += samples_x[i];
         sum_y += samples_y[i];
     }
     
-    *ts_x = sum_x / 8;
-    *ts_y = sum_y / 8;
+    *ts_x = sum_x / 60;
+    *ts_y = sum_y / 60;
     
     Delay(50);
     draw_cross(lcd_x, lcd_y);
@@ -548,38 +569,7 @@ void ts_calibrate_5pt(int XRES, int YRES, int M)
     temp = (long long)lcd_d << 17;  // Multiplicar por 2 usando shift
     g_ky_fp = (long)(temp / (ts_d1 + ts_d2));
     
-    // Mostrar resultados de calibración
-    Lcd_Clr();
-    
-    Lcd_DspAscII6x8(10, 10, BLACK, (unsigned char *)"=== CALIBRACION OK ===");
-    
-    if (g_swap_xy)
-        Lcd_DspAscII6x8(10, 30, BLACK, (unsigned char *)"Swap XY: SI");
-    else
-        Lcd_DspAscII6x8(10, 30, BLACK, (unsigned char *)"Swap XY: NO");
-    
-    Lcd_DspAscII6x8(10, 50, BLACK, (unsigned char *)"Puntos capturados OK");
-    Lcd_DspAscII6x8(10, 70, BLACK, (unsigned char *)"Factores calculados");
-    
-    // Mostrar signo de las escalas
-    if (g_kx_fp > 0)
-        Lcd_DspAscII6x8(10, 90, BLACK, (unsigned char *)"kx: POSITIVO");
-    else
-        Lcd_DspAscII6x8(10, 90, BLACK, (unsigned char *)"kx: NEGATIVO");
-        
-    if (g_ky_fp > 0)
-        Lcd_DspAscII6x8(10, 110, BLACK, (unsigned char *)"ky: POSITIVO");
-    else
-        Lcd_DspAscII6x8(10, 110, BLACK, (unsigned char *)"ky: NEGATIVO");
-    
-    Lcd_DspAscII6x8(10, 140, BLACK, (unsigned char *)"[Toca para continuar]");
-    
-    Lcd_Dma_Trans();
-    
-    // Esperar toque para continuar
-    ts_wait_for_touch();
-    Delay(50);
-    
+    // Limpiar pantalla tras calibración
     Lcd_Clr();
     Lcd_Dma_Trans();
 }

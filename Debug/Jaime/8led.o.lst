@@ -1,0 +1,153 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"8led.c"
+  21              	.Ltext0:
+  22              		.file 1 "../Jaime/8led.c"
+ 1882              		.align	2
+ 1885              	Symbol:
+ 1886 0000 12FFFFFF 		.word	-238
+ 1887 0004 9FFFFFFF 		.word	-97
+ 1888 0008 31FFFFFF 		.word	-207
+ 1889 000c 15FFFFFF 		.word	-235
+ 1890 0010 9CFFFFFF 		.word	-100
+ 1891 0014 54FFFFFF 		.word	-172
+ 1892 0018 D0FFFFFF 		.word	-48
+ 1893 001c 1FFFFFFF 		.word	-225
+ 1894 0020 10FFFFFF 		.word	-240
+ 1895 0024 1CFFFFFF 		.word	-228
+ 1896 0028 18FFFFFF 		.word	-232
+ 1897 002c D0FFFFFF 		.word	-48
+ 1898 0030 72FFFFFF 		.word	-142
+ 1899 0034 91FFFFFF 		.word	-111
+ 1900 0038 70FFFFFF 		.word	-144
+ 1901 003c 78FFFFFF 		.word	-136
+ 1902 0040 FFFFFFFF 		.word	-1
+ 1903              		.text
+ 1904              		.align	2
+ 1905              		.global	D8Led_init
+ 1907              	D8Led_init:
+ 1908              	.LFB0:
+   1:../Jaime/8led.c **** /*********************************************************************************************
+   2:../Jaime/8led.c **** * Fichero:	8led.c
+   3:../Jaime/8led.c **** * Autor:
+   4:../Jaime/8led.c **** * Descrip:	Funciones de control del display 8-segmentos
+   5:../Jaime/8led.c **** * Version:
+   6:../Jaime/8led.c **** *********************************************************************************************/
+   7:../Jaime/8led.c **** 
+   8:../Jaime/8led.c **** /*--- ficheros de cabecera ---*/
+   9:../Jaime/8led.c **** #include "8led.h"
+  10:../Jaime/8led.c **** #include "44b.h"
+  11:../Jaime/8led.c **** #include "44blib.h"
+  12:../Jaime/8led.c **** 
+  13:../Jaime/8led.c **** /*--- variables globales del m�dulo ---*/
+  14:../Jaime/8led.c **** /* tabla de segmentos */
+  15:../Jaime/8led.c **** static int
+  16:../Jaime/8led.c **** Symbol[size_8led] = { cero, uno, dos, tres, cuatro, cinco, seis, siete, ocho, nueve, A, B, C, D, E,
+  17:../Jaime/8led.c **** 
+  18:../Jaime/8led.c **** /*--- c�digo de las funciones ---*/
+  19:../Jaime/8led.c **** void D8Led_init(void)
+  20:../Jaime/8led.c **** {
+ 1909              		.loc 1 20 0
+ 1910              		.cfi_startproc
+ 1911              		@ Function supports interworking.
+ 1912              		@ args = 0, pretend = 0, frame = 0
+ 1913              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1914 0000 0DC0A0E1 		mov	ip, sp
+ 1915              	.LCFI0:
+ 1916              		.cfi_def_cfa_register 12
+ 1917 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1918 0008 04B04CE2 		sub	fp, ip, #4
+ 1919              		.cfi_offset 14, -8
+ 1920              		.cfi_offset 13, -12
+ 1921              		.cfi_offset 11, -16
+ 1922              	.LCFI1:
+ 1923              		.cfi_def_cfa 11, 4
+  21:../Jaime/8led.c **** 	/* Estado inicial del display con todos los segmentos iluminados
+  22:../Jaime/8led.c **** 	   (buscar en los ficheros de cabecera la direccion implicada) */
+  23:../Jaime/8led.c **** 	LED8ADDR = (unsigned char) cero;
+ 1924              		.loc 1 23 0
+ 1925 000c 8537A0E3 		mov	r3, #34865152
+ 1926 0010 1220A0E3 		mov	r2, #18
+ 1927 0014 0020C3E5 		strb	r2, [r3, #0]
+  24:../Jaime/8led.c **** }
+ 1928              		.loc 1 24 0
+ 1929 0018 0CD04BE2 		sub	sp, fp, #12
+ 1930 001c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1931 0020 1EFF2FE1 		bx	lr
+ 1932              		.cfi_endproc
+ 1933              	.LFE0:
+ 1935              		.align	2
+ 1936              		.global	D8Led_symbol
+ 1938              	D8Led_symbol:
+ 1939              	.LFB1:
+  25:../Jaime/8led.c **** 
+  26:../Jaime/8led.c **** void D8Led_symbol(int value)
+  27:../Jaime/8led.c **** {
+ 1940              		.loc 1 27 0
+ 1941              		.cfi_startproc
+ 1942              		@ Function supports interworking.
+ 1943              		@ args = 0, pretend = 0, frame = 8
+ 1944              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1945 0024 0DC0A0E1 		mov	ip, sp
+ 1946              	.LCFI2:
+ 1947              		.cfi_def_cfa_register 12
+ 1948 0028 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 1949 002c 04B04CE2 		sub	fp, ip, #4
+ 1950              		.cfi_offset 14, -8
+ 1951              		.cfi_offset 13, -12
+ 1952              		.cfi_offset 11, -16
+ 1953              	.LCFI3:
+ 1954              		.cfi_def_cfa 11, 4
+ 1955 0030 08D04DE2 		sub	sp, sp, #8
+ 1956 0034 10000BE5 		str	r0, [fp, #-16]
+  28:../Jaime/8led.c **** 	/* muestra el Symbol[value] en el display (analogo al caso anterior) */
+  29:../Jaime/8led.c **** 	if ((value >= 0) && (value < size_8led)) {
+ 1957              		.loc 1 29 0
+ 1958 0038 10301BE5 		ldr	r3, [fp, #-16]
+ 1959 003c 000053E3 		cmp	r3, #0
+ 1960 0040 080000BA 		blt	.L2
+ 1961              		.loc 1 29 0 is_stmt 0 discriminator 1
+ 1962 0044 10301BE5 		ldr	r3, [fp, #-16]
+ 1963 0048 100053E3 		cmp	r3, #16
+ 1964 004c 050000CA 		bgt	.L2
+  30:../Jaime/8led.c **** 		LED8ADDR = (unsigned char) Symbol[value];
+ 1965              		.loc 1 30 0 is_stmt 1
+ 1966 0050 8537A0E3 		mov	r3, #34865152
+ 1967 0054 18209FE5 		ldr	r2, .L4
+ 1968 0058 10101BE5 		ldr	r1, [fp, #-16]
+ 1969 005c 012192E7 		ldr	r2, [r2, r1, asl #2]
+ 1970 0060 FF2002E2 		and	r2, r2, #255
+ 1971 0064 0020C3E5 		strb	r2, [r3, #0]
+ 1972              	.L2:
+  31:../Jaime/8led.c **** 	}
+  32:../Jaime/8led.c **** }
+ 1973              		.loc 1 32 0
+ 1974 0068 0CD04BE2 		sub	sp, fp, #12
+ 1975 006c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 1976 0070 1EFF2FE1 		bx	lr
+ 1977              	.L5:
+ 1978              		.align	2
+ 1979              	.L4:
+ 1980 0074 00000000 		.word	Symbol
+ 1981              		.cfi_endproc
+ 1982              	.LFE1:
+ 1984              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 8led.c
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1882   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1885   .data:00000000 Symbol
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1904   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1907   .text:00000000 D8Led_init
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1938   .text:00000024 D8Led_symbol
+C:\Users\jaime\AppData\Local\Temp\ccJ1DdRV.s:1980   .text:00000074 $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS
