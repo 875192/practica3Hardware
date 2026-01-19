@@ -1,682 +1,117 @@
 /*********************************************************************************************
 * Fichero:      button.c
 * Autor:
-* Descrip:      Funciones de manejo de los pulsadores (EINT6-7)
-* Version:
+* Descrip:      Manejo de interrupciones de botones físicos (EINT6-7)
+* Version:      2.0
+* Comentarios:  Este módulo SOLO maneja el hardware de los botones físicos.
+*               La lógica de la máquina de estados está en maquina_estados.c
+*               Flujo: ISR → Timer3 (antirrebotes) → boton_confirmado → Maquina_Procesar_Boton
 *********************************************************************************************/
 
 /*--- ficheros de cabecera ---*/
 #include "button.h"
-#include "8led.h"
-#include "cola.h"
+#include "maquina_estados.h"  /* Máquina de estados del juego */
 #include "eventos.h"
-#include "timer2.h"
 #include "timer3.h"
 #include "44blib.h"
 #include "44b.h"
 #include "def.h"
-#include "sudoku_2025.h"
-#include "lcd.h"
 
-/*--- Variables del juego Sudoku ---*/
-static volatile EstadoSudoku estado_juego = ESPERANDO_INICIO;
-static volatile uint8_t int_count = 0;
-static volatile uint8_t fila = 0;
-static volatile uint8_t columna = 0;
-static volatile uint8_t valor = 0;
-static volatile uint8_t valor_previo = 0;  /* Para detectar modificación de valor */
-static volatile uint8_t pantalla_mostrada = 0;  /* Flag para mostrar pantalla inicial solo una vez */
-static volatile uint32_t tiempo_inicio = 0;  /* Tiempo de inicio de la partida actual */
-static volatile uint32_t tiempo_final = 0;  /* Tiempo final al terminar la partida */
+/*=====================================================================================
+ * CALLBACK PARA BOTONES CONFIRMADOS (sin rebotes)
+ *====================================================================================*/
 
-/*--- Variables para interacción con touchscreen ---*/
-static volatile uint8_t celda_fila_touch = 0;  /* Fila seleccionada por touchscreen */
-static volatile uint8_t celda_col_touch = 0;   /* Columna seleccionada por touchscreen */
-
-/* Declaración externa de la cuadrícula del juego */
-extern CELDA (*cuadricula)[NUM_COLUMNAS];
-extern int celdas_vacias;
-
-/* Declaración externa de la cuadrícula original (para reiniciar) */
-#include "tableros.h"
-
-/* Función auxiliar para restaurar la cuadrícula al estado original */
-static void restaurar_cuadricula_original(void)
+/*********************************************************************************************
+* name:		boton_confirmado
+* func:		Callback invocado por timer3 cuando un botón está confirmado (sin rebotes)
+* para:		boton_id - ID del botón (EVENTO_BOTON_IZQUIERDO o EVENTO_BOTON_DERECHO)
+* ret:		none
+* comment:	Esta función solo delega el procesamiento a la máquina de estados.
+*			NO contiene lógica del juego, solo interfaz hardware→software.
+*********************************************************************************************/
+static void boton_confirmado(INT8U boton_id)
 {
-	uint8_t f, c;
-	
-	/* Copiar toda la cuadrícula original (incluye todas las columnas del array) */
-	for (f = 0; f < NUM_FILAS; f++)
-	{
-		for (c = 0; c < NUM_COLUMNAS; c++)
-		{
-			cuadricula[f][c] = cuadricula_Respaldo[f][c];
-		}
-	}
+	/* Delegar el procesamiento a la máquina de estados */
+	Maquina_Procesar_Boton(boton_id);
 }
 
-/* Función auxiliar para marcar todas las celdas en conflicto con un valor */
-static void marcar_celdas_en_conflicto(uint8_t fila_error, uint8_t col_error, uint8_t valor_error)
-{
-	uint8_t i, f, c;
-	uint8_t region_fila_inicio, region_col_inicio;
-	
-	/* Primero limpiar todos los errores previos */
-	for (f = 0; f < NUM_FILAS; f++)
-	{
-		for (c = 0; c < NUM_COLUMNAS; c++)
-		{
-			celda_limpiar_error(&cuadricula[f][c]);
-		}
-	}
-	
-	/* Marcar la celda donde intentamos poner el valor */
-	celda_marcar_error(&cuadricula[fila_error][col_error]);
-	
-	/* Buscar y marcar todas las celdas con el mismo valor en la misma fila */
-	for (i = 0; i < NUM_COLUMNAS; i++)
-	{
-		if (i != col_error && celda_leer_valor(cuadricula[fila_error][i]) == valor_error)
-		{
-			celda_marcar_error(&cuadricula[fila_error][i]);
-		}
-	}
-	
-	/* Buscar y marcar todas las celdas con el mismo valor en la misma columna */
-	for (i = 0; i < NUM_FILAS; i++)
-	{
-		if (i != fila_error && celda_leer_valor(cuadricula[i][col_error]) == valor_error)
-		{
-			celda_marcar_error(&cuadricula[i][col_error]);
-		}
-	}
-	
-	/* Buscar y marcar todas las celdas con el mismo valor en la misma región 3x3 */
-	region_fila_inicio = (fila_error / 3) * 3;
-	region_col_inicio = (col_error / 3) * 3;
-	
-	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
-	{
-		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
-		{
-			if ((f != fila_error || c != col_error) && celda_leer_valor(cuadricula[f][c]) == valor_error)
-			{
-				celda_marcar_error(&cuadricula[f][c]);
-			}
-		}
-	}
-}
 
-/* Callback para recibir la confirmación de pulsaciones filtradas por el timer3 */
-static void boton_confirmado(uint8_t boton_id)
-{
-        cola_depuracion(timer2_count(), boton_id, estado_juego);
-        
-        switch (estado_juego)
-        {
-                case ESPERANDO_INICIO:
-                        /* Cualquier botón inicia el juego */
-                        /* Guardar tiempo de inicio para reiniciar el contador */
-                        tiempo_inicio = timer2_count();
-                        
-                        /* Calcular candidatos por primera vez */
-                        celdas_vacias = candidatos_actualizar_all(cuadricula);
-                        
-                        /* Dibujar el tablero del juego */
-                        Sudoku_Dibujar_Tablero();
-                        
-                        /* Actualizar con los valores de la cuadrícula */
-                        Sudoku_Actualizar_Tablero_Completo(cuadricula);
-                        
-                        /* Pasar a introducir fila */
-                        estado_juego = INTRODUCIR_FILA;
-                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
-                        D8Led_symbol(15);  /* Mostrar 'F' de Fila */
-                        pantalla_mostrada = 0;  /* Resetear flag para próxima partida */
-                        break;
-                
-                case INTRODUCIR_FILA:
-                        if (boton_id == EVENTO_BOTON_DERECHO)
-                        {
-                                /* Incrementar fila (ciclo: 0 → 1 → 2 → ... → 9 → 0) */
-                                int_count++;
-                                if (int_count > 9)
-                                {
-                                        int_count = 0;  /* Volver a 0 */
-                                }
-                                D8Led_symbol(int_count & 0x000f);
-                        }
-                        else if (boton_id == EVENTO_BOTON_IZQUIERDO)
-                        {
-                                /* Verificar si se eligió fila 0 (terminar partida) */
-                                if (int_count == 0)
-                                {
-                                        /* Fila 0: terminar la partida */
-                                        /* Guardar tiempo transcurrido desde el inicio de esta partida */
-                                        tiempo_final = timer2_count() - tiempo_inicio;
-                                        estado_juego = PARTIDA_TERMINADA;
-                                        /* La pantalla final se mostrará en este estado */
-                                }
-                                else
-                                {
-                                        /* Confirmar fila y pasar a introducir columna */
-                                        fila = int_count - 1;  /* Convertir a índice 0-8 */
-                                        estado_juego = INTRODUCIR_COLUMNA;
-                                        int_count = 0;
-                                        D8Led_symbol(12);  /* Mostrar 'C' de Columna (índice 12 en el array Symbol) */
-                                }
-                        }
-                        break;
-                
-                case INTRODUCIR_COLUMNA:
-                        if (boton_id == EVENTO_BOTON_DERECHO)
-                        {
-                                /* Incrementar columna */
-                                int_count++;
-                                if (int_count > 9)
-                                {
-                                        int_count = 1;
-                                }
-                                D8Led_symbol(int_count & 0x000f);
-                        }
-                        else if (boton_id == EVENTO_BOTON_IZQUIERDO)
-                        {
-                                /* Confirmar columna y pasar a introducir valor */
-                                columna = int_count - 1;  /* Convertir a índice 0-8 */
-                                estado_juego = VERIFICAR_CELDA;
-                                int_count = 0;
-                                D8Led_symbol(int_count & 0x000f);
-                        }
-                        break;
-                
-                case VERIFICAR_CELDA:
-                        /* Primero se verifica si la celda[fila][columna] no es una pista */
-                        if (celda_es_pista(cuadricula[fila][columna]))
-                        {
-                                // Se vuelve al estado INTRODUCIR_FILA
-                                estado_juego = INTRODUCIR_FILA;
-                                int_count = 0;
-                                D8Led_symbol(15);  /* Mostrar 'F' de Fila (índice 15 en el array Symbol) */
-                        } 
-                        else
-                        {
-                                // Si no es pista, se pasa a INTRODUCIR_VALOR
-                                estado_juego = INTRODUCIR_VALOR;
-                                int_count = 0;
-                        }
-                        break;
-                
-                case INTRODUCIR_VALOR:
-                        if (boton_id == EVENTO_BOTON_DERECHO)
-                        {
-                                /* Incrementar valor */
-                                int_count++;
-                                if (int_count > 9)
-                                {
-                                        int_count = 0;
-                                }
-                                D8Led_symbol(int_count & 0x000f);
-                        }
-                        else if (boton_id == EVENTO_BOTON_IZQUIERDO)
-                        {
-                                /* Confirmar valor e intentar escribir en la celda */
-                                valor = int_count;  /* Valor a escribir (0-9) */
-                                
-                                estado_juego = VERIFICAR_VALOR;
-                                int_count = 0;
-                        }
-                        break;
-                
-                case VERIFICAR_VALOR:
-                        /* Guardar valor previo de la celda */
-                        valor_previo = celda_leer_valor(cuadricula[fila][columna]);
-                        
-                        if (valor == 0)
-                        {
-                                uint8_t f, c;
-                                
-                                /* Valor 0 = borrar -> pasar a BORRAR_VALOR */
-                                /* Limpiar todos los errores previos */
-                                for (f = 0; f < NUM_FILAS; f++)
-                                {
-                                        for (c = 0; c < NUM_COLUMNAS; c++)
-                                        {
-                                                celda_limpiar_error(&cuadricula[f][c]);
-                                        }
-                                }
-                                
-                                /* Borrar el valor de la celda */
-                                celda_poner_valor(&cuadricula[fila][columna], 0);
-                                
-                                /* Al borrar un valor, hay que recalcular todos los candidatos */
-                                celdas_vacias = candidatos_actualizar_all(cuadricula);
-                                
-                                /* Actualizar la visualización del tablero */
-                                Sudoku_Actualizar_Tablero_Completo(cuadricula);
-                                
-                                /* Volver a introducir fila */
-                                estado_juego = INTRODUCIR_FILA;
-                                int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
-                                D8Led_symbol(15);  /* Mostrar 'F' de Fila */
-                                break;
-                        }
-                        else
-                        {
-                                /* Verificar si el valor es candidato */
-                                if (celda_es_candidato(cuadricula[fila][columna], valor))
-                                {
-                                        uint8_t f, c;
-                                        
-                                        /* Es candidato: escribir el valor en la celda */
-                                        /* Primero limpiar todos los errores previos */
-                                        for (f = 0; f < NUM_FILAS; f++)
-                                        {
-                                                for (c = 0; c < NUM_COLUMNAS; c++)
-                                                {
-                                                        celda_limpiar_error(&cuadricula[f][c]);
-                                                }
-                                        }
-                                        
-                                        celda_poner_valor(&cuadricula[fila][columna], valor);
-                                        
-                                        /* Decidir si propagar o actualizar según el caso */
-                                        if (valor_previo != 0)
-                                        {
-                                                /* Se modificó un valor previo -> recalcular todo */
-                                                celdas_vacias = candidatos_actualizar_all(cuadricula);
-                                        }
-                                        else
-                                        {
-                                                /* Celda vacía -> solo propagar el nuevo valor */
-                                                candidatos_propagar_arm(cuadricula, fila, columna);
-                                        }
-                                        
-                                        /* Actualizar la visualización del tablero */
-                                        Sudoku_Actualizar_Tablero_Completo(cuadricula);
-                                        
-                                        /* Volver a introducir fila */
-                                        estado_juego = INTRODUCIR_FILA;
-                                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
-                                        D8Led_symbol(15);  /* Mostrar 'F' de Fila */
-                                }
-                                else
-                                {
-                                        /* No es candidato: es un error */
-                                        celda_marcar_error(&cuadricula[fila][columna]);
-                                        D8Led_symbol(14);  /* Mostrar 'E' de Error */
-                                        
-                                        /* Esperar 2 segundos para que la 'E' sea visible */
-                                        Delay(200);
-                                        
-                                        /* Poner el valor incorrecto en la celda para visualizarlo */
-                                        celda_poner_valor(&cuadricula[fila][columna], valor);
-                                        
-                                        /* Actualizar candidatos para reflejar el cambio */
-                                        if (valor_previo != 0)
-                                        {
-                                                /* Se modificó un valor previo -> recalcular todo */
-                                                celdas_vacias = candidatos_actualizar_all(cuadricula);
-                                        }
-                                        else
-                                        {
-                                                /* Celda vacía -> propagar el nuevo valor */
-                                                candidatos_propagar_arm(cuadricula, fila, columna);
-                                        }
-                                        
-                                        /* Marcar TODAS las celdas involucradas en el conflicto */
-                                        marcar_celdas_en_conflicto(fila, columna, valor);
-                                        
-                                        /* Actualizar la visualización del tablero */
-                                        Sudoku_Actualizar_Tablero_Completo(cuadricula);
-                                        
-                                        /* Volver a introducir fila */
-                                        estado_juego = INTRODUCIR_FILA;
-                                        int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
-                                        D8Led_symbol(15);  /* Mostrar 'F' de Fila */
-                                }
-                        }
-                        break;
-                
-                case PARTIDA_TERMINADA:
-                        /* Mostrar pantalla de despedida solo una vez */
-                        if (!pantalla_mostrada)
-                        {
-                                /* Usar la función existente de lcd.c */
-                                Sudoku_Pantalla_Final(tiempo_final);
-                                
-                                pantalla_mostrada = 1;
-                        }
-                        else
-                        {
-                                /* Cualquier botón después de mostrar pantalla final reinicia el juego */
-                                /* Restaurar la cuadrícula al estado original */
-                                restaurar_cuadricula_original();
-                                
-                                /* Mostrar pantalla inicial */
-                                Sudoku_Pantalla_Inicial();
-                                
-                                /* Volver al estado inicial */
-                                estado_juego = ESPERANDO_INICIO;
-                                int_count = 0;
-                                pantalla_mostrada = 0;
-                        }
-                        break;
-        }
-}
+/*=====================================================================================
+ * RUTINA DE SERVICIO DE INTERRUPCIÓN (ISR)
+ *====================================================================================*/
 
 /* declaración de función que es rutina de servicio de interrupción
  * https://gcc.gnu.org/onlinedocs/gcc/ARM-Function-Attributes.html */
 void Eint4567_ISR(void) __attribute__((interrupt("IRQ")));
 
-/*--- código de funciones ---*/
+/*********************************************************************************************
+* name:		Eint4567_ISR
+* func:		Rutina de servicio de interrupción para botones físicos EINT6-7
+* ret:		none
+* comment:	Identifica qué botón fue presionado e inicia el proceso de antirrebotes.
+*			NO procesa la lógica del juego directamente, solo identifica el botón.
+*********************************************************************************************/
 void Eint4567_ISR(void)
 {
-        /* Identificar la interrupción (hay dos pulsadores) */
-        unsigned int pending = rEXTINTPND & 0xF;
-        uint8_t boton_id = 0;
+	/* Identificar la interrupción (hay dos pulsadores) */
+	unsigned int pending = rEXTINTPND & 0xF;
+	INT8U boton_id = 0;
 
-        if (pending & 0x4)
-        {
-                boton_id = EVENTO_BOTON_IZQUIERDO;
-        }
-        else if (pending & 0x8)
-        {
-                boton_id = EVENTO_BOTON_DERECHO;
-        }
-
-        if (boton_id != 0U)
-        {
-                /* No registrar la pulsación inicial, solo las confirmadas */
-
-                /* Iniciar la máquina de antirrebotes. Si está ocupada, no hacer nada */
-                timer3_start_antirrebote(boton_id);
-        }
-
-        /* Finalizar ISR */
-        rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
-        rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
-}
-/* Función para consultar si la partida está terminada */
-int Sudoku_Partida_Terminada(void)
-{
-	return (estado_juego == PARTIDA_TERMINADA);
-}
-
-/* Función para consultar si el juego está en progreso */
-int Sudoku_Juego_En_Progreso(void)
-{
-	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
-}
-
-/*********************************************************************************************
-* name:		Sudoku_Cambiar_Estado
-* func:		Cambia el estado de la máquina de estados del juego
-* para:		nuevo_estado - Estado al que cambiar (de tipo EstadoSudoku)
-* ret:		none
-*********************************************************************************************/
-void Sudoku_Cambiar_Estado(int nuevo_estado)
-{
-	estado_juego = (EstadoSudoku)nuevo_estado;
-	
-	/* Actualizar 8LED según el nuevo estado */
-	switch (estado_juego)
+	if (pending & 0x4)
 	{
-		case INTRODUCIR_FILA:
-			D8Led_symbol(15);  /* 'F' de Fila */
-			int_count = 0;
-			break;
-			
-		case INTRODUCIR_COLUMNA:
-			D8Led_symbol(12);  /* 'C' de Columna */
-			int_count = 0;
-			break;
-			
-		case INTRODUCIR_VALOR:
-			/* Mostrar 0 para indicar que se puede introducir valor */
-			D8Led_symbol(0);
-			int_count = 0;
-			break;
-			
-		case BORRAR_VALOR:
-			/* Mostrar 0 al borrar */
-			D8Led_symbol(0);
-			break;
-			
-		case VERIFICAR_VALOR:
-		case VERIFICAR_CELDA:
-			/* No cambiar el 8LED durante verificación */
-			break;
-			
-		default:
-			/* Otros estados no cambian el 8LED */
-			break;
+		boton_id = EVENTO_BOTON_IZQUIERDO;
 	}
-}
-
-/*********************************************************************************************
-* name:		Sudoku_Obtener_Estado
-* func:		Obtiene el estado actual de la máquina de estados del juego
-* para:		none
-* ret:		Estado actual (int que representa EstadoSudoku)
-*********************************************************************************************/
-int Sudoku_Obtener_Estado(void)
-{
-	return (int)estado_juego;
-}
-
-/*********************************************************************************************
-* name:		Sudoku_Insertar_Valor_Touch
-* func:		Inserta un valor en una celda desde el touchscreen (integración con máquina de estados)
-* para:		fila, col - posición de la celda
-*           valor - valor a insertar (1-9)
-* ret:		none
-* comment:	Esta función se llama desde lcd.c cuando el usuario toca un número
-*           Maneja la transición de estados: INTRODUCIR_VALOR -> VERIFICAR_VALOR
-*********************************************************************************************/
-void Sudoku_Insertar_Valor_Touch(int fila_param, int col_param, int valor_param)
-{
-	INT8U f, c;
-	
-	/* Guardar la celda seleccionada */
-	celda_fila_touch = fila_param;
-	celda_col_touch = col_param;
-	
-	/* Verificar que estamos en el estado correcto */
-	if (estado_juego == INTRODUCIR_VALOR)
+	else if (pending & 0x8)
 	{
-		/* Verificar si es una celda válida y no es pista */
-		if (fila_param < NUM_FILAS && col_param < NUM_FILAS && 
-		    !celda_es_pista(cuadricula[fila_param][col_param]))
-		{
-			/* Guardar el valor previo */
-			valor_previo = celda_leer_valor(cuadricula[fila_param][col_param]);
-			valor = valor_param;
-			fila = fila_param;
-			columna = col_param;
-			
-			/* Transición a VERIFICAR_VALOR */
-			estado_juego = VERIFICAR_VALOR;
-			
-			/* Ejecutar la lógica de verificación */
-			/* Limpiar todos los errores previos */
-			for (f = 0; f < NUM_FILAS; f++)
-			{
-				for (c = 0; c < NUM_COLUMNAS; c++)
-				{
-					celda_limpiar_error(&cuadricula[f][c]);
-				}
-			}
-			
-			/* Verificar si el valor es un candidato válido */
-			if (celda_es_candidato(cuadricula[fila][columna], valor))
-			{
-				/* Es candidato: escribir el valor */
-				celda_poner_valor(&cuadricula[fila][columna], valor);
-				
-				/* Actualizar candidatos */
-				if (valor_previo != 0)
-				{
-					/* Se modificó un valor previo -> recalcular todo */
-					celdas_vacias = candidatos_actualizar_all(cuadricula);
-				}
-				else
-				{
-					/* Celda vacía -> propagar */
-					candidatos_propagar_arm(cuadricula, fila, columna);
-					celdas_vacias--;
-				}
-				
-				/* Verificar si se completó el Sudoku */
-				if (celdas_vacias == 0)
-				{
-					/* ¡Sudoku completado! */
-					tiempo_final = timer2_count();
-					estado_juego = PARTIDA_TERMINADA;
-				}
-				else
-				{
-					/* Volver a INTRODUCIR_VALOR para permitir seguir jugando */
-					estado_juego = INTRODUCIR_VALOR;
-					D8Led_symbol(0);  /* Mostrar 0 para nuevo valor */
-				}
-			}
-			else
-			{
-				/* No es candidato: ERROR */
-				celda_marcar_error(&cuadricula[fila][columna]);
-				celda_poner_valor(&cuadricula[fila][columna], valor);
-				
-				/* Actualizar candidatos */
-				if (valor_previo != 0)
-				{
-					celdas_vacias = candidatos_actualizar_all(cuadricula);
-				}
-				else
-				{
-					candidatos_propagar_arm(cuadricula, fila, columna);
-				}
-				
-				/* Marcar TODAS las celdas con conflicto */
-				/* Buscar en la misma fila */
-				for (c = 0; c < NUM_COLUMNAS; c++)
-				{
-					if (c != columna && celda_leer_valor(cuadricula[fila][c]) == valor)
-					{
-						celda_marcar_error(&cuadricula[fila][c]);
-					}
-				}
-				
-				/* Buscar en la misma columna */
-				for (f = 0; f < NUM_FILAS; f++)
-				{
-					if (f != fila && celda_leer_valor(cuadricula[f][columna]) == valor)
-					{
-						celda_marcar_error(&cuadricula[f][columna]);
-					}
-				}
-				
-				/* Buscar en la misma región 3x3 */
-				INT8U region_fila_inicio = (fila / 3) * 3;
-				INT8U region_col_inicio = (columna / 3) * 3;
-				
-				for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
-				{
-					for (c = region_col_inicio; c < region_col_inicio + 3; c++)
-					{
-						if ((f != fila || c != columna) && celda_leer_valor(cuadricula[f][c]) == valor)
-						{
-							celda_marcar_error(&cuadricula[f][c]);
-						}
-					}
-				}
-				
-				/* Volver a INTRODUCIR_VALOR */
-				estado_juego = INTRODUCIR_VALOR;
-				D8Led_symbol(14);  /* Mostrar 'E' de Error */
-			}
-		}
+		boton_id = EVENTO_BOTON_DERECHO;
 	}
+
+	if (boton_id != 0U)
+	{
+		/* Iniciar la máquina de antirrebotes. Si está ocupada, no hacer nada */
+		timer3_start_antirrebote(boton_id);
+	}
+
+	/* Finalizar ISR: limpiar banderas de interrupción */
+	rEXTINTPND = 0xf;              // borra los bits en EXTINTPND
+	rI_ISPC   |= BIT_EINT4567;     // borra el bit pendiente en INTPND
 }
+
+
+/*=====================================================================================
+ * INICIALIZACIÓN DEL HARDWARE
+ *====================================================================================*/
 
 /*********************************************************************************************
-* name:		Sudoku_Borrar_Valor_Touch
-* func:		Borra el valor de una celda desde el touchscreen
-* para:		fila, col - posición de la celda
+* name:		Eint4567_init
+* func:		Inicializa el hardware de los botones físicos EINT6-7
 * ret:		none
-* comment:	Esta función se llama desde lcd.c cuando el usuario toca "Borrar"
-*           Establece valor=0 y pasa a VERIFICAR_VALOR para que maneje el borrado
+* comment:	Configura:
+*			- Timer3 para antirrebotes
+*			- Controlador de interrupciones
+*			- Puerto G (pines físicos de los botones)
 *********************************************************************************************/
-void Sudoku_Borrar_Valor_Touch(int fila_param, int col_param)
-{
-	INT8U f, c;
-	
-	/* Verificar que estamos en el estado correcto */
-	if (estado_juego == INTRODUCIR_VALOR)
-	{
-		/* Verificar que no sea una pista */
-		if (fila_param < NUM_FILAS && col_param < NUM_FILAS && 
-		    !celda_es_pista(cuadricula[fila_param][col_param]))
-		{
-			/* Guardar valor previo */
-			valor_previo = celda_leer_valor(cuadricula[fila_param][col_param]);
-			
-			/* Establecer las variables para el borrado */
-			fila = fila_param;
-			columna = col_param;
-			valor = 0;  /* Valor 0 indica borrado */
-			
-			/* Transición a VERIFICAR_VALOR */
-			estado_juego = VERIFICAR_VALOR;
-			
-			/* Ejecutar la lógica de verificación (detectará valor=0 y borrará) */
-			/* Limpiar todos los errores previos */
-			for (f = 0; f < NUM_FILAS; f++)
-			{
-				for (c = 0; c < NUM_COLUMNAS; c++)
-				{
-					celda_limpiar_error(&cuadricula[f][c]);
-				}
-			}
-			
-			/* Borrar el valor de la celda */
-			celda_poner_valor(&cuadricula[fila][columna], 0);
-			
-			/* Al borrar un valor, hay que recalcular todos los candidatos */
-			celdas_vacias = candidatos_actualizar_all(cuadricula);
-			
-			/* Volver a INTRODUCIR_VALOR */
-			estado_juego = INTRODUCIR_VALOR;
-			D8Led_symbol(0);  /* Mostrar 0 tras borrar */
-		}
-	}
-}
-
-/* Función para obtener el tiempo de inicio de la partida */
-unsigned int Sudoku_Obtener_Tiempo_Inicio(void)
-{
-	return tiempo_inicio;
-}
 void Eint4567_init(void)
 {
-        /* Inicializar el temporizador dedicado a la eliminación de rebotes */
-        timer3_init(boton_confirmado);
+	/* Inicializar el temporizador dedicado a la eliminación de rebotes */
+	timer3_init(boton_confirmado);
 
-        /* Configuracion del controlador de interrupciones. Estos registros están definidos en 44b.h */
-        rI_ISPC    = 0x3ffffff;         // Borra INTPND escribiendo 1s en I_ISPC
-        rEXTINTPND = 0xf;               // Borra EXTINTPND escribiendo 1s en el propio registro
-        rINTMOD    = 0x0;               // Configura las lineas como de tipo IRQ
-        rINTCON    = 0x1;               // Habilita int. vectorizadas y la linea IRQ (FIQ no)
-        rINTMSK    &= ~(BIT_EINT4567);  // habilitamos interrupcion linea eint4567 en vector de mascaras
+	/* Configuracion del controlador de interrupciones. Estos registros están definidos en 44b.h */
+	rI_ISPC    = 0x3ffffff;         // Borra INTPND escribiendo 1s en I_ISPC
+	rEXTINTPND = 0xf;               // Borra EXTINTPND escribiendo 1s en el propio registro
+	rINTMOD    = 0x0;               // Configura las lineas como de tipo IRQ
+	rINTCON    = 0x1;               // Habilita int. vectorizadas y la linea IRQ (FIQ no)
+	rINTMSK    &= ~(BIT_EINT4567);  // habilitamos interrupcion linea eint4567 en vector de mascaras
 
-        /* Establece la rutina de servicio para Eint4567 */
-        pISR_EINT4567 = (int) Eint4567_ISR;
+	/* Establece la rutina de servicio para Eint4567 */
+	pISR_EINT4567 = (int) Eint4567_ISR;
 
-        /* Configuracion del puerto G */
-        rPCONG  = 0xffff;                       // Establece la funcion de los pines (EINT0-7)
-        rPUPG   = 0x0;                  // Habilita el "pull up" del puerto
-        rEXTINT = rEXTINT | 0x22222222;   // Configura las lineas de int. como de flanco de bajada
+	/* Configuracion del puerto G */
+	rPCONG  = 0xffff;                       // Establece la funcion de los pines (EINT0-7)
+	rPUPG   = 0x0;                  // Habilita el "pull up" del puerto
+	rEXTINT = rEXTINT | 0x22222222;   // Configura las lineas de int. como de flanco de bajada
 
-        /* Por precaucion, se vuelven a borrar los bits de INTPND y EXTINTPND */
-        rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
-        rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
+	/* Por precaucion, se vuelven a borrar los bits de INTPND y EXTINTPND */
+	rEXTINTPND = 0xf;                               // borra los bits en EXTINTPND
+	rI_ISPC   |= BIT_EINT4567;              // borra el bit pendiente en INTPND
 }

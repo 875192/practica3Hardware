@@ -11,6 +11,7 @@ C_SRCS += \
 ../lcd.c \
 ../led.c \
 ../main.c \
+../maquina_estados.c \
 ../sudoku_2025.c \
 ../timer.c \
 ../timer1.c \
@@ -30,6 +31,7 @@ OBJS += \
 ./lcd.o \
 ./led.o \
 ./main.o \
+./maquina_estados.o \
 ./sudoku_2025.o \
 ./timer.o \
 ./timer1.o \
@@ -45,6 +47,7 @@ C_DEPS += \
 ./lcd.d \
 ./led.d \
 ./main.d \
+./maquina_estados.d \
 ./sudoku_2025.d \
 ./timer.d \
 ./timer1.d \

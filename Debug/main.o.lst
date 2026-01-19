@@ -1276,39 +1276,41 @@
  4160 00f0 3C309FE5 		ldr	r3, .L10
  4161 00f4 030052E1 		cmp	r2, r3
  4162 00f8 D9FFFF9A 		bls	.L9
+ 4163              	.LBB2:
  103:../main.c     ****                 if (Sudoku_Juego_En_Progreso())
- 4163              		.loc 1 103 0
- 4164 00fc FEFFFFEB 		bl	Sudoku_Juego_En_Progreso
- 4165 0100 0030A0E1 		mov	r3, r0
- 4166 0104 000053E3 		cmp	r3, #0
- 4167 0108 0600000A 		beq	.L6
- 4168              	.LBB2:
+ 4164              		.loc 1 103 0
+ 4165 00fc FEFFFFEB 		bl	Sudoku_Juego_En_Progreso
+ 4166 0100 0030A0E1 		mov	r3, r0
+ 4167 0104 000053E3 		cmp	r3, #0
+ 4168 0108 0600000A 		beq	.L6
+ 4169              	.LBB3:
  106:../main.c     ****                     unsigned int tiempo_transcurrido = tiempo_actual - Sudoku_Obtener_Tiempo_Inicio
- 4169              		.loc 1 106 0
- 4170 010c FEFFFFEB 		bl	Sudoku_Obtener_Tiempo_Inicio
- 4171 0110 0030A0E1 		mov	r3, r0
- 4172 0114 14201BE5 		ldr	r2, [fp, #-20]
- 4173 0118 023063E0 		rsb	r3, r3, r2
- 4174 011c 18300BE5 		str	r3, [fp, #-24]
+ 4170              		.loc 1 106 0
+ 4171 010c FEFFFFEB 		bl	Sudoku_Obtener_Tiempo_Inicio
+ 4172 0110 0030A0E1 		mov	r3, r0
+ 4173 0114 14201BE5 		ldr	r2, [fp, #-20]
+ 4174 0118 023063E0 		rsb	r3, r3, r2
+ 4175 011c 18300BE5 		str	r3, [fp, #-24]
  107:../main.c     ****                     Sudoku_Actualizar_Tiempo(tiempo_transcurrido);
- 4175              		.loc 1 107 0
- 4176 0120 18001BE5 		ldr	r0, [fp, #-24]
- 4177 0124 FEFFFFEB 		bl	Sudoku_Actualizar_Tiempo
- 4178              	.L6:
- 4179              	.LBE2:
+ 4176              		.loc 1 107 0
+ 4177 0120 18001BE5 		ldr	r0, [fp, #-24]
+ 4178 0124 FEFFFFEB 		bl	Sudoku_Actualizar_Tiempo
+ 4179              	.L6:
+ 4180              	.LBE3:
  109:../main.c     ****                 tiempo_anterior = tiempo_actual;
- 4180              		.loc 1 109 0
- 4181 0128 14301BE5 		ldr	r3, [fp, #-20]
- 4182 012c 10300BE5 		str	r3, [fp, #-16]
- 4183              		.loc 1 112 0
- 4184 0130 CCFFFFEA 		b	.L7
- 4185              	.L11:
- 4186              		.align	2
- 4187              	.L10:
- 4188 0134 3F420F00 		.word	999999
- 4189              		.cfi_endproc
- 4190              	.LFE7:
- 4192              	.Letext0:
+ 4181              		.loc 1 109 0
+ 4182 0128 14301BE5 		ldr	r3, [fp, #-20]
+ 4183 012c 10300BE5 		str	r3, [fp, #-16]
+ 4184              	.LBE2:
+ 4185              		.loc 1 112 0
+ 4186 0130 CCFFFFEA 		b	.L7
+ 4187              	.L11:
+ 4188              		.align	2
+ 4189              	.L10:
+ 4190 0134 3F420F00 		.word	999999
+ 4191              		.cfi_endproc
+ 4192              	.LFE7:
+ 4194              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
                             *COM*:00000004 CheckTSP
@@ -1319,21 +1321,21 @@ DEFINED SYMBOLS
                             *COM*:00000004 Ymax
                             *COM*:00000004 Xmin
                             *COM*:00000004 Ymin
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3003   .data:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3006   .data:00000000 cuadricula_C_C
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3154   .data:00000120 cuadricula_C_ARM
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3302   .data:00000240 cuadricula_ARM_C
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3450   .data:00000360 cuadricula_ARM_ARM
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3596   .rodata:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3599   .rodata:00000000 cuadricula_Respaldo
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3748   .data:00000480 cuadricula_ARM_ARM_ALL
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:3896   .data:000005a0 solucion
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4045   .data:000006c0 cuadricula
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4052   .bss:00000000 celdas_vacias
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4049   .bss:00000000 $d
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4055   .text:00000000 $a
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4058   .text:00000000 Main
-C:\Users\jaime\AppData\Local\Temp\ccU3BR9h.s:4188   .text:00000134 $d
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3003   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3006   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3154   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3302   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3450   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3596   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3599   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3748   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:3896   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4045   .data:000006c0 cuadricula
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4052   .bss:00000000 celdas_vacias
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4049   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4055   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4058   .text:00000000 Main
+C:\Users\jaime\AppData\Local\Temp\ccxVHmps.s:4190   .text:00000134 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

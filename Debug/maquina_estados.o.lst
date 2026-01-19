@@ -1,0 +1,4091 @@
+   1              		.cpu arm7tdmi
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 18, 4
+  11              		.file	"maquina_estados.c"
+  21              	.Ltext0:
+  22              		.file 1 "../maquina_estados.c"
+ 2114              		.align	2
+ 2116              	celda_poner_valor:
+ 2117              	.LFB1:
+   1:../celda.h    **** 	/* guarda para evitar inclusiones mÃºltiples (include guard) */
+   2:../celda.h    **** 	#ifndef CELDA_H
+   3:../celda.h    **** 	#define CELDA_H
+   4:../celda.h    **** 	
+   5:../celda.h    **** 	#include <inttypes.h>
+   6:../celda.h    **** 	
+   7:../celda.h    **** 	/* Cada celda se codifica en 16 bits
+   8:../celda.h    **** 	 * bits [15,7]: los 9 bits mÃ¡s significativos representan el vector de candidatos,
+   9:../celda.h    **** 	 * si el bit 7 + valor - 1 estÃ¡ a 0, valor es candidato, 1 en caso contrario
+  10:../celda.h    **** 	 * bit 6: no empleado
+  11:../celda.h    **** 	 * bit 5: error
+  12:../celda.h    **** 	 * bit 4: pista
+  13:../celda.h    **** 	 * bits [3,0]: valor de la celda
+  14:../celda.h    **** 	 */
+  15:../celda.h    **** 	
+  16:../celda.h    **** enum { BIT_CANDIDATOS = 7, BIT_NO_USADO = 6, BIT_ERROR = 5, BIT_PISTA = 4 };
+  17:../celda.h    **** 	
+  18:../celda.h    **** 	typedef uint16_t CELDA;
+  19:../celda.h    **** 	
+  20:../celda.h    **** 	/* *****************************************************************************
+  21:../celda.h    **** 	 * elimina el candidato del valor almacenado en la celda indicada */
+  22:../celda.h    **** 	__inline static void
+  23:../celda.h    **** 	celda_eliminar_candidato(CELDA *celdaptr, uint8_t valor)
+  24:../celda.h    **** 	{
+  25:../celda.h    **** 		*celdaptr = *celdaptr | (0x0001 << (BIT_CANDIDATOS + valor - 1));
+  26:../celda.h    **** 	}
+  27:../celda.h    **** 	
+  28:../celda.h    **** 	/* *****************************************************************************
+  29:../celda.h    **** 	 * modifica el valor almacenado en la celda indicada */
+  30:../celda.h    **** 	__inline static void
+  31:../celda.h    **** 	celda_poner_valor(CELDA *celdaptr, uint8_t val)
+  32:../celda.h    **** 	{
+ 2118              		.loc 15 32 0
+ 2119              		.cfi_startproc
+ 2120              		@ Function supports interworking.
+ 2121              		@ args = 0, pretend = 0, frame = 8
+ 2122              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2123 0000 0DC0A0E1 		mov	ip, sp
+ 2124              	.LCFI0:
+ 2125              		.cfi_def_cfa_register 12
+ 2126 0004 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2127 0008 04B04CE2 		sub	fp, ip, #4
+ 2128              		.cfi_offset 14, -8
+ 2129              		.cfi_offset 13, -12
+ 2130              		.cfi_offset 11, -16
+ 2131              	.LCFI1:
+ 2132              		.cfi_def_cfa 11, 4
+ 2133 000c 08D04DE2 		sub	sp, sp, #8
+ 2134 0010 10000BE5 		str	r0, [fp, #-16]
+ 2135 0014 0130A0E1 		mov	r3, r1
+ 2136 0018 11304BE5 		strb	r3, [fp, #-17]
+  33:../celda.h    **** 		*celdaptr = (*celdaptr & 0xFFF0) | (val & 0x000F);
+ 2137              		.loc 15 33 0
+ 2138 001c 10301BE5 		ldr	r3, [fp, #-16]
+ 2139 0020 B030D3E1 		ldrh	r3, [r3, #0]
+ 2140 0024 0338A0E1 		mov	r3, r3, asl #16
+ 2141 0028 2338A0E1 		mov	r3, r3, lsr #16
+ 2142 002c 0F30C3E3 		bic	r3, r3, #15
+ 2143 0030 0338A0E1 		mov	r3, r3, asl #16
+ 2144 0034 2328A0E1 		mov	r2, r3, lsr #16
+ 2145 0038 11305BE5 		ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+ 2146 003c 0338A0E1 		mov	r3, r3, asl #16
+ 2147 0040 2338A0E1 		mov	r3, r3, lsr #16
+ 2148 0044 0F3003E2 		and	r3, r3, #15
+ 2149 0048 0338A0E1 		mov	r3, r3, asl #16
+ 2150 004c 2338A0E1 		mov	r3, r3, lsr #16
+ 2151 0050 033082E1 		orr	r3, r2, r3
+ 2152 0054 0338A0E1 		mov	r3, r3, asl #16
+ 2153 0058 2338A0E1 		mov	r3, r3, lsr #16
+ 2154 005c 0338A0E1 		mov	r3, r3, asl #16
+ 2155 0060 2328A0E1 		mov	r2, r3, lsr #16
+ 2156 0064 10301BE5 		ldr	r3, [fp, #-16]
+ 2157 0068 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  34:../celda.h    **** 	}
+ 2158              		.loc 15 34 0
+ 2159 006c 0CD04BE2 		sub	sp, fp, #12
+ 2160 0070 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2161 0074 1EFF2FE1 		bx	lr
+ 2162              		.cfi_endproc
+ 2163              	.LFE1:
+ 2165              		.align	2
+ 2167              	celda_leer_valor:
+ 2168              	.LFB2:
+  35:../celda.h    **** 	
+  36:../celda.h    **** 	/* *****************************************************************************
+  37:../celda.h    **** 	 * extrae el valor almacenado en los 16 bits de una celda */
+  38:../celda.h    ****         __inline static uint8_t
+  39:../celda.h    ****         celda_leer_valor(CELDA celda)
+  40:../celda.h    ****         {
+ 2169              		.loc 15 40 0
+ 2170              		.cfi_startproc
+ 2171              		@ Function supports interworking.
+ 2172              		@ args = 0, pretend = 0, frame = 8
+ 2173              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2174 0078 0DC0A0E1 		mov	ip, sp
+ 2175              	.LCFI2:
+ 2176              		.cfi_def_cfa_register 12
+ 2177 007c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2178 0080 04B04CE2 		sub	fp, ip, #4
+ 2179              		.cfi_offset 14, -8
+ 2180              		.cfi_offset 13, -12
+ 2181              		.cfi_offset 11, -16
+ 2182              	.LCFI3:
+ 2183              		.cfi_def_cfa 11, 4
+ 2184 0084 08D04DE2 		sub	sp, sp, #8
+ 2185 0088 0030A0E1 		mov	r3, r0
+ 2186 008c BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  41:../celda.h    ****                 return (celda & 0x000F);
+ 2187              		.loc 15 41 0
+ 2188 0090 BE305BE1 		ldrh	r3, [fp, #-14]	@ movhi
+ 2189 0094 FF3003E2 		and	r3, r3, #255
+ 2190 0098 0F3003E2 		and	r3, r3, #15
+ 2191 009c FF3003E2 		and	r3, r3, #255
+  42:../celda.h    ****         }
+ 2192              		.loc 15 42 0
+ 2193 00a0 0300A0E1 		mov	r0, r3
+ 2194 00a4 0CD04BE2 		sub	sp, fp, #12
+ 2195 00a8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2196 00ac 1EFF2FE1 		bx	lr
+ 2197              		.cfi_endproc
+ 2198              	.LFE2:
+ 2200              		.align	2
+ 2202              	celda_es_candidato:
+ 2203              	.LFB3:
+  43:../celda.h    **** 
+  44:../celda.h    ****         /* *****************************************************************************
+  45:../celda.h    ****          * comprueba si el valor es candidato en la celda indicada */
+  46:../celda.h    ****         __inline static int
+  47:../celda.h    ****         celda_es_candidato(CELDA celda, uint8_t valor)
+  48:../celda.h    ****         {
+ 2204              		.loc 15 48 0
+ 2205              		.cfi_startproc
+ 2206              		@ Function supports interworking.
+ 2207              		@ args = 0, pretend = 0, frame = 8
+ 2208              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2209 00b0 0DC0A0E1 		mov	ip, sp
+ 2210              	.LCFI4:
+ 2211              		.cfi_def_cfa_register 12
+ 2212 00b4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2213 00b8 04B04CE2 		sub	fp, ip, #4
+ 2214              		.cfi_offset 14, -8
+ 2215              		.cfi_offset 13, -12
+ 2216              		.cfi_offset 11, -16
+ 2217              	.LCFI5:
+ 2218              		.cfi_def_cfa 11, 4
+ 2219 00bc 08D04DE2 		sub	sp, sp, #8
+ 2220 00c0 0020A0E1 		mov	r2, r0
+ 2221 00c4 0130A0E1 		mov	r3, r1
+ 2222 00c8 BE204BE1 		strh	r2, [fp, #-14]	@ movhi
+ 2223 00cc 0F304BE5 		strb	r3, [fp, #-15]
+  49:../celda.h    ****                 return (celda & (0x0001 << (BIT_CANDIDATOS + valor - 1))) == 0;
+ 2224              		.loc 15 49 0
+ 2225 00d0 BE205BE1 		ldrh	r2, [fp, #-14]
+ 2226 00d4 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 2227 00d8 063083E2 		add	r3, r3, #6
+ 2228 00dc 5233A0E1 		mov	r3, r2, asr r3
+ 2229 00e0 013003E2 		and	r3, r3, #1
+ 2230 00e4 000053E3 		cmp	r3, #0
+ 2231 00e8 0030A013 		movne	r3, #0
+ 2232 00ec 0130A003 		moveq	r3, #1
+  50:../celda.h    ****         }
+ 2233              		.loc 15 50 0
+ 2234 00f0 0300A0E1 		mov	r0, r3
+ 2235 00f4 0CD04BE2 		sub	sp, fp, #12
+ 2236 00f8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2237 00fc 1EFF2FE1 		bx	lr
+ 2238              		.cfi_endproc
+ 2239              	.LFE3:
+ 2241              		.align	2
+ 2243              	celda_es_pista:
+ 2244              	.LFB4:
+  51:../celda.h    **** 
+  52:../celda.h    ****         /* *****************************************************************************
+  53:../celda.h    ****          * comprueba si la celda es una pista */
+  54:../celda.h    ****         __inline static int
+  55:../celda.h    ****         celda_es_pista(CELDA celda)
+  56:../celda.h    ****         {
+ 2245              		.loc 15 56 0
+ 2246              		.cfi_startproc
+ 2247              		@ Function supports interworking.
+ 2248              		@ args = 0, pretend = 0, frame = 8
+ 2249              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2250 0100 0DC0A0E1 		mov	ip, sp
+ 2251              	.LCFI6:
+ 2252              		.cfi_def_cfa_register 12
+ 2253 0104 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2254 0108 04B04CE2 		sub	fp, ip, #4
+ 2255              		.cfi_offset 14, -8
+ 2256              		.cfi_offset 13, -12
+ 2257              		.cfi_offset 11, -16
+ 2258              	.LCFI7:
+ 2259              		.cfi_def_cfa 11, 4
+ 2260 010c 08D04DE2 		sub	sp, sp, #8
+ 2261 0110 0030A0E1 		mov	r3, r0
+ 2262 0114 BE304BE1 		strh	r3, [fp, #-14]	@ movhi
+  57:../celda.h    ****                 return (celda & (1 << BIT_PISTA)) != 0;
+ 2263              		.loc 15 57 0
+ 2264 0118 BE305BE1 		ldrh	r3, [fp, #-14]
+ 2265 011c 103003E2 		and	r3, r3, #16
+ 2266 0120 000053E3 		cmp	r3, #0
+ 2267 0124 0030A003 		moveq	r3, #0
+ 2268 0128 0130A013 		movne	r3, #1
+  58:../celda.h    ****         }
+ 2269              		.loc 15 58 0
+ 2270 012c 0300A0E1 		mov	r0, r3
+ 2271 0130 0CD04BE2 		sub	sp, fp, #12
+ 2272 0134 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2273 0138 1EFF2FE1 		bx	lr
+ 2274              		.cfi_endproc
+ 2275              	.LFE4:
+ 2277              		.align	2
+ 2279              	celda_marcar_error:
+ 2280              	.LFB5:
+  59:../celda.h    **** 
+  60:../celda.h    ****         /* *****************************************************************************
+  61:../celda.h    ****          * marca o limpia el bit de error de la celda */
+  62:../celda.h    ****         __inline static void
+  63:../celda.h    ****         celda_marcar_error(CELDA *celdaptr)
+  64:../celda.h    ****         {
+ 2281              		.loc 15 64 0
+ 2282              		.cfi_startproc
+ 2283              		@ Function supports interworking.
+ 2284              		@ args = 0, pretend = 0, frame = 8
+ 2285              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2286 013c 0DC0A0E1 		mov	ip, sp
+ 2287              	.LCFI8:
+ 2288              		.cfi_def_cfa_register 12
+ 2289 0140 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2290 0144 04B04CE2 		sub	fp, ip, #4
+ 2291              		.cfi_offset 14, -8
+ 2292              		.cfi_offset 13, -12
+ 2293              		.cfi_offset 11, -16
+ 2294              	.LCFI9:
+ 2295              		.cfi_def_cfa 11, 4
+ 2296 0148 08D04DE2 		sub	sp, sp, #8
+ 2297 014c 10000BE5 		str	r0, [fp, #-16]
+  65:../celda.h    ****                 *celdaptr |= (1 << BIT_ERROR);
+ 2298              		.loc 15 65 0
+ 2299 0150 10301BE5 		ldr	r3, [fp, #-16]
+ 2300 0154 B030D3E1 		ldrh	r3, [r3, #0]
+ 2301 0158 203083E3 		orr	r3, r3, #32
+ 2302 015c 0338A0E1 		mov	r3, r3, asl #16
+ 2303 0160 2328A0E1 		mov	r2, r3, lsr #16
+ 2304 0164 10301BE5 		ldr	r3, [fp, #-16]
+ 2305 0168 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  66:../celda.h    ****         }
+ 2306              		.loc 15 66 0
+ 2307 016c 0CD04BE2 		sub	sp, fp, #12
+ 2308 0170 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2309 0174 1EFF2FE1 		bx	lr
+ 2310              		.cfi_endproc
+ 2311              	.LFE5:
+ 2313              		.align	2
+ 2315              	celda_limpiar_error:
+ 2316              	.LFB6:
+  67:../celda.h    **** 
+  68:../celda.h    ****         __inline static void
+  69:../celda.h    ****         celda_limpiar_error(CELDA *celdaptr)
+  70:../celda.h    ****         {
+ 2317              		.loc 15 70 0
+ 2318              		.cfi_startproc
+ 2319              		@ Function supports interworking.
+ 2320              		@ args = 0, pretend = 0, frame = 8
+ 2321              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2322 0178 0DC0A0E1 		mov	ip, sp
+ 2323              	.LCFI10:
+ 2324              		.cfi_def_cfa_register 12
+ 2325 017c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 2326 0180 04B04CE2 		sub	fp, ip, #4
+ 2327              		.cfi_offset 14, -8
+ 2328              		.cfi_offset 13, -12
+ 2329              		.cfi_offset 11, -16
+ 2330              	.LCFI11:
+ 2331              		.cfi_def_cfa 11, 4
+ 2332 0184 08D04DE2 		sub	sp, sp, #8
+ 2333 0188 10000BE5 		str	r0, [fp, #-16]
+  71:../celda.h    ****                 *celdaptr &= ~(1 << BIT_ERROR);
+ 2334              		.loc 15 71 0
+ 2335 018c 10301BE5 		ldr	r3, [fp, #-16]
+ 2336 0190 B030D3E1 		ldrh	r3, [r3, #0]
+ 2337 0194 2030C3E3 		bic	r3, r3, #32
+ 2338 0198 0338A0E1 		mov	r3, r3, asl #16
+ 2339 019c 2328A0E1 		mov	r2, r3, lsr #16
+ 2340 01a0 10301BE5 		ldr	r3, [fp, #-16]
+ 2341 01a4 B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  72:../celda.h    ****         }
+ 2342              		.loc 15 72 0
+ 2343 01a8 0CD04BE2 		sub	sp, fp, #12
+ 2344 01ac 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 2345 01b0 1EFF2FE1 		bx	lr
+ 2346              		.cfi_endproc
+ 2347              	.LFE6:
+ 2349              		.data
+ 2350              		.align	5
+ 2353              	cuadricula_C_C:
+ 2354 0000 1500     		.short	21
+ 2355 0002 0000     		.short	0
+ 2356 0004 0000     		.short	0
+ 2357 0006 1300     		.short	19
+ 2358 0008 0000     		.short	0
+ 2359 000a 0000     		.short	0
+ 2360 000c 0000     		.short	0
+ 2361 000e 0000     		.short	0
+ 2362 0010 0000     		.short	0
+ 2363 0012 0000     		.short	0
+ 2364 0014 0000     		.short	0
+ 2365 0016 0000     		.short	0
+ 2366 0018 0000     		.short	0
+ 2367 001a 0000     		.short	0
+ 2368 001c 0000     		.short	0
+ 2369 001e 0000     		.short	0
+ 2370 0020 0000     		.short	0
+ 2371 0022 0000     		.short	0
+ 2372 0024 0000     		.short	0
+ 2373 0026 0000     		.short	0
+ 2374 0028 1900     		.short	25
+ 2375 002a 0000     		.short	0
+ 2376 002c 0000     		.short	0
+ 2377 002e 0000     		.short	0
+ 2378 0030 1500     		.short	21
+ 2379 0032 0000     		.short	0
+ 2380 0034 0000     		.short	0
+ 2381 0036 0000     		.short	0
+ 2382 0038 0000     		.short	0
+ 2383 003a 0000     		.short	0
+ 2384 003c 0000     		.short	0
+ 2385 003e 0000     		.short	0
+ 2386 0040 0000     		.short	0
+ 2387 0042 1900     		.short	25
+ 2388 0044 1600     		.short	22
+ 2389 0046 1700     		.short	23
+ 2390 0048 0000     		.short	0
+ 2391 004a 1500     		.short	21
+ 2392 004c 0000     		.short	0
+ 2393 004e 1300     		.short	19
+ 2394 0050 0000     		.short	0
+ 2395 0052 0000     		.short	0
+ 2396 0054 0000     		.short	0
+ 2397 0056 0000     		.short	0
+ 2398 0058 0000     		.short	0
+ 2399 005a 0000     		.short	0
+ 2400 005c 0000     		.short	0
+ 2401 005e 0000     		.short	0
+ 2402 0060 0000     		.short	0
+ 2403 0062 1800     		.short	24
+ 2404 0064 0000     		.short	0
+ 2405 0066 1900     		.short	25
+ 2406 0068 0000     		.short	0
+ 2407 006a 0000     		.short	0
+ 2408 006c 1600     		.short	22
+ 2409 006e 0000     		.short	0
+ 2410 0070 0000     		.short	0
+ 2411 0072 0000     		.short	0
+ 2412 0074 0000     		.short	0
+ 2413 0076 0000     		.short	0
+ 2414 0078 0000     		.short	0
+ 2415 007a 0000     		.short	0
+ 2416 007c 0000     		.short	0
+ 2417 007e 0000     		.short	0
+ 2418 0080 0000     		.short	0
+ 2419 0082 0000     		.short	0
+ 2420 0084 1500     		.short	21
+ 2421 0086 1800     		.short	24
+ 2422 0088 1600     		.short	22
+ 2423 008a 1100     		.short	17
+ 2424 008c 1400     		.short	20
+ 2425 008e 0000     		.short	0
+ 2426 0090 0000     		.short	0
+ 2427 0092 0000     		.short	0
+ 2428 0094 0000     		.short	0
+ 2429 0096 0000     		.short	0
+ 2430 0098 0000     		.short	0
+ 2431 009a 0000     		.short	0
+ 2432 009c 0000     		.short	0
+ 2433 009e 0000     		.short	0
+ 2434 00a0 0000     		.short	0
+ 2435 00a2 0000     		.short	0
+ 2436 00a4 1400     		.short	20
+ 2437 00a6 1200     		.short	18
+ 2438 00a8 0000     		.short	0
+ 2439 00aa 1300     		.short	19
+ 2440 00ac 0000     		.short	0
+ 2441 00ae 1700     		.short	23
+ 2442 00b0 0000     		.short	0
+ 2443 00b2 0000     		.short	0
+ 2444 00b4 0000     		.short	0
+ 2445 00b6 0000     		.short	0
+ 2446 00b8 0000     		.short	0
+ 2447 00ba 0000     		.short	0
+ 2448 00bc 0000     		.short	0
+ 2449 00be 0000     		.short	0
+ 2450 00c0 0000     		.short	0
+ 2451 00c2 1700     		.short	23
+ 2452 00c4 0000     		.short	0
+ 2453 00c6 1500     		.short	21
+ 2454 00c8 0000     		.short	0
+ 2455 00ca 1900     		.short	25
+ 2456 00cc 1200     		.short	18
+ 2457 00ce 1600     		.short	22
+ 2458 00d0 0000     		.short	0
+ 2459 00d2 0000     		.short	0
+ 2460 00d4 0000     		.short	0
+ 2461 00d6 0000     		.short	0
+ 2462 00d8 0000     		.short	0
+ 2463 00da 0000     		.short	0
+ 2464 00dc 0000     		.short	0
+ 2465 00de 0000     		.short	0
+ 2466 00e0 1600     		.short	22
+ 2467 00e2 0000     		.short	0
+ 2468 00e4 0000     		.short	0
+ 2469 00e6 0000     		.short	0
+ 2470 00e8 1800     		.short	24
+ 2471 00ea 0000     		.short	0
+ 2472 00ec 0000     		.short	0
+ 2473 00ee 0000     		.short	0
+ 2474 00f0 0000     		.short	0
+ 2475 00f2 0000     		.short	0
+ 2476 00f4 0000     		.short	0
+ 2477 00f6 0000     		.short	0
+ 2478 00f8 0000     		.short	0
+ 2479 00fa 0000     		.short	0
+ 2480 00fc 0000     		.short	0
+ 2481 00fe 0000     		.short	0
+ 2482 0100 0000     		.short	0
+ 2483 0102 0000     		.short	0
+ 2484 0104 0000     		.short	0
+ 2485 0106 0000     		.short	0
+ 2486 0108 0000     		.short	0
+ 2487 010a 1200     		.short	18
+ 2488 010c 0000     		.short	0
+ 2489 010e 0000     		.short	0
+ 2490 0110 1100     		.short	17
+ 2491 0112 0000     		.short	0
+ 2492 0114 0000     		.short	0
+ 2493 0116 0000     		.short	0
+ 2494 0118 0000     		.short	0
+ 2495 011a 0000     		.short	0
+ 2496 011c 0000     		.short	0
+ 2497 011e 0000     		.short	0
+ 2498              		.align	5
+ 2501              	cuadricula_C_ARM:
+ 2502 0120 1500     		.short	21
+ 2503 0122 0000     		.short	0
+ 2504 0124 0000     		.short	0
+ 2505 0126 1300     		.short	19
+ 2506 0128 0000     		.short	0
+ 2507 012a 0000     		.short	0
+ 2508 012c 0000     		.short	0
+ 2509 012e 0000     		.short	0
+ 2510 0130 0000     		.short	0
+ 2511 0132 0000     		.short	0
+ 2512 0134 0000     		.short	0
+ 2513 0136 0000     		.short	0
+ 2514 0138 0000     		.short	0
+ 2515 013a 0000     		.short	0
+ 2516 013c 0000     		.short	0
+ 2517 013e 0000     		.short	0
+ 2518 0140 0000     		.short	0
+ 2519 0142 0000     		.short	0
+ 2520 0144 0000     		.short	0
+ 2521 0146 0000     		.short	0
+ 2522 0148 1900     		.short	25
+ 2523 014a 0000     		.short	0
+ 2524 014c 0000     		.short	0
+ 2525 014e 0000     		.short	0
+ 2526 0150 1500     		.short	21
+ 2527 0152 0000     		.short	0
+ 2528 0154 0000     		.short	0
+ 2529 0156 0000     		.short	0
+ 2530 0158 0000     		.short	0
+ 2531 015a 0000     		.short	0
+ 2532 015c 0000     		.short	0
+ 2533 015e 0000     		.short	0
+ 2534 0160 0000     		.short	0
+ 2535 0162 1900     		.short	25
+ 2536 0164 1600     		.short	22
+ 2537 0166 1700     		.short	23
+ 2538 0168 0000     		.short	0
+ 2539 016a 1500     		.short	21
+ 2540 016c 0000     		.short	0
+ 2541 016e 1300     		.short	19
+ 2542 0170 0000     		.short	0
+ 2543 0172 0000     		.short	0
+ 2544 0174 0000     		.short	0
+ 2545 0176 0000     		.short	0
+ 2546 0178 0000     		.short	0
+ 2547 017a 0000     		.short	0
+ 2548 017c 0000     		.short	0
+ 2549 017e 0000     		.short	0
+ 2550 0180 0000     		.short	0
+ 2551 0182 1800     		.short	24
+ 2552 0184 0000     		.short	0
+ 2553 0186 1900     		.short	25
+ 2554 0188 0000     		.short	0
+ 2555 018a 0000     		.short	0
+ 2556 018c 1600     		.short	22
+ 2557 018e 0000     		.short	0
+ 2558 0190 0000     		.short	0
+ 2559 0192 0000     		.short	0
+ 2560 0194 0000     		.short	0
+ 2561 0196 0000     		.short	0
+ 2562 0198 0000     		.short	0
+ 2563 019a 0000     		.short	0
+ 2564 019c 0000     		.short	0
+ 2565 019e 0000     		.short	0
+ 2566 01a0 0000     		.short	0
+ 2567 01a2 0000     		.short	0
+ 2568 01a4 1500     		.short	21
+ 2569 01a6 1800     		.short	24
+ 2570 01a8 1600     		.short	22
+ 2571 01aa 1100     		.short	17
+ 2572 01ac 1400     		.short	20
+ 2573 01ae 0000     		.short	0
+ 2574 01b0 0000     		.short	0
+ 2575 01b2 0000     		.short	0
+ 2576 01b4 0000     		.short	0
+ 2577 01b6 0000     		.short	0
+ 2578 01b8 0000     		.short	0
+ 2579 01ba 0000     		.short	0
+ 2580 01bc 0000     		.short	0
+ 2581 01be 0000     		.short	0
+ 2582 01c0 0000     		.short	0
+ 2583 01c2 0000     		.short	0
+ 2584 01c4 1400     		.short	20
+ 2585 01c6 1200     		.short	18
+ 2586 01c8 0000     		.short	0
+ 2587 01ca 1300     		.short	19
+ 2588 01cc 0000     		.short	0
+ 2589 01ce 1700     		.short	23
+ 2590 01d0 0000     		.short	0
+ 2591 01d2 0000     		.short	0
+ 2592 01d4 0000     		.short	0
+ 2593 01d6 0000     		.short	0
+ 2594 01d8 0000     		.short	0
+ 2595 01da 0000     		.short	0
+ 2596 01dc 0000     		.short	0
+ 2597 01de 0000     		.short	0
+ 2598 01e0 0000     		.short	0
+ 2599 01e2 1700     		.short	23
+ 2600 01e4 0000     		.short	0
+ 2601 01e6 1500     		.short	21
+ 2602 01e8 0000     		.short	0
+ 2603 01ea 1900     		.short	25
+ 2604 01ec 1200     		.short	18
+ 2605 01ee 1600     		.short	22
+ 2606 01f0 0000     		.short	0
+ 2607 01f2 0000     		.short	0
+ 2608 01f4 0000     		.short	0
+ 2609 01f6 0000     		.short	0
+ 2610 01f8 0000     		.short	0
+ 2611 01fa 0000     		.short	0
+ 2612 01fc 0000     		.short	0
+ 2613 01fe 0000     		.short	0
+ 2614 0200 1600     		.short	22
+ 2615 0202 0000     		.short	0
+ 2616 0204 0000     		.short	0
+ 2617 0206 0000     		.short	0
+ 2618 0208 1800     		.short	24
+ 2619 020a 0000     		.short	0
+ 2620 020c 0000     		.short	0
+ 2621 020e 0000     		.short	0
+ 2622 0210 0000     		.short	0
+ 2623 0212 0000     		.short	0
+ 2624 0214 0000     		.short	0
+ 2625 0216 0000     		.short	0
+ 2626 0218 0000     		.short	0
+ 2627 021a 0000     		.short	0
+ 2628 021c 0000     		.short	0
+ 2629 021e 0000     		.short	0
+ 2630 0220 0000     		.short	0
+ 2631 0222 0000     		.short	0
+ 2632 0224 0000     		.short	0
+ 2633 0226 0000     		.short	0
+ 2634 0228 0000     		.short	0
+ 2635 022a 1200     		.short	18
+ 2636 022c 0000     		.short	0
+ 2637 022e 0000     		.short	0
+ 2638 0230 1100     		.short	17
+ 2639 0232 0000     		.short	0
+ 2640 0234 0000     		.short	0
+ 2641 0236 0000     		.short	0
+ 2642 0238 0000     		.short	0
+ 2643 023a 0000     		.short	0
+ 2644 023c 0000     		.short	0
+ 2645 023e 0000     		.short	0
+ 2646              		.align	5
+ 2649              	cuadricula_ARM_C:
+ 2650 0240 1500     		.short	21
+ 2651 0242 0000     		.short	0
+ 2652 0244 0000     		.short	0
+ 2653 0246 1300     		.short	19
+ 2654 0248 0000     		.short	0
+ 2655 024a 0000     		.short	0
+ 2656 024c 0000     		.short	0
+ 2657 024e 0000     		.short	0
+ 2658 0250 0000     		.short	0
+ 2659 0252 0000     		.short	0
+ 2660 0254 0000     		.short	0
+ 2661 0256 0000     		.short	0
+ 2662 0258 0000     		.short	0
+ 2663 025a 0000     		.short	0
+ 2664 025c 0000     		.short	0
+ 2665 025e 0000     		.short	0
+ 2666 0260 0000     		.short	0
+ 2667 0262 0000     		.short	0
+ 2668 0264 0000     		.short	0
+ 2669 0266 0000     		.short	0
+ 2670 0268 1900     		.short	25
+ 2671 026a 0000     		.short	0
+ 2672 026c 0000     		.short	0
+ 2673 026e 0000     		.short	0
+ 2674 0270 1500     		.short	21
+ 2675 0272 0000     		.short	0
+ 2676 0274 0000     		.short	0
+ 2677 0276 0000     		.short	0
+ 2678 0278 0000     		.short	0
+ 2679 027a 0000     		.short	0
+ 2680 027c 0000     		.short	0
+ 2681 027e 0000     		.short	0
+ 2682 0280 0000     		.short	0
+ 2683 0282 1900     		.short	25
+ 2684 0284 1600     		.short	22
+ 2685 0286 1700     		.short	23
+ 2686 0288 0000     		.short	0
+ 2687 028a 1500     		.short	21
+ 2688 028c 0000     		.short	0
+ 2689 028e 1300     		.short	19
+ 2690 0290 0000     		.short	0
+ 2691 0292 0000     		.short	0
+ 2692 0294 0000     		.short	0
+ 2693 0296 0000     		.short	0
+ 2694 0298 0000     		.short	0
+ 2695 029a 0000     		.short	0
+ 2696 029c 0000     		.short	0
+ 2697 029e 0000     		.short	0
+ 2698 02a0 0000     		.short	0
+ 2699 02a2 1800     		.short	24
+ 2700 02a4 0000     		.short	0
+ 2701 02a6 1900     		.short	25
+ 2702 02a8 0000     		.short	0
+ 2703 02aa 0000     		.short	0
+ 2704 02ac 1600     		.short	22
+ 2705 02ae 0000     		.short	0
+ 2706 02b0 0000     		.short	0
+ 2707 02b2 0000     		.short	0
+ 2708 02b4 0000     		.short	0
+ 2709 02b6 0000     		.short	0
+ 2710 02b8 0000     		.short	0
+ 2711 02ba 0000     		.short	0
+ 2712 02bc 0000     		.short	0
+ 2713 02be 0000     		.short	0
+ 2714 02c0 0000     		.short	0
+ 2715 02c2 0000     		.short	0
+ 2716 02c4 1500     		.short	21
+ 2717 02c6 1800     		.short	24
+ 2718 02c8 1600     		.short	22
+ 2719 02ca 1100     		.short	17
+ 2720 02cc 1400     		.short	20
+ 2721 02ce 0000     		.short	0
+ 2722 02d0 0000     		.short	0
+ 2723 02d2 0000     		.short	0
+ 2724 02d4 0000     		.short	0
+ 2725 02d6 0000     		.short	0
+ 2726 02d8 0000     		.short	0
+ 2727 02da 0000     		.short	0
+ 2728 02dc 0000     		.short	0
+ 2729 02de 0000     		.short	0
+ 2730 02e0 0000     		.short	0
+ 2731 02e2 0000     		.short	0
+ 2732 02e4 1400     		.short	20
+ 2733 02e6 1200     		.short	18
+ 2734 02e8 0000     		.short	0
+ 2735 02ea 1300     		.short	19
+ 2736 02ec 0000     		.short	0
+ 2737 02ee 1700     		.short	23
+ 2738 02f0 0000     		.short	0
+ 2739 02f2 0000     		.short	0
+ 2740 02f4 0000     		.short	0
+ 2741 02f6 0000     		.short	0
+ 2742 02f8 0000     		.short	0
+ 2743 02fa 0000     		.short	0
+ 2744 02fc 0000     		.short	0
+ 2745 02fe 0000     		.short	0
+ 2746 0300 0000     		.short	0
+ 2747 0302 1700     		.short	23
+ 2748 0304 0000     		.short	0
+ 2749 0306 1500     		.short	21
+ 2750 0308 0000     		.short	0
+ 2751 030a 1900     		.short	25
+ 2752 030c 1200     		.short	18
+ 2753 030e 1600     		.short	22
+ 2754 0310 0000     		.short	0
+ 2755 0312 0000     		.short	0
+ 2756 0314 0000     		.short	0
+ 2757 0316 0000     		.short	0
+ 2758 0318 0000     		.short	0
+ 2759 031a 0000     		.short	0
+ 2760 031c 0000     		.short	0
+ 2761 031e 0000     		.short	0
+ 2762 0320 1600     		.short	22
+ 2763 0322 0000     		.short	0
+ 2764 0324 0000     		.short	0
+ 2765 0326 0000     		.short	0
+ 2766 0328 1800     		.short	24
+ 2767 032a 0000     		.short	0
+ 2768 032c 0000     		.short	0
+ 2769 032e 0000     		.short	0
+ 2770 0330 0000     		.short	0
+ 2771 0332 0000     		.short	0
+ 2772 0334 0000     		.short	0
+ 2773 0336 0000     		.short	0
+ 2774 0338 0000     		.short	0
+ 2775 033a 0000     		.short	0
+ 2776 033c 0000     		.short	0
+ 2777 033e 0000     		.short	0
+ 2778 0340 0000     		.short	0
+ 2779 0342 0000     		.short	0
+ 2780 0344 0000     		.short	0
+ 2781 0346 0000     		.short	0
+ 2782 0348 0000     		.short	0
+ 2783 034a 1200     		.short	18
+ 2784 034c 0000     		.short	0
+ 2785 034e 0000     		.short	0
+ 2786 0350 1100     		.short	17
+ 2787 0352 0000     		.short	0
+ 2788 0354 0000     		.short	0
+ 2789 0356 0000     		.short	0
+ 2790 0358 0000     		.short	0
+ 2791 035a 0000     		.short	0
+ 2792 035c 0000     		.short	0
+ 2793 035e 0000     		.short	0
+ 2794              		.align	5
+ 2797              	cuadricula_ARM_ARM:
+ 2798 0360 1500     		.short	21
+ 2799 0362 0000     		.short	0
+ 2800 0364 0000     		.short	0
+ 2801 0366 1300     		.short	19
+ 2802 0368 0000     		.short	0
+ 2803 036a 0000     		.short	0
+ 2804 036c 0000     		.short	0
+ 2805 036e 0000     		.short	0
+ 2806 0370 0000     		.short	0
+ 2807 0372 0000     		.short	0
+ 2808 0374 0000     		.short	0
+ 2809 0376 0000     		.short	0
+ 2810 0378 0000     		.short	0
+ 2811 037a 0000     		.short	0
+ 2812 037c 0000     		.short	0
+ 2813 037e 0000     		.short	0
+ 2814 0380 0000     		.short	0
+ 2815 0382 0000     		.short	0
+ 2816 0384 0000     		.short	0
+ 2817 0386 0000     		.short	0
+ 2818 0388 1900     		.short	25
+ 2819 038a 0000     		.short	0
+ 2820 038c 0000     		.short	0
+ 2821 038e 0000     		.short	0
+ 2822 0390 1500     		.short	21
+ 2823 0392 0000     		.short	0
+ 2824 0394 0000     		.short	0
+ 2825 0396 0000     		.short	0
+ 2826 0398 0000     		.short	0
+ 2827 039a 0000     		.short	0
+ 2828 039c 0000     		.short	0
+ 2829 039e 0000     		.short	0
+ 2830 03a0 0000     		.short	0
+ 2831 03a2 1900     		.short	25
+ 2832 03a4 1600     		.short	22
+ 2833 03a6 1700     		.short	23
+ 2834 03a8 0000     		.short	0
+ 2835 03aa 1500     		.short	21
+ 2836 03ac 0000     		.short	0
+ 2837 03ae 1300     		.short	19
+ 2838 03b0 0000     		.short	0
+ 2839 03b2 0000     		.short	0
+ 2840 03b4 0000     		.short	0
+ 2841 03b6 0000     		.short	0
+ 2842 03b8 0000     		.short	0
+ 2843 03ba 0000     		.short	0
+ 2844 03bc 0000     		.short	0
+ 2845 03be 0000     		.short	0
+ 2846 03c0 0000     		.short	0
+ 2847 03c2 1800     		.short	24
+ 2848 03c4 0000     		.short	0
+ 2849 03c6 1900     		.short	25
+ 2850 03c8 0000     		.short	0
+ 2851 03ca 0000     		.short	0
+ 2852 03cc 1600     		.short	22
+ 2853 03ce 0000     		.short	0
+ 2854 03d0 0000     		.short	0
+ 2855 03d2 0000     		.short	0
+ 2856 03d4 0000     		.short	0
+ 2857 03d6 0000     		.short	0
+ 2858 03d8 0000     		.short	0
+ 2859 03da 0000     		.short	0
+ 2860 03dc 0000     		.short	0
+ 2861 03de 0000     		.short	0
+ 2862 03e0 0000     		.short	0
+ 2863 03e2 0000     		.short	0
+ 2864 03e4 1500     		.short	21
+ 2865 03e6 1800     		.short	24
+ 2866 03e8 1600     		.short	22
+ 2867 03ea 1100     		.short	17
+ 2868 03ec 1400     		.short	20
+ 2869 03ee 0000     		.short	0
+ 2870 03f0 0000     		.short	0
+ 2871 03f2 0000     		.short	0
+ 2872 03f4 0000     		.short	0
+ 2873 03f6 0000     		.short	0
+ 2874 03f8 0000     		.short	0
+ 2875 03fa 0000     		.short	0
+ 2876 03fc 0000     		.short	0
+ 2877 03fe 0000     		.short	0
+ 2878 0400 0000     		.short	0
+ 2879 0402 0000     		.short	0
+ 2880 0404 1400     		.short	20
+ 2881 0406 1200     		.short	18
+ 2882 0408 0000     		.short	0
+ 2883 040a 1300     		.short	19
+ 2884 040c 0000     		.short	0
+ 2885 040e 1700     		.short	23
+ 2886 0410 0000     		.short	0
+ 2887 0412 0000     		.short	0
+ 2888 0414 0000     		.short	0
+ 2889 0416 0000     		.short	0
+ 2890 0418 0000     		.short	0
+ 2891 041a 0000     		.short	0
+ 2892 041c 0000     		.short	0
+ 2893 041e 0000     		.short	0
+ 2894 0420 0000     		.short	0
+ 2895 0422 1700     		.short	23
+ 2896 0424 0000     		.short	0
+ 2897 0426 1500     		.short	21
+ 2898 0428 0000     		.short	0
+ 2899 042a 1900     		.short	25
+ 2900 042c 1200     		.short	18
+ 2901 042e 1600     		.short	22
+ 2902 0430 0000     		.short	0
+ 2903 0432 0000     		.short	0
+ 2904 0434 0000     		.short	0
+ 2905 0436 0000     		.short	0
+ 2906 0438 0000     		.short	0
+ 2907 043a 0000     		.short	0
+ 2908 043c 0000     		.short	0
+ 2909 043e 0000     		.short	0
+ 2910 0440 1600     		.short	22
+ 2911 0442 0000     		.short	0
+ 2912 0444 0000     		.short	0
+ 2913 0446 0000     		.short	0
+ 2914 0448 1800     		.short	24
+ 2915 044a 0000     		.short	0
+ 2916 044c 0000     		.short	0
+ 2917 044e 0000     		.short	0
+ 2918 0450 0000     		.short	0
+ 2919 0452 0000     		.short	0
+ 2920 0454 0000     		.short	0
+ 2921 0456 0000     		.short	0
+ 2922 0458 0000     		.short	0
+ 2923 045a 0000     		.short	0
+ 2924 045c 0000     		.short	0
+ 2925 045e 0000     		.short	0
+ 2926 0460 0000     		.short	0
+ 2927 0462 0000     		.short	0
+ 2928 0464 0000     		.short	0
+ 2929 0466 0000     		.short	0
+ 2930 0468 0000     		.short	0
+ 2931 046a 1200     		.short	18
+ 2932 046c 0000     		.short	0
+ 2933 046e 0000     		.short	0
+ 2934 0470 1100     		.short	17
+ 2935 0472 0000     		.short	0
+ 2936 0474 0000     		.short	0
+ 2937 0476 0000     		.short	0
+ 2938 0478 0000     		.short	0
+ 2939 047a 0000     		.short	0
+ 2940 047c 0000     		.short	0
+ 2941 047e 0000     		.short	0
+ 2942              		.section	.rodata
+ 2943              		.align	5
+ 2946              	cuadricula_Respaldo:
+ 2947 0000 1500     		.short	21
+ 2948 0002 0000     		.short	0
+ 2949 0004 0000     		.short	0
+ 2950 0006 1300     		.short	19
+ 2951 0008 0000     		.short	0
+ 2952 000a 0000     		.short	0
+ 2953 000c 0000     		.short	0
+ 2954 000e 0000     		.short	0
+ 2955 0010 0000     		.short	0
+ 2956 0012 0000     		.short	0
+ 2957 0014 0000     		.short	0
+ 2958 0016 0000     		.short	0
+ 2959 0018 0000     		.short	0
+ 2960 001a 0000     		.short	0
+ 2961 001c 0000     		.short	0
+ 2962 001e 0000     		.short	0
+ 2963 0020 0000     		.short	0
+ 2964 0022 0000     		.short	0
+ 2965 0024 0000     		.short	0
+ 2966 0026 0000     		.short	0
+ 2967 0028 1900     		.short	25
+ 2968 002a 0000     		.short	0
+ 2969 002c 0000     		.short	0
+ 2970 002e 0000     		.short	0
+ 2971 0030 1500     		.short	21
+ 2972 0032 0000     		.short	0
+ 2973 0034 0000     		.short	0
+ 2974 0036 0000     		.short	0
+ 2975 0038 0000     		.short	0
+ 2976 003a 0000     		.short	0
+ 2977 003c 0000     		.short	0
+ 2978 003e 0000     		.short	0
+ 2979 0040 0000     		.short	0
+ 2980 0042 1900     		.short	25
+ 2981 0044 1600     		.short	22
+ 2982 0046 1700     		.short	23
+ 2983 0048 0000     		.short	0
+ 2984 004a 1500     		.short	21
+ 2985 004c 0000     		.short	0
+ 2986 004e 1300     		.short	19
+ 2987 0050 0000     		.short	0
+ 2988 0052 0000     		.short	0
+ 2989 0054 0000     		.short	0
+ 2990 0056 0000     		.short	0
+ 2991 0058 0000     		.short	0
+ 2992 005a 0000     		.short	0
+ 2993 005c 0000     		.short	0
+ 2994 005e 0000     		.short	0
+ 2995 0060 0000     		.short	0
+ 2996 0062 1800     		.short	24
+ 2997 0064 0000     		.short	0
+ 2998 0066 1900     		.short	25
+ 2999 0068 0000     		.short	0
+ 3000 006a 0000     		.short	0
+ 3001 006c 1600     		.short	22
+ 3002 006e 0000     		.short	0
+ 3003 0070 0000     		.short	0
+ 3004 0072 0000     		.short	0
+ 3005 0074 0000     		.short	0
+ 3006 0076 0000     		.short	0
+ 3007 0078 0000     		.short	0
+ 3008 007a 0000     		.short	0
+ 3009 007c 0000     		.short	0
+ 3010 007e 0000     		.short	0
+ 3011 0080 0000     		.short	0
+ 3012 0082 0000     		.short	0
+ 3013 0084 1500     		.short	21
+ 3014 0086 1800     		.short	24
+ 3015 0088 1600     		.short	22
+ 3016 008a 1100     		.short	17
+ 3017 008c 1400     		.short	20
+ 3018 008e 0000     		.short	0
+ 3019 0090 0000     		.short	0
+ 3020 0092 0000     		.short	0
+ 3021 0094 0000     		.short	0
+ 3022 0096 0000     		.short	0
+ 3023 0098 0000     		.short	0
+ 3024 009a 0000     		.short	0
+ 3025 009c 0000     		.short	0
+ 3026 009e 0000     		.short	0
+ 3027 00a0 0000     		.short	0
+ 3028 00a2 0000     		.short	0
+ 3029 00a4 1400     		.short	20
+ 3030 00a6 1200     		.short	18
+ 3031 00a8 0000     		.short	0
+ 3032 00aa 1300     		.short	19
+ 3033 00ac 0000     		.short	0
+ 3034 00ae 1700     		.short	23
+ 3035 00b0 0000     		.short	0
+ 3036 00b2 0000     		.short	0
+ 3037 00b4 0000     		.short	0
+ 3038 00b6 0000     		.short	0
+ 3039 00b8 0000     		.short	0
+ 3040 00ba 0000     		.short	0
+ 3041 00bc 0000     		.short	0
+ 3042 00be 0000     		.short	0
+ 3043 00c0 0000     		.short	0
+ 3044 00c2 1700     		.short	23
+ 3045 00c4 0000     		.short	0
+ 3046 00c6 1500     		.short	21
+ 3047 00c8 0000     		.short	0
+ 3048 00ca 1900     		.short	25
+ 3049 00cc 1200     		.short	18
+ 3050 00ce 1600     		.short	22
+ 3051 00d0 0000     		.short	0
+ 3052 00d2 0000     		.short	0
+ 3053 00d4 0000     		.short	0
+ 3054 00d6 0000     		.short	0
+ 3055 00d8 0000     		.short	0
+ 3056 00da 0000     		.short	0
+ 3057 00dc 0000     		.short	0
+ 3058 00de 0000     		.short	0
+ 3059 00e0 1600     		.short	22
+ 3060 00e2 0000     		.short	0
+ 3061 00e4 0000     		.short	0
+ 3062 00e6 0000     		.short	0
+ 3063 00e8 1800     		.short	24
+ 3064 00ea 0000     		.short	0
+ 3065 00ec 0000     		.short	0
+ 3066 00ee 0000     		.short	0
+ 3067 00f0 0000     		.short	0
+ 3068 00f2 0000     		.short	0
+ 3069 00f4 0000     		.short	0
+ 3070 00f6 0000     		.short	0
+ 3071 00f8 0000     		.short	0
+ 3072 00fa 0000     		.short	0
+ 3073 00fc 0000     		.short	0
+ 3074 00fe 0000     		.short	0
+ 3075 0100 0000     		.short	0
+ 3076 0102 0000     		.short	0
+ 3077 0104 0000     		.short	0
+ 3078 0106 0000     		.short	0
+ 3079 0108 0000     		.short	0
+ 3080 010a 1200     		.short	18
+ 3081 010c 0000     		.short	0
+ 3082 010e 0000     		.short	0
+ 3083 0110 1100     		.short	17
+ 3084 0112 0000     		.short	0
+ 3085 0114 0000     		.short	0
+ 3086 0116 0000     		.short	0
+ 3087 0118 0000     		.short	0
+ 3088 011a 0000     		.short	0
+ 3089 011c 0000     		.short	0
+ 3090 011e 0000     		.short	0
+ 3091              		.data
+ 3092              		.align	5
+ 3095              	cuadricula_ARM_ARM_ALL:
+ 3096 0480 1500     		.short	21
+ 3097 0482 0000     		.short	0
+ 3098 0484 0000     		.short	0
+ 3099 0486 1300     		.short	19
+ 3100 0488 0000     		.short	0
+ 3101 048a 0000     		.short	0
+ 3102 048c 0000     		.short	0
+ 3103 048e 0000     		.short	0
+ 3104 0490 0000     		.short	0
+ 3105 0492 0000     		.short	0
+ 3106 0494 0000     		.short	0
+ 3107 0496 0000     		.short	0
+ 3108 0498 0000     		.short	0
+ 3109 049a 0000     		.short	0
+ 3110 049c 0000     		.short	0
+ 3111 049e 0000     		.short	0
+ 3112 04a0 0000     		.short	0
+ 3113 04a2 0000     		.short	0
+ 3114 04a4 0000     		.short	0
+ 3115 04a6 0000     		.short	0
+ 3116 04a8 1900     		.short	25
+ 3117 04aa 0000     		.short	0
+ 3118 04ac 0000     		.short	0
+ 3119 04ae 0000     		.short	0
+ 3120 04b0 1500     		.short	21
+ 3121 04b2 0000     		.short	0
+ 3122 04b4 0000     		.short	0
+ 3123 04b6 0000     		.short	0
+ 3124 04b8 0000     		.short	0
+ 3125 04ba 0000     		.short	0
+ 3126 04bc 0000     		.short	0
+ 3127 04be 0000     		.short	0
+ 3128 04c0 0000     		.short	0
+ 3129 04c2 1900     		.short	25
+ 3130 04c4 1600     		.short	22
+ 3131 04c6 1700     		.short	23
+ 3132 04c8 0000     		.short	0
+ 3133 04ca 1500     		.short	21
+ 3134 04cc 0000     		.short	0
+ 3135 04ce 1300     		.short	19
+ 3136 04d0 0000     		.short	0
+ 3137 04d2 0000     		.short	0
+ 3138 04d4 0000     		.short	0
+ 3139 04d6 0000     		.short	0
+ 3140 04d8 0000     		.short	0
+ 3141 04da 0000     		.short	0
+ 3142 04dc 0000     		.short	0
+ 3143 04de 0000     		.short	0
+ 3144 04e0 0000     		.short	0
+ 3145 04e2 1800     		.short	24
+ 3146 04e4 0000     		.short	0
+ 3147 04e6 1900     		.short	25
+ 3148 04e8 0000     		.short	0
+ 3149 04ea 0000     		.short	0
+ 3150 04ec 1600     		.short	22
+ 3151 04ee 0000     		.short	0
+ 3152 04f0 0000     		.short	0
+ 3153 04f2 0000     		.short	0
+ 3154 04f4 0000     		.short	0
+ 3155 04f6 0000     		.short	0
+ 3156 04f8 0000     		.short	0
+ 3157 04fa 0000     		.short	0
+ 3158 04fc 0000     		.short	0
+ 3159 04fe 0000     		.short	0
+ 3160 0500 0000     		.short	0
+ 3161 0502 0000     		.short	0
+ 3162 0504 1500     		.short	21
+ 3163 0506 1800     		.short	24
+ 3164 0508 1600     		.short	22
+ 3165 050a 1100     		.short	17
+ 3166 050c 1400     		.short	20
+ 3167 050e 0000     		.short	0
+ 3168 0510 0000     		.short	0
+ 3169 0512 0000     		.short	0
+ 3170 0514 0000     		.short	0
+ 3171 0516 0000     		.short	0
+ 3172 0518 0000     		.short	0
+ 3173 051a 0000     		.short	0
+ 3174 051c 0000     		.short	0
+ 3175 051e 0000     		.short	0
+ 3176 0520 0000     		.short	0
+ 3177 0522 0000     		.short	0
+ 3178 0524 1400     		.short	20
+ 3179 0526 1200     		.short	18
+ 3180 0528 0000     		.short	0
+ 3181 052a 1300     		.short	19
+ 3182 052c 0000     		.short	0
+ 3183 052e 1700     		.short	23
+ 3184 0530 0000     		.short	0
+ 3185 0532 0000     		.short	0
+ 3186 0534 0000     		.short	0
+ 3187 0536 0000     		.short	0
+ 3188 0538 0000     		.short	0
+ 3189 053a 0000     		.short	0
+ 3190 053c 0000     		.short	0
+ 3191 053e 0000     		.short	0
+ 3192 0540 0000     		.short	0
+ 3193 0542 1700     		.short	23
+ 3194 0544 0000     		.short	0
+ 3195 0546 1500     		.short	21
+ 3196 0548 0000     		.short	0
+ 3197 054a 1900     		.short	25
+ 3198 054c 1200     		.short	18
+ 3199 054e 1600     		.short	22
+ 3200 0550 0000     		.short	0
+ 3201 0552 0000     		.short	0
+ 3202 0554 0000     		.short	0
+ 3203 0556 0000     		.short	0
+ 3204 0558 0000     		.short	0
+ 3205 055a 0000     		.short	0
+ 3206 055c 0000     		.short	0
+ 3207 055e 0000     		.short	0
+ 3208 0560 1600     		.short	22
+ 3209 0562 0000     		.short	0
+ 3210 0564 0000     		.short	0
+ 3211 0566 0000     		.short	0
+ 3212 0568 1800     		.short	24
+ 3213 056a 0000     		.short	0
+ 3214 056c 0000     		.short	0
+ 3215 056e 0000     		.short	0
+ 3216 0570 0000     		.short	0
+ 3217 0572 0000     		.short	0
+ 3218 0574 0000     		.short	0
+ 3219 0576 0000     		.short	0
+ 3220 0578 0000     		.short	0
+ 3221 057a 0000     		.short	0
+ 3222 057c 0000     		.short	0
+ 3223 057e 0000     		.short	0
+ 3224 0580 0000     		.short	0
+ 3225 0582 0000     		.short	0
+ 3226 0584 0000     		.short	0
+ 3227 0586 0000     		.short	0
+ 3228 0588 0000     		.short	0
+ 3229 058a 1200     		.short	18
+ 3230 058c 0000     		.short	0
+ 3231 058e 0000     		.short	0
+ 3232 0590 1100     		.short	17
+ 3233 0592 0000     		.short	0
+ 3234 0594 0000     		.short	0
+ 3235 0596 0000     		.short	0
+ 3236 0598 0000     		.short	0
+ 3237 059a 0000     		.short	0
+ 3238 059c 0000     		.short	0
+ 3239 059e 0000     		.short	0
+ 3240              		.align	5
+ 3243              	solucion:
+ 3244 05a0 159A     		.short	-26091
+ 3245 05a2 00FA     		.short	-1536
+ 3246 05a4 009E     		.short	-25088
+ 3247 05a6 13EB     		.short	-5357
+ 3248 05a8 00FA     		.short	-1536
+ 3249 05aa 80AB     		.short	-21632
+ 3250 05ac 001F     		.short	7936
+ 3251 05ae 003A     		.short	14848
+ 3252 05b0 800A     		.short	2688
+ 3253 05b2 0000     		.short	0
+ 3254 05b4 0000     		.short	0
+ 3255 05b6 0000     		.short	0
+ 3256 05b8 0000     		.short	0
+ 3257 05ba 0000     		.short	0
+ 3258 05bc 0000     		.short	0
+ 3259 05be 0000     		.short	0
+ 3260 05c0 0098     		.short	-26624
+ 3261 05c2 00F8     		.short	-2048
+ 3262 05c4 009C     		.short	-25600
+ 3263 05c6 00EB     		.short	-5376
+ 3264 05c8 19FA     		.short	-1511
+ 3265 05ca 80AB     		.short	-21632
+ 3266 05cc 009F     		.short	-24832
+ 3267 05ce 00BA     		.short	-17920
+ 3268 05d0 958A     		.short	-30059
+ 3269 05d2 0000     		.short	0
+ 3270 05d4 0000     		.short	0
+ 3271 05d6 0000     		.short	0
+ 3272 05d8 0000     		.short	0
+ 3273 05da 0000     		.short	0
+ 3274 05dc 0000     		.short	0
+ 3275 05de 0000     		.short	0
+ 3276 05e0 00BA     		.short	-17920
+ 3277 05e2 19FA     		.short	-1511
+ 3278 05e4 16BE     		.short	-16874
+ 3279 05e6 17FB     		.short	-1257
+ 3280 05e8 00FA     		.short	-1536
+ 3281 05ea 95BB     		.short	-17515
+ 3282 05ec 00BF     		.short	-16640
+ 3283 05ee 13BA     		.short	-17901
+ 3284 05f0 80BA     		.short	-17792
+ 3285 05f2 0000     		.short	0
+ 3286 05f4 0000     		.short	0
+ 3287 05f6 0000     		.short	0
+ 3288 05f8 0000     		.short	0
+ 3289 05fa 0000     		.short	0
+ 3290 05fc 0000     		.short	0
+ 3291 05fe 0000     		.short	0
+ 3292 0600 00DC     		.short	-9216
+ 3293 0602 18FC     		.short	-1000
+ 3294 0604 00DC     		.short	-9216
+ 3295 0606 99FB     		.short	-1127
+ 3296 0608 80D3     		.short	-11392
+ 3297 060a 80DB     		.short	-9344
+ 3298 060c 16F5     		.short	-2794
+ 3299 060e 00F6     		.short	-2560
+ 3300 0610 80FC     		.short	-896
+ 3301 0612 0000     		.short	0
+ 3302 0614 0000     		.short	0
+ 3303 0616 0000     		.short	0
+ 3304 0618 0000     		.short	0
+ 3305 061a 0000     		.short	0
+ 3306 061c 0000     		.short	0
+ 3307 061e 0000     		.short	0
+ 3308 0620 805C     		.short	23680
+ 3309 0622 80FC     		.short	-896
+ 3310 0624 955C     		.short	23701
+ 3311 0626 98FF     		.short	-104
+ 3312 0628 96DF     		.short	-8298
+ 3313 062a 91DF     		.short	-8303
+ 3314 062c 947D     		.short	32148
+ 3315 062e 807E     		.short	32384
+ 3316 0630 807C     		.short	31872
+ 3317 0632 0000     		.short	0
+ 3318 0634 0000     		.short	0
+ 3319 0636 0000     		.short	0
+ 3320 0638 0000     		.short	0
+ 3321 063a 0000     		.short	0
+ 3322 063c 0000     		.short	0
+ 3323 063e 0000     		.short	0
+ 3324 0640 007F     		.short	32512
+ 3325 0642 00EF     		.short	-4352
+ 3326 0644 147F     		.short	32532
+ 3327 0646 92FF     		.short	-110
+ 3328 0648 80F7     		.short	-2176
+ 3329 064a 93FF     		.short	-109
+ 3330 064c 0037     		.short	14080
+ 3331 064e 1737     		.short	14103
+ 3332 0650 803F     		.short	16256
+ 3333 0652 0000     		.short	0
+ 3334 0654 0000     		.short	0
+ 3335 0656 0000     		.short	0
+ 3336 0658 0000     		.short	0
+ 3337 065a 0000     		.short	0
+ 3338 065c 0000     		.short	0
+ 3339 065e 0000     		.short	0
+ 3340 0660 00B9     		.short	-18176
+ 3341 0662 17F9     		.short	-1769
+ 3342 0664 00BD     		.short	-17152
+ 3343 0666 15FB     		.short	-1259
+ 3344 0668 00F9     		.short	-1792
+ 3345 066a 99FB     		.short	-1127
+ 3346 066c 92BD     		.short	-17006
+ 3347 066e 96BB     		.short	-17514
+ 3348 0670 80B9     		.short	-18048
+ 3349 0672 0000     		.short	0
+ 3350 0674 0000     		.short	0
+ 3351 0676 0000     		.short	0
+ 3352 0678 0000     		.short	0
+ 3353 067a 0000     		.short	0
+ 3354 067c 0000     		.short	0
+ 3355 067e 0000     		.short	0
+ 3356 0680 1678     		.short	30742
+ 3357 0682 00F0     		.short	-4096
+ 3358 0684 007C     		.short	31744
+ 3359 0686 00FB     		.short	-1280
+ 3360 0688 18D9     		.short	-9960
+ 3361 068a 80DB     		.short	-9344
+ 3362 068c 8055     		.short	21888
+ 3363 068e 8073     		.short	29568
+ 3364 0690 8059     		.short	22912
+ 3365 0692 0000     		.short	0
+ 3366 0694 0000     		.short	0
+ 3367 0696 0000     		.short	0
+ 3368 0698 0000     		.short	0
+ 3369 069a 0000     		.short	0
+ 3370 069c 0000     		.short	0
+ 3371 069e 0000     		.short	0
+ 3372 06a0 8039     		.short	14720
+ 3373 06a2 80F1     		.short	-3712
+ 3374 06a4 803D     		.short	15744
+ 3375 06a6 80EB     		.short	-5248
+ 3376 06a8 80D9     		.short	-9856
+ 3377 06aa 92CB     		.short	-13422
+ 3378 06ac 8015     		.short	5504
+ 3379 06ae 8033     		.short	13184
+ 3380 06b0 9119     		.short	6545
+ 3381 06b2 0000     		.short	0
+ 3382 06b4 0000     		.short	0
+ 3383 06b6 0000     		.short	0
+ 3384 06b8 0000     		.short	0
+ 3385 06ba 0000     		.short	0
+ 3386 06bc 0000     		.short	0
+ 3387 06be 0000     		.short	0
+ 3388              		.bss
+ 3389              	estado_juego:
+ 3390 0000 00       		.space	1
+ 3391              	int_count:
+ 3392 0001 00       		.space	1
+ 3393              	fila:
+ 3394 0002 00       		.space	1
+ 3395              	columna:
+ 3396 0003 00       		.space	1
+ 3397              	valor:
+ 3398 0004 00       		.space	1
+ 3399              	valor_previo:
+ 3400 0005 00       		.space	1
+ 3401              	pantalla_mostrada:
+ 3402 0006 00       		.space	1
+ 3403 0007 00       		.align	2
+ 3404              	tiempo_inicio:
+ 3405 0008 00000000 		.space	4
+ 3406              		.align	2
+ 3407              	tiempo_final:
+ 3408 000c 00000000 		.space	4
+ 3409              		.text
+ 3410              		.align	2
+ 3412              	restaurar_cuadricula_original:
+ 3413              	.LFB7:
+   1:../maquina_estados.c **** /*********************************************************************************************
+   2:../maquina_estados.c **** * Fichero:		maquina_estados.c
+   3:../maquina_estados.c **** * Autor:		
+   4:../maquina_estados.c **** * Descrip:		MÃ¡quina de estados del juego Sudoku - ImplementaciÃ³n
+   5:../maquina_estados.c **** * Version:		1.0
+   6:../maquina_estados.c **** * Comentarios:	Este mÃ³dulo contiene TODA la lÃ³gica de la mÃ¡quina de estados del juego.
+   7:../maquina_estados.c **** *				Es independiente del mÃ©todo de entrada (botones fÃ­sicos o touchscreen).
+   8:../maquina_estados.c **** *********************************************************************************************/
+   9:../maquina_estados.c **** 
+  10:../maquina_estados.c **** /*--- ficheros de cabecera ---*/
+  11:../maquina_estados.c **** #include "maquina_estados.h"
+  12:../maquina_estados.c **** #include "8led.h"
+  13:../maquina_estados.c **** #include "cola.h"
+  14:../maquina_estados.c **** #include "eventos.h"
+  15:../maquina_estados.c **** #include "timer2.h"
+  16:../maquina_estados.c **** #include "lcd.h"
+  17:../maquina_estados.c **** #include "44blib.h"
+  18:../maquina_estados.c **** #include "def.h"
+  19:../maquina_estados.c **** #include "sudoku_2025.h"
+  20:../maquina_estados.c **** #include "lcd.h"
+  21:../maquina_estados.c **** #include "tableros.h"
+  22:../maquina_estados.c **** 
+  23:../maquina_estados.c **** /*=====================================================================================
+  24:../maquina_estados.c ****  * VARIABLES DE ESTADO (privadas del mÃ³dulo)
+  25:../maquina_estados.c ****  *====================================================================================*/
+  26:../maquina_estados.c **** 
+  27:../maquina_estados.c **** /* Variables de la mÃ¡quina de estados */
+  28:../maquina_estados.c **** static volatile EstadoSudoku estado_juego = ESPERANDO_INICIO;
+  29:../maquina_estados.c **** static volatile INT8U int_count = 0;              /* Contador para incremento de fila/columna/valor
+  30:../maquina_estados.c **** static volatile INT8U fila = 0;                   /* Fila seleccionada (0-8) */
+  31:../maquina_estados.c **** static volatile INT8U columna = 0;                /* Columna seleccionada (0-8) */
+  32:../maquina_estados.c **** static volatile INT8U valor = 0;                  /* Valor a insertar (0-9) */
+  33:../maquina_estados.c **** static volatile INT8U valor_previo = 0;           /* Valor previo de la celda (para detectar modifi
+  34:../maquina_estados.c **** 
+  35:../maquina_estados.c **** /* Variables de control del juego */
+  36:../maquina_estados.c **** static volatile INT8U pantalla_mostrada = 0;      /* Flag: pantalla inicial/final mostrada */
+  37:../maquina_estados.c **** static volatile INT32U tiempo_inicio = 0;         /* Timestamp de inicio de partida (timer2_count) 
+  38:../maquina_estados.c **** static volatile INT32U tiempo_final = 0;          /* Timestamp de fin de partida */
+  39:../maquina_estados.c **** 
+  40:../maquina_estados.c **** /* DeclaraciÃ³n externa de la cuadrÃ­cula del juego */
+  41:../maquina_estados.c **** extern CELDA (*cuadricula)[NUM_COLUMNAS];
+  42:../maquina_estados.c **** extern int celdas_vacias;
+  43:../maquina_estados.c **** 
+  44:../maquina_estados.c **** 
+  45:../maquina_estados.c **** /*=====================================================================================
+  46:../maquina_estados.c ****  * FUNCIONES AUXILIARES PRIVADAS
+  47:../maquina_estados.c ****  *====================================================================================*/
+  48:../maquina_estados.c **** 
+  49:../maquina_estados.c **** /*********************************************************************************************
+  50:../maquina_estados.c **** * name:		restaurar_cuadricula_original
+  51:../maquina_estados.c **** * func:		Restaura la cuadrÃ­cula al estado inicial (para reiniciar partida)
+  52:../maquina_estados.c **** * ret:		none
+  53:../maquina_estados.c **** *********************************************************************************************/
+  54:../maquina_estados.c **** static void restaurar_cuadricula_original(void)
+  55:../maquina_estados.c **** {
+ 3414              		.loc 1 55 0
+ 3415              		.cfi_startproc
+ 3416              		@ Function supports interworking.
+ 3417              		@ args = 0, pretend = 0, frame = 8
+ 3418              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3419 01b4 0DC0A0E1 		mov	ip, sp
+ 3420              	.LCFI12:
+ 3421              		.cfi_def_cfa_register 12
+ 3422 01b8 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3423 01bc 04B04CE2 		sub	fp, ip, #4
+ 3424              		.cfi_offset 14, -8
+ 3425              		.cfi_offset 13, -12
+ 3426              		.cfi_offset 11, -16
+ 3427              	.LCFI13:
+ 3428              		.cfi_def_cfa 11, 4
+ 3429 01c0 08D04DE2 		sub	sp, sp, #8
+  56:../maquina_estados.c **** 	INT8U f, c;
+  57:../maquina_estados.c **** 	
+  58:../maquina_estados.c **** 	/* Copiar toda la cuadrÃ­cula original desde el backup */
+  59:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3430              		.loc 1 59 0
+ 3431 01c4 0030A0E3 		mov	r3, #0
+ 3432 01c8 0D304BE5 		strb	r3, [fp, #-13]
+ 3433 01cc 1C0000EA 		b	.L8
+ 3434              	.L11:
+  60:../maquina_estados.c **** 	{
+  61:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3435              		.loc 1 61 0
+ 3436 01d0 0030A0E3 		mov	r3, #0
+ 3437 01d4 0E304BE5 		strb	r3, [fp, #-14]
+ 3438 01d8 130000EA 		b	.L9
+ 3439              	.L10:
+  62:../maquina_estados.c **** 		{
+  63:../maquina_estados.c **** 			cuadricula[f][c] = cuadricula_Respaldo[f][c];
+ 3440              		.loc 1 63 0 discriminator 2
+ 3441 01dc 78309FE5 		ldr	r3, .L12
+ 3442 01e0 002093E5 		ldr	r2, [r3, #0]
+ 3443 01e4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3444 01e8 8332A0E1 		mov	r3, r3, asl #5
+ 3445 01ec 031082E0 		add	r1, r2, r3
+ 3446 01f0 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3447 01f4 0DC05BE5 		ldrb	ip, [fp, #-13]	@ zero_extendqisi2
+ 3448 01f8 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 3449 01fc 5C009FE5 		ldr	r0, .L12+4
+ 3450 0200 0CC2A0E1 		mov	ip, ip, asl #4
+ 3451 0204 02208CE0 		add	r2, ip, r2
+ 3452 0208 8220A0E1 		mov	r2, r2, asl #1
+ 3453 020c 022080E0 		add	r2, r0, r2
+ 3454 0210 B020D2E1 		ldrh	r2, [r2, #0]
+ 3455 0214 8330A0E1 		mov	r3, r3, asl #1
+ 3456 0218 033081E0 		add	r3, r1, r3
+ 3457 021c B020C3E1 		strh	r2, [r3, #0]	@ movhi
+  61:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3458              		.loc 1 61 0 discriminator 2
+ 3459 0220 0E305BE5 		ldrb	r3, [fp, #-14]
+ 3460 0224 013083E2 		add	r3, r3, #1
+ 3461 0228 0E304BE5 		strb	r3, [fp, #-14]
+ 3462              	.L9:
+  61:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3463              		.loc 1 61 0 is_stmt 0 discriminator 1
+ 3464 022c 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3465 0230 0F0053E3 		cmp	r3, #15
+ 3466 0234 E8FFFF9A 		bls	.L10
+  59:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3467              		.loc 1 59 0 is_stmt 1
+ 3468 0238 0D305BE5 		ldrb	r3, [fp, #-13]
+ 3469 023c 013083E2 		add	r3, r3, #1
+ 3470 0240 0D304BE5 		strb	r3, [fp, #-13]
+ 3471              	.L8:
+  59:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3472              		.loc 1 59 0 is_stmt 0 discriminator 1
+ 3473 0244 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3474 0248 080053E3 		cmp	r3, #8
+ 3475 024c DFFFFF9A 		bls	.L11
+  64:../maquina_estados.c **** 		}
+  65:../maquina_estados.c **** 	}
+  66:../maquina_estados.c **** }
+ 3476              		.loc 1 66 0 is_stmt 1
+ 3477 0250 0CD04BE2 		sub	sp, fp, #12
+ 3478 0254 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3479 0258 1EFF2FE1 		bx	lr
+ 3480              	.L13:
+ 3481              		.align	2
+ 3482              	.L12:
+ 3483 025c 00000000 		.word	cuadricula
+ 3484 0260 00000000 		.word	cuadricula_Respaldo
+ 3485              		.cfi_endproc
+ 3486              	.LFE7:
+ 3488              		.align	2
+ 3490              	marcar_celdas_en_conflicto:
+ 3491              	.LFB8:
+  67:../maquina_estados.c **** 
+  68:../maquina_estados.c **** /*********************************************************************************************
+  69:../maquina_estados.c **** * name:		marcar_celdas_en_conflicto
+  70:../maquina_estados.c **** * func:		Marca todas las celdas que estÃ¡n en conflicto con un valor introducido
+  71:../maquina_estados.c **** * para:		fila_error, col_error - celda donde se intentÃ³ poner el valor
+  72:../maquina_estados.c **** *			valor_error - valor que causÃ³ el conflicto
+  73:../maquina_estados.c **** * ret:		none
+  74:../maquina_estados.c **** * comment:	Marca la celda objetivo y todas las celdas con el mismo valor en:
+  75:../maquina_estados.c **** *			- La misma fila
+  76:../maquina_estados.c **** *			- La misma columna
+  77:../maquina_estados.c **** *			- La misma regiÃ³n 3x3
+  78:../maquina_estados.c **** *********************************************************************************************/
+  79:../maquina_estados.c **** static void marcar_celdas_en_conflicto(INT8U fila_error, INT8U col_error, INT8U valor_error)
+  80:../maquina_estados.c **** {
+ 3492              		.loc 1 80 0
+ 3493              		.cfi_startproc
+ 3494              		@ Function supports interworking.
+ 3495              		@ args = 0, pretend = 0, frame = 16
+ 3496              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3497 0264 0DC0A0E1 		mov	ip, sp
+ 3498              	.LCFI14:
+ 3499              		.cfi_def_cfa_register 12
+ 3500 0268 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3501 026c 04B04CE2 		sub	fp, ip, #4
+ 3502              		.cfi_offset 14, -8
+ 3503              		.cfi_offset 13, -12
+ 3504              		.cfi_offset 11, -16
+ 3505              	.LCFI15:
+ 3506              		.cfi_def_cfa 11, 4
+ 3507 0270 10D04DE2 		sub	sp, sp, #16
+ 3508 0274 0230A0E1 		mov	r3, r2
+ 3509 0278 0020A0E1 		mov	r2, r0
+ 3510 027c 15204BE5 		strb	r2, [fp, #-21]
+ 3511 0280 0120A0E1 		mov	r2, r1
+ 3512 0284 16204BE5 		strb	r2, [fp, #-22]
+ 3513 0288 17304BE5 		strb	r3, [fp, #-23]
+  81:../maquina_estados.c **** 	INT8U i, f, c;
+  82:../maquina_estados.c **** 	INT8U region_fila_inicio, region_col_inicio;
+  83:../maquina_estados.c **** 	
+  84:../maquina_estados.c **** 	/* Primero limpiar todos los errores previos */
+  85:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3514              		.loc 1 85 0
+ 3515 028c 0030A0E3 		mov	r3, #0
+ 3516 0290 0E304BE5 		strb	r3, [fp, #-14]
+ 3517 0294 160000EA 		b	.L15
+ 3518              	.L18:
+  86:../maquina_estados.c **** 	{
+  87:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3519              		.loc 1 87 0
+ 3520 0298 0030A0E3 		mov	r3, #0
+ 3521 029c 0F304BE5 		strb	r3, [fp, #-15]
+ 3522 02a0 0D0000EA 		b	.L16
+ 3523              	.L17:
+  88:../maquina_estados.c **** 		{
+  89:../maquina_estados.c **** 			celda_limpiar_error(&cuadricula[f][c]);
+ 3524              		.loc 1 89 0 discriminator 2
+ 3525 02a4 EC329FE5 		ldr	r3, .L31
+ 3526 02a8 003093E5 		ldr	r3, [r3, #0]
+ 3527 02ac 0320A0E1 		mov	r2, r3
+ 3528 02b0 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3529 02b4 0312A0E1 		mov	r1, r3, asl #4
+ 3530 02b8 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 3531 02bc 033081E0 		add	r3, r1, r3
+ 3532 02c0 8330A0E1 		mov	r3, r3, asl #1
+ 3533 02c4 033082E0 		add	r3, r2, r3
+ 3534 02c8 0300A0E1 		mov	r0, r3
+ 3535 02cc A9FFFFEB 		bl	celda_limpiar_error
+  87:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3536              		.loc 1 87 0 discriminator 2
+ 3537 02d0 0F305BE5 		ldrb	r3, [fp, #-15]
+ 3538 02d4 013083E2 		add	r3, r3, #1
+ 3539 02d8 0F304BE5 		strb	r3, [fp, #-15]
+ 3540              	.L16:
+  87:../maquina_estados.c **** 		for (c = 0; c < NUM_COLUMNAS; c++)
+ 3541              		.loc 1 87 0 is_stmt 0 discriminator 1
+ 3542 02dc 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 3543 02e0 0F0053E3 		cmp	r3, #15
+ 3544 02e4 EEFFFF9A 		bls	.L17
+  85:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3545              		.loc 1 85 0 is_stmt 1
+ 3546 02e8 0E305BE5 		ldrb	r3, [fp, #-14]
+ 3547 02ec 013083E2 		add	r3, r3, #1
+ 3548 02f0 0E304BE5 		strb	r3, [fp, #-14]
+ 3549              	.L15:
+  85:../maquina_estados.c **** 	for (f = 0; f < NUM_FILAS; f++)
+ 3550              		.loc 1 85 0 is_stmt 0 discriminator 1
+ 3551 02f4 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3552 02f8 080053E3 		cmp	r3, #8
+ 3553 02fc E5FFFF9A 		bls	.L18
+  90:../maquina_estados.c **** 		}
+  91:../maquina_estados.c **** 	}
+  92:../maquina_estados.c **** 	
+  93:../maquina_estados.c **** 	/* Marcar la celda donde intentamos poner el valor */
+  94:../maquina_estados.c **** 	celda_marcar_error(&cuadricula[fila_error][col_error]);
+ 3554              		.loc 1 94 0 is_stmt 1
+ 3555 0300 90329FE5 		ldr	r3, .L31
+ 3556 0304 003093E5 		ldr	r3, [r3, #0]
+ 3557 0308 0320A0E1 		mov	r2, r3
+ 3558 030c 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3559 0310 0312A0E1 		mov	r1, r3, asl #4
+ 3560 0314 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 3561 0318 033081E0 		add	r3, r1, r3
+ 3562 031c 8330A0E1 		mov	r3, r3, asl #1
+ 3563 0320 033082E0 		add	r3, r2, r3
+ 3564 0324 0300A0E1 		mov	r0, r3
+ 3565 0328 83FFFFEB 		bl	celda_marcar_error
+  95:../maquina_estados.c **** 	
+  96:../maquina_estados.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma fila */
+  97:../maquina_estados.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 3566              		.loc 1 97 0
+ 3567 032c 0030A0E3 		mov	r3, #0
+ 3568 0330 0D304BE5 		strb	r3, [fp, #-13]
+ 3569 0334 200000EA 		b	.L19
+ 3570              	.L21:
+  98:../maquina_estados.c **** 	{
+  99:../maquina_estados.c **** 		if (i != col_error && celda_leer_valor(cuadricula[fila_error][i]) == valor_error)
+ 3571              		.loc 1 99 0
+ 3572 0338 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 3573 033c 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 3574 0340 030052E1 		cmp	r2, r3
+ 3575 0344 1900000A 		beq	.L20
+ 3576              		.loc 1 99 0 is_stmt 0 discriminator 1
+ 3577 0348 48329FE5 		ldr	r3, .L31
+ 3578 034c 002093E5 		ldr	r2, [r3, #0]
+ 3579 0350 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3580 0354 8332A0E1 		mov	r3, r3, asl #5
+ 3581 0358 032082E0 		add	r2, r2, r3
+ 3582 035c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3583 0360 8330A0E1 		mov	r3, r3, asl #1
+ 3584 0364 033082E0 		add	r3, r2, r3
+ 3585 0368 B030D3E1 		ldrh	r3, [r3, #0]
+ 3586 036c 0300A0E1 		mov	r0, r3
+ 3587 0370 40FFFFEB 		bl	celda_leer_valor
+ 3588 0374 0030A0E1 		mov	r3, r0
+ 3589 0378 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 3590 037c 030052E1 		cmp	r2, r3
+ 3591 0380 0A00001A 		bne	.L20
+ 100:../maquina_estados.c **** 		{
+ 101:../maquina_estados.c **** 			celda_marcar_error(&cuadricula[fila_error][i]);
+ 3592              		.loc 1 101 0 is_stmt 1
+ 3593 0384 0C329FE5 		ldr	r3, .L31
+ 3594 0388 003093E5 		ldr	r3, [r3, #0]
+ 3595 038c 0320A0E1 		mov	r2, r3
+ 3596 0390 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3597 0394 0312A0E1 		mov	r1, r3, asl #4
+ 3598 0398 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3599 039c 033081E0 		add	r3, r1, r3
+ 3600 03a0 8330A0E1 		mov	r3, r3, asl #1
+ 3601 03a4 033082E0 		add	r3, r2, r3
+ 3602 03a8 0300A0E1 		mov	r0, r3
+ 3603 03ac 62FFFFEB 		bl	celda_marcar_error
+ 3604              	.L20:
+  97:../maquina_estados.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 3605              		.loc 1 97 0
+ 3606 03b0 0D305BE5 		ldrb	r3, [fp, #-13]
+ 3607 03b4 013083E2 		add	r3, r3, #1
+ 3608 03b8 0D304BE5 		strb	r3, [fp, #-13]
+ 3609              	.L19:
+  97:../maquina_estados.c **** 	for (i = 0; i < NUM_COLUMNAS; i++)
+ 3610              		.loc 1 97 0 is_stmt 0 discriminator 1
+ 3611 03bc 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3612 03c0 0F0053E3 		cmp	r3, #15
+ 3613 03c4 DBFFFF9A 		bls	.L21
+ 102:../maquina_estados.c **** 		}
+ 103:../maquina_estados.c **** 	}
+ 104:../maquina_estados.c **** 	
+ 105:../maquina_estados.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma columna */
+ 106:../maquina_estados.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 3614              		.loc 1 106 0 is_stmt 1
+ 3615 03c8 0030A0E3 		mov	r3, #0
+ 3616 03cc 0D304BE5 		strb	r3, [fp, #-13]
+ 3617 03d0 200000EA 		b	.L22
+ 3618              	.L24:
+ 107:../maquina_estados.c **** 	{
+ 108:../maquina_estados.c **** 		if (i != fila_error && celda_leer_valor(cuadricula[i][col_error]) == valor_error)
+ 3619              		.loc 1 108 0
+ 3620 03d4 0D205BE5 		ldrb	r2, [fp, #-13]	@ zero_extendqisi2
+ 3621 03d8 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3622 03dc 030052E1 		cmp	r2, r3
+ 3623 03e0 1900000A 		beq	.L23
+ 3624              		.loc 1 108 0 is_stmt 0 discriminator 1
+ 3625 03e4 AC319FE5 		ldr	r3, .L31
+ 3626 03e8 002093E5 		ldr	r2, [r3, #0]
+ 3627 03ec 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3628 03f0 8332A0E1 		mov	r3, r3, asl #5
+ 3629 03f4 032082E0 		add	r2, r2, r3
+ 3630 03f8 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 3631 03fc 8330A0E1 		mov	r3, r3, asl #1
+ 3632 0400 033082E0 		add	r3, r2, r3
+ 3633 0404 B030D3E1 		ldrh	r3, [r3, #0]
+ 3634 0408 0300A0E1 		mov	r0, r3
+ 3635 040c 19FFFFEB 		bl	celda_leer_valor
+ 3636 0410 0030A0E1 		mov	r3, r0
+ 3637 0414 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 3638 0418 030052E1 		cmp	r2, r3
+ 3639 041c 0A00001A 		bne	.L23
+ 109:../maquina_estados.c **** 		{
+ 110:../maquina_estados.c **** 			celda_marcar_error(&cuadricula[i][col_error]);
+ 3640              		.loc 1 110 0 is_stmt 1
+ 3641 0420 70319FE5 		ldr	r3, .L31
+ 3642 0424 003093E5 		ldr	r3, [r3, #0]
+ 3643 0428 0320A0E1 		mov	r2, r3
+ 3644 042c 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3645 0430 0312A0E1 		mov	r1, r3, asl #4
+ 3646 0434 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 3647 0438 033081E0 		add	r3, r1, r3
+ 3648 043c 8330A0E1 		mov	r3, r3, asl #1
+ 3649 0440 033082E0 		add	r3, r2, r3
+ 3650 0444 0300A0E1 		mov	r0, r3
+ 3651 0448 3BFFFFEB 		bl	celda_marcar_error
+ 3652              	.L23:
+ 106:../maquina_estados.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 3653              		.loc 1 106 0
+ 3654 044c 0D305BE5 		ldrb	r3, [fp, #-13]
+ 3655 0450 013083E2 		add	r3, r3, #1
+ 3656 0454 0D304BE5 		strb	r3, [fp, #-13]
+ 3657              	.L22:
+ 106:../maquina_estados.c **** 	for (i = 0; i < NUM_FILAS; i++)
+ 3658              		.loc 1 106 0 is_stmt 0 discriminator 1
+ 3659 0458 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 3660 045c 080053E3 		cmp	r3, #8
+ 3661 0460 DBFFFF9A 		bls	.L24
+ 111:../maquina_estados.c **** 		}
+ 112:../maquina_estados.c **** 	}
+ 113:../maquina_estados.c **** 	
+ 114:../maquina_estados.c **** 	/* Buscar y marcar todas las celdas con el mismo valor en la misma regiÃ³n 3x3 */
+ 115:../maquina_estados.c **** 	region_fila_inicio = (fila_error / 3) * 3;
+ 3662              		.loc 1 115 0 is_stmt 1
+ 3663 0464 15205BE5 		ldrb	r2, [fp, #-21]	@ zero_extendqisi2
+ 3664 0468 2C319FE5 		ldr	r3, .L31+4
+ 3665 046c 921383E0 		umull	r1, r3, r2, r3
+ 3666 0470 A330A0E1 		mov	r3, r3, lsr #1
+ 3667 0474 FF3003E2 		and	r3, r3, #255
+ 3668 0478 0320A0E1 		mov	r2, r3
+ 3669 047c 8220A0E1 		mov	r2, r2, asl #1
+ 3670 0480 033082E0 		add	r3, r2, r3
+ 3671 0484 10304BE5 		strb	r3, [fp, #-16]
+ 116:../maquina_estados.c **** 	region_col_inicio = (col_error / 3) * 3;
+ 3672              		.loc 1 116 0
+ 3673 0488 16205BE5 		ldrb	r2, [fp, #-22]	@ zero_extendqisi2
+ 3674 048c 08319FE5 		ldr	r3, .L31+4
+ 3675 0490 921383E0 		umull	r1, r3, r2, r3
+ 3676 0494 A330A0E1 		mov	r3, r3, lsr #1
+ 3677 0498 FF3003E2 		and	r3, r3, #255
+ 3678 049c 0320A0E1 		mov	r2, r3
+ 3679 04a0 8220A0E1 		mov	r2, r2, asl #1
+ 3680 04a4 033082E0 		add	r3, r2, r3
+ 3681 04a8 11304BE5 		strb	r3, [fp, #-17]
+ 117:../maquina_estados.c **** 	
+ 118:../maquina_estados.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 3682              		.loc 1 118 0
+ 3683 04ac 10305BE5 		ldrb	r3, [fp, #-16]
+ 3684 04b0 0E304BE5 		strb	r3, [fp, #-14]
+ 3685 04b4 2F0000EA 		b	.L25
+ 3686              	.L30:
+ 119:../maquina_estados.c **** 	{
+ 120:../maquina_estados.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 3687              		.loc 1 120 0
+ 3688 04b8 11305BE5 		ldrb	r3, [fp, #-17]
+ 3689 04bc 0F304BE5 		strb	r3, [fp, #-15]
+ 3690 04c0 240000EA 		b	.L26
+ 3691              	.L29:
+ 121:../maquina_estados.c **** 		{
+ 122:../maquina_estados.c **** 			if ((f != fila_error || c != col_error) && celda_leer_valor(cuadricula[f][c]) == valor_error)
+ 3692              		.loc 1 122 0
+ 3693 04c4 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 3694 04c8 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 3695 04cc 030052E1 		cmp	r2, r3
+ 3696 04d0 0300001A 		bne	.L27
+ 3697              		.loc 1 122 0 is_stmt 0 discriminator 2
+ 3698 04d4 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 3699 04d8 16305BE5 		ldrb	r3, [fp, #-22]	@ zero_extendqisi2
+ 3700 04dc 030052E1 		cmp	r2, r3
+ 3701 04e0 1900000A 		beq	.L28
+ 3702              	.L27:
+ 3703              		.loc 1 122 0 discriminator 1
+ 3704 04e4 AC309FE5 		ldr	r3, .L31
+ 3705 04e8 002093E5 		ldr	r2, [r3, #0]
+ 3706 04ec 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3707 04f0 8332A0E1 		mov	r3, r3, asl #5
+ 3708 04f4 032082E0 		add	r2, r2, r3
+ 3709 04f8 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 3710 04fc 8330A0E1 		mov	r3, r3, asl #1
+ 3711 0500 033082E0 		add	r3, r2, r3
+ 3712 0504 B030D3E1 		ldrh	r3, [r3, #0]
+ 3713 0508 0300A0E1 		mov	r0, r3
+ 3714 050c D9FEFFEB 		bl	celda_leer_valor
+ 3715 0510 0030A0E1 		mov	r3, r0
+ 3716 0514 17205BE5 		ldrb	r2, [fp, #-23]	@ zero_extendqisi2
+ 3717 0518 030052E1 		cmp	r2, r3
+ 3718 051c 0A00001A 		bne	.L28
+ 123:../maquina_estados.c **** 			{
+ 124:../maquina_estados.c **** 				celda_marcar_error(&cuadricula[f][c]);
+ 3719              		.loc 1 124 0 is_stmt 1
+ 3720 0520 70309FE5 		ldr	r3, .L31
+ 3721 0524 003093E5 		ldr	r3, [r3, #0]
+ 3722 0528 0320A0E1 		mov	r2, r3
+ 3723 052c 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 3724 0530 0312A0E1 		mov	r1, r3, asl #4
+ 3725 0534 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 3726 0538 033081E0 		add	r3, r1, r3
+ 3727 053c 8330A0E1 		mov	r3, r3, asl #1
+ 3728 0540 033082E0 		add	r3, r2, r3
+ 3729 0544 0300A0E1 		mov	r0, r3
+ 3730 0548 FBFEFFEB 		bl	celda_marcar_error
+ 3731              	.L28:
+ 120:../maquina_estados.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 3732              		.loc 1 120 0
+ 3733 054c 0F305BE5 		ldrb	r3, [fp, #-15]
+ 3734 0550 013083E2 		add	r3, r3, #1
+ 3735 0554 0F304BE5 		strb	r3, [fp, #-15]
+ 3736              	.L26:
+ 120:../maquina_estados.c **** 		for (c = region_col_inicio; c < region_col_inicio + 3; c++)
+ 3737              		.loc 1 120 0 is_stmt 0 discriminator 1
+ 3738 0558 0F205BE5 		ldrb	r2, [fp, #-15]	@ zero_extendqisi2
+ 3739 055c 11305BE5 		ldrb	r3, [fp, #-17]	@ zero_extendqisi2
+ 3740 0560 033083E2 		add	r3, r3, #3
+ 3741 0564 030052E1 		cmp	r2, r3
+ 3742 0568 D5FFFFBA 		blt	.L29
+ 118:../maquina_estados.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 3743              		.loc 1 118 0 is_stmt 1
+ 3744 056c 0E305BE5 		ldrb	r3, [fp, #-14]
+ 3745 0570 013083E2 		add	r3, r3, #1
+ 3746 0574 0E304BE5 		strb	r3, [fp, #-14]
+ 3747              	.L25:
+ 118:../maquina_estados.c **** 	for (f = region_fila_inicio; f < region_fila_inicio + 3; f++)
+ 3748              		.loc 1 118 0 is_stmt 0 discriminator 1
+ 3749 0578 0E205BE5 		ldrb	r2, [fp, #-14]	@ zero_extendqisi2
+ 3750 057c 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 3751 0580 033083E2 		add	r3, r3, #3
+ 3752 0584 030052E1 		cmp	r2, r3
+ 3753 0588 CAFFFFBA 		blt	.L30
+ 125:../maquina_estados.c **** 			}
+ 126:../maquina_estados.c **** 		}
+ 127:../maquina_estados.c **** 	}
+ 128:../maquina_estados.c **** }
+ 3754              		.loc 1 128 0 is_stmt 1
+ 3755 058c 0CD04BE2 		sub	sp, fp, #12
+ 3756 0590 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3757 0594 1EFF2FE1 		bx	lr
+ 3758              	.L32:
+ 3759              		.align	2
+ 3760              	.L31:
+ 3761 0598 00000000 		.word	cuadricula
+ 3762 059c ABAAAAAA 		.word	-1431655765
+ 3763              		.cfi_endproc
+ 3764              	.LFE8:
+ 3766              		.align	2
+ 3767              		.global	Sudoku_Obtener_Estado
+ 3769              	Sudoku_Obtener_Estado:
+ 3770              	.LFB9:
+ 129:../maquina_estados.c **** 
+ 130:../maquina_estados.c **** 
+ 131:../maquina_estados.c **** /*=====================================================================================
+ 132:../maquina_estados.c ****  * IMPLEMENTACIÃ“N: FUNCIONES PÃšBLICAS - CONSULTA DE ESTADO
+ 133:../maquina_estados.c ****  *====================================================================================*/
+ 134:../maquina_estados.c **** 
+ 135:../maquina_estados.c **** int Sudoku_Obtener_Estado(void)
+ 136:../maquina_estados.c **** {
+ 3771              		.loc 1 136 0
+ 3772              		.cfi_startproc
+ 3773              		@ Function supports interworking.
+ 3774              		@ args = 0, pretend = 0, frame = 0
+ 3775              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3776 05a0 0DC0A0E1 		mov	ip, sp
+ 3777              	.LCFI16:
+ 3778              		.cfi_def_cfa_register 12
+ 3779 05a4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3780 05a8 04B04CE2 		sub	fp, ip, #4
+ 3781              		.cfi_offset 14, -8
+ 3782              		.cfi_offset 13, -12
+ 3783              		.cfi_offset 11, -16
+ 3784              	.LCFI17:
+ 3785              		.cfi_def_cfa 11, 4
+ 137:../maquina_estados.c **** 	return (int)estado_juego;
+ 3786              		.loc 1 137 0
+ 3787 05ac 14309FE5 		ldr	r3, .L34
+ 3788 05b0 0030D3E5 		ldrb	r3, [r3, #0]
+ 3789 05b4 FF3003E2 		and	r3, r3, #255
+ 138:../maquina_estados.c **** }
+ 3790              		.loc 1 138 0
+ 3791 05b8 0300A0E1 		mov	r0, r3
+ 3792 05bc 0CD04BE2 		sub	sp, fp, #12
+ 3793 05c0 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3794 05c4 1EFF2FE1 		bx	lr
+ 3795              	.L35:
+ 3796              		.align	2
+ 3797              	.L34:
+ 3798 05c8 00000000 		.word	estado_juego
+ 3799              		.cfi_endproc
+ 3800              	.LFE9:
+ 3802              		.align	2
+ 3803              		.global	Sudoku_Partida_Terminada
+ 3805              	Sudoku_Partida_Terminada:
+ 3806              	.LFB10:
+ 139:../maquina_estados.c **** 
+ 140:../maquina_estados.c **** int Sudoku_Partida_Terminada(void)
+ 141:../maquina_estados.c **** {
+ 3807              		.loc 1 141 0
+ 3808              		.cfi_startproc
+ 3809              		@ Function supports interworking.
+ 3810              		@ args = 0, pretend = 0, frame = 0
+ 3811              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3812 05cc 0DC0A0E1 		mov	ip, sp
+ 3813              	.LCFI18:
+ 3814              		.cfi_def_cfa_register 12
+ 3815 05d0 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3816 05d4 04B04CE2 		sub	fp, ip, #4
+ 3817              		.cfi_offset 14, -8
+ 3818              		.cfi_offset 13, -12
+ 3819              		.cfi_offset 11, -16
+ 3820              	.LCFI19:
+ 3821              		.cfi_def_cfa 11, 4
+ 142:../maquina_estados.c **** 	return (estado_juego == PARTIDA_TERMINADA);
+ 3822              		.loc 1 142 0
+ 3823 05d8 20309FE5 		ldr	r3, .L37
+ 3824 05dc 0030D3E5 		ldrb	r3, [r3, #0]
+ 3825 05e0 FF3003E2 		and	r3, r3, #255
+ 3826 05e4 070053E3 		cmp	r3, #7
+ 3827 05e8 0030A013 		movne	r3, #0
+ 3828 05ec 0130A003 		moveq	r3, #1
+ 143:../maquina_estados.c **** }
+ 3829              		.loc 1 143 0
+ 3830 05f0 0300A0E1 		mov	r0, r3
+ 3831 05f4 0CD04BE2 		sub	sp, fp, #12
+ 3832 05f8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3833 05fc 1EFF2FE1 		bx	lr
+ 3834              	.L38:
+ 3835              		.align	2
+ 3836              	.L37:
+ 3837 0600 00000000 		.word	estado_juego
+ 3838              		.cfi_endproc
+ 3839              	.LFE10:
+ 3841              		.align	2
+ 3842              		.global	Sudoku_Juego_En_Progreso
+ 3844              	Sudoku_Juego_En_Progreso:
+ 3845              	.LFB11:
+ 144:../maquina_estados.c **** 
+ 145:../maquina_estados.c **** int Sudoku_Juego_En_Progreso(void)
+ 146:../maquina_estados.c **** {
+ 3846              		.loc 1 146 0
+ 3847              		.cfi_startproc
+ 3848              		@ Function supports interworking.
+ 3849              		@ args = 0, pretend = 0, frame = 0
+ 3850              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3851 0604 0DC0A0E1 		mov	ip, sp
+ 3852              	.LCFI20:
+ 3853              		.cfi_def_cfa_register 12
+ 3854 0608 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3855 060c 04B04CE2 		sub	fp, ip, #4
+ 3856              		.cfi_offset 14, -8
+ 3857              		.cfi_offset 13, -12
+ 3858              		.cfi_offset 11, -16
+ 3859              	.LCFI21:
+ 3860              		.cfi_def_cfa 11, 4
+ 147:../maquina_estados.c **** 	return (estado_juego != ESPERANDO_INICIO && estado_juego != PARTIDA_TERMINADA);
+ 3861              		.loc 1 147 0
+ 3862 0610 3C309FE5 		ldr	r3, .L42
+ 3863 0614 0030D3E5 		ldrb	r3, [r3, #0]
+ 3864 0618 FF3003E2 		and	r3, r3, #255
+ 3865 061c 000053E3 		cmp	r3, #0
+ 3866 0620 0600000A 		beq	.L40
+ 3867              		.loc 1 147 0 is_stmt 0 discriminator 1
+ 3868 0624 28309FE5 		ldr	r3, .L42
+ 3869 0628 0030D3E5 		ldrb	r3, [r3, #0]
+ 3870 062c FF3003E2 		and	r3, r3, #255
+ 3871 0630 070053E3 		cmp	r3, #7
+ 3872 0634 0100000A 		beq	.L40
+ 3873 0638 0130A0E3 		mov	r3, #1
+ 3874 063c 000000EA 		b	.L41
+ 3875              	.L40:
+ 3876              		.loc 1 147 0 discriminator 2
+ 3877 0640 0030A0E3 		mov	r3, #0
+ 3878              	.L41:
+ 148:../maquina_estados.c **** }
+ 3879              		.loc 1 148 0 is_stmt 1 discriminator 3
+ 3880 0644 0300A0E1 		mov	r0, r3
+ 3881 0648 0CD04BE2 		sub	sp, fp, #12
+ 3882 064c 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3883 0650 1EFF2FE1 		bx	lr
+ 3884              	.L43:
+ 3885              		.align	2
+ 3886              	.L42:
+ 3887 0654 00000000 		.word	estado_juego
+ 3888              		.cfi_endproc
+ 3889              	.LFE11:
+ 3891              		.align	2
+ 3892              		.global	Sudoku_Obtener_Tiempo_Inicio
+ 3894              	Sudoku_Obtener_Tiempo_Inicio:
+ 3895              	.LFB12:
+ 149:../maquina_estados.c **** 
+ 150:../maquina_estados.c **** unsigned int Sudoku_Obtener_Tiempo_Inicio(void)
+ 151:../maquina_estados.c **** {
+ 3896              		.loc 1 151 0
+ 3897              		.cfi_startproc
+ 3898              		@ Function supports interworking.
+ 3899              		@ args = 0, pretend = 0, frame = 0
+ 3900              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3901 0658 0DC0A0E1 		mov	ip, sp
+ 3902              	.LCFI22:
+ 3903              		.cfi_def_cfa_register 12
+ 3904 065c 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3905 0660 04B04CE2 		sub	fp, ip, #4
+ 3906              		.cfi_offset 14, -8
+ 3907              		.cfi_offset 13, -12
+ 3908              		.cfi_offset 11, -16
+ 3909              	.LCFI23:
+ 3910              		.cfi_def_cfa 11, 4
+ 152:../maquina_estados.c **** 	return tiempo_inicio;
+ 3911              		.loc 1 152 0
+ 3912 0664 10309FE5 		ldr	r3, .L45
+ 3913 0668 003093E5 		ldr	r3, [r3, #0]
+ 153:../maquina_estados.c **** }
+ 3914              		.loc 1 153 0
+ 3915 066c 0300A0E1 		mov	r0, r3
+ 3916 0670 0CD04BE2 		sub	sp, fp, #12
+ 3917 0674 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 3918 0678 1EFF2FE1 		bx	lr
+ 3919              	.L46:
+ 3920              		.align	2
+ 3921              	.L45:
+ 3922 067c 08000000 		.word	tiempo_inicio
+ 3923              		.cfi_endproc
+ 3924              	.LFE12:
+ 3926              		.align	2
+ 3927              		.global	Sudoku_Cambiar_Estado
+ 3929              	Sudoku_Cambiar_Estado:
+ 3930              	.LFB13:
+ 154:../maquina_estados.c **** 
+ 155:../maquina_estados.c **** 
+ 156:../maquina_estados.c **** /*=====================================================================================
+ 157:../maquina_estados.c ****  * IMPLEMENTACIÃ“N: TRANSICIÃ“N MANUAL DE ESTADOS
+ 158:../maquina_estados.c ****  *====================================================================================*/
+ 159:../maquina_estados.c **** 
+ 160:../maquina_estados.c **** void Sudoku_Cambiar_Estado(int nuevo_estado)
+ 161:../maquina_estados.c **** {
+ 3931              		.loc 1 161 0
+ 3932              		.cfi_startproc
+ 3933              		@ Function supports interworking.
+ 3934              		@ args = 0, pretend = 0, frame = 8
+ 3935              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3936 0680 0DC0A0E1 		mov	ip, sp
+ 3937              	.LCFI24:
+ 3938              		.cfi_def_cfa_register 12
+ 3939 0684 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 3940 0688 04B04CE2 		sub	fp, ip, #4
+ 3941              		.cfi_offset 14, -8
+ 3942              		.cfi_offset 13, -12
+ 3943              		.cfi_offset 11, -16
+ 3944              	.LCFI25:
+ 3945              		.cfi_def_cfa 11, 4
+ 3946 068c 08D04DE2 		sub	sp, sp, #8
+ 3947 0690 10000BE5 		str	r0, [fp, #-16]
+ 162:../maquina_estados.c **** 	estado_juego = (EstadoSudoku)nuevo_estado;
+ 3948              		.loc 1 162 0
+ 3949 0694 10301BE5 		ldr	r3, [fp, #-16]
+ 3950 0698 FF2003E2 		and	r2, r3, #255
+ 3951 069c 98309FE5 		ldr	r3, .L57
+ 3952 06a0 0020C3E5 		strb	r2, [r3, #0]
+ 163:../maquina_estados.c **** 	
+ 164:../maquina_estados.c **** 	/* Actualizar 8LED segÃºn el nuevo estado */
+ 165:../maquina_estados.c **** 	switch (estado_juego)
+ 3953              		.loc 1 165 0
+ 3954 06a4 90309FE5 		ldr	r3, .L57
+ 3955 06a8 0030D3E5 		ldrb	r3, [r3, #0]
+ 3956 06ac FF3003E2 		and	r3, r3, #255
+ 3957 06b0 013043E2 		sub	r3, r3, #1
+ 3958 06b4 050053E3 		cmp	r3, #5
+ 3959 06b8 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 3960 06bc 1A0000EA 		b	.L56
+ 3961              	.L54:
+ 3962 06c0 D8060000 		.word	.L49
+ 3963 06c4 F0060000 		.word	.L50
+ 3964 06c8 2C070000 		.word	.L56
+ 3965 06cc 08070000 		.word	.L52
+ 3966 06d0 2C070000 		.word	.L56
+ 3967 06d4 20070000 		.word	.L53
+ 3968              	.L49:
+ 166:../maquina_estados.c **** 	{
+ 167:../maquina_estados.c **** 		case INTRODUCIR_FILA:
+ 168:../maquina_estados.c **** 			D8Led_symbol(15);  /* 'F' de Fila */
+ 3969              		.loc 1 168 0
+ 3970 06d8 0F00A0E3 		mov	r0, #15
+ 3971 06dc FEFFFFEB 		bl	D8Led_symbol
+ 169:../maquina_estados.c **** 			int_count = 0;
+ 3972              		.loc 1 169 0
+ 3973 06e0 58309FE5 		ldr	r3, .L57+4
+ 3974 06e4 0020A0E3 		mov	r2, #0
+ 3975 06e8 0020C3E5 		strb	r2, [r3, #0]
+ 170:../maquina_estados.c **** 			break;
+ 3976              		.loc 1 170 0
+ 3977 06ec 0F0000EA 		b	.L47
+ 3978              	.L50:
+ 171:../maquina_estados.c **** 			
+ 172:../maquina_estados.c **** 		case INTRODUCIR_COLUMNA:
+ 173:../maquina_estados.c **** 			D8Led_symbol(12);  /* 'C' de Columna */
+ 3979              		.loc 1 173 0
+ 3980 06f0 0C00A0E3 		mov	r0, #12
+ 3981 06f4 FEFFFFEB 		bl	D8Led_symbol
+ 174:../maquina_estados.c **** 			int_count = 0;
+ 3982              		.loc 1 174 0
+ 3983 06f8 40309FE5 		ldr	r3, .L57+4
+ 3984 06fc 0020A0E3 		mov	r2, #0
+ 3985 0700 0020C3E5 		strb	r2, [r3, #0]
+ 175:../maquina_estados.c **** 			break;
+ 3986              		.loc 1 175 0
+ 3987 0704 090000EA 		b	.L47
+ 3988              	.L52:
+ 176:../maquina_estados.c **** 			
+ 177:../maquina_estados.c **** 		case INTRODUCIR_VALOR:
+ 178:../maquina_estados.c **** 			/* Mostrar 0 para indicar que se puede introducir valor */
+ 179:../maquina_estados.c **** 			D8Led_symbol(0);
+ 3989              		.loc 1 179 0
+ 3990 0708 0000A0E3 		mov	r0, #0
+ 3991 070c FEFFFFEB 		bl	D8Led_symbol
+ 180:../maquina_estados.c **** 			int_count = 0;
+ 3992              		.loc 1 180 0
+ 3993 0710 28309FE5 		ldr	r3, .L57+4
+ 3994 0714 0020A0E3 		mov	r2, #0
+ 3995 0718 0020C3E5 		strb	r2, [r3, #0]
+ 181:../maquina_estados.c **** 			break;
+ 3996              		.loc 1 181 0
+ 3997 071c 030000EA 		b	.L47
+ 3998              	.L53:
+ 182:../maquina_estados.c **** 			
+ 183:../maquina_estados.c **** 		case BORRAR_VALOR:
+ 184:../maquina_estados.c **** 			/* Mostrar 0 al borrar */
+ 185:../maquina_estados.c **** 			D8Led_symbol(0);
+ 3999              		.loc 1 185 0
+ 4000 0720 0000A0E3 		mov	r0, #0
+ 4001 0724 FEFFFFEB 		bl	D8Led_symbol
+ 186:../maquina_estados.c **** 			break;
+ 4002              		.loc 1 186 0
+ 4003 0728 000000EA 		b	.L47
+ 4004              	.L56:
+ 187:../maquina_estados.c **** 			
+ 188:../maquina_estados.c **** 		case VERIFICAR_VALOR:
+ 189:../maquina_estados.c **** 		case VERIFICAR_CELDA:
+ 190:../maquina_estados.c **** 			/* No cambiar el 8LED durante verificaciÃ³n */
+ 191:../maquina_estados.c **** 			break;
+ 192:../maquina_estados.c **** 			
+ 193:../maquina_estados.c **** 		default:
+ 194:../maquina_estados.c **** 			/* Otros estados no cambian el 8LED */
+ 195:../maquina_estados.c **** 			break;
+ 4005              		.loc 1 195 0
+ 4006 072c 0000A0E1 		mov	r0, r0	@ nop
+ 4007              	.L47:
+ 196:../maquina_estados.c **** 	}
+ 197:../maquina_estados.c **** }
+ 4008              		.loc 1 197 0
+ 4009 0730 0CD04BE2 		sub	sp, fp, #12
+ 4010 0734 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 4011 0738 1EFF2FE1 		bx	lr
+ 4012              	.L58:
+ 4013              		.align	2
+ 4014              	.L57:
+ 4015 073c 00000000 		.word	estado_juego
+ 4016 0740 01000000 		.word	int_count
+ 4017              		.cfi_endproc
+ 4018              	.LFE13:
+ 4020              		.align	2
+ 4022              	Maquina_Procesar_Evento:
+ 4023              	.LFB14:
+ 198:../maquina_estados.c **** 
+ 199:../maquina_estados.c **** 
+ 200:../maquina_estados.c **** /*=====================================================================================
+ 201:../maquina_estados.c ****  * IMPLEMENTACIÃ“N: NÃšCLEO GENÃ‰RICO DE LA MÃ�QUINA DE ESTADOS
+ 202:../maquina_estados.c ****  * Esta funciÃ³n procesa eventos genÃ©ricos independientemente del origen (botones/LCD)
+ 203:../maquina_estados.c ****  *====================================================================================*/
+ 204:../maquina_estados.c **** 
+ 205:../maquina_estados.c **** /*********************************************************************************************
+ 206:../maquina_estados.c **** * name:		Maquina_Procesar_Evento
+ 207:../maquina_estados.c **** * func:		Procesa un evento genÃ©rico en la mÃ¡quina de estados
+ 208:../maquina_estados.c **** * para:		evento - Evento genÃ©rico a procesar
+ 209:../maquina_estados.c **** * ret:		none
+ 210:../maquina_estados.c **** * comment:	Esta es la funciÃ³n CENTRAL que contiene toda la lÃ³gica de la mÃ¡quina.
+ 211:../maquina_estados.c **** *			Es independiente del mÃ©todo de entrada (botones fÃ­sicos o touchscreen).
+ 212:../maquina_estados.c **** *********************************************************************************************/
+ 213:../maquina_estados.c **** 
+ 214:../maquina_estados.c **** static void Maquina_Procesar_Evento(EventoGenerico evento)
+ 215:../maquina_estados.c **** {
+ 4024              		.loc 1 215 0
+ 4025              		.cfi_startproc
+ 4026              		@ Function supports interworking.
+ 4027              		@ args = 0, pretend = 0, frame = 16
+ 4028              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4029 0744 0DC0A0E1 		mov	ip, sp
+ 4030              	.LCFI26:
+ 4031              		.cfi_def_cfa_register 12
+ 4032 0748 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4033 074c 04B04CE2 		sub	fp, ip, #4
+ 4034              		.cfi_offset 14, -8
+ 4035              		.cfi_offset 13, -12
+ 4036              		.cfi_offset 11, -16
+ 4037              	.LCFI27:
+ 4038              		.cfi_def_cfa 11, 4
+ 4039 0750 10D04DE2 		sub	sp, sp, #16
+ 4040 0754 0030A0E1 		mov	r3, r0
+ 4041 0758 15304BE5 		strb	r3, [fp, #-21]
+ 216:../maquina_estados.c **** 	switch (estado_juego)
+ 4042              		.loc 1 216 0
+ 4043 075c DC399FE5 		ldr	r3, .L114
+ 4044 0760 0030D3E5 		ldrb	r3, [r3, #0]
+ 4045 0764 FF3003E2 		and	r3, r3, #255
+ 4046 0768 070053E3 		cmp	r3, #7
+ 4047 076c 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 4048 0770 640200EA 		b	.L108
+ 4049              	.L68:
+ 4050 0774 94070000 		.word	.L61
+ 4051 0778 10080000 		.word	.L62
+ 4052 077c 00090000 		.word	.L63
+ 4053 0780 C0090000 		.word	.L64
+ 4054 0784 480A0000 		.word	.L65
+ 4055 0788 2C0B0000 		.word	.L66
+ 4056 078c 08110000 		.word	.L108
+ 4057 0790 98100000 		.word	.L67
+ 4058              	.L61:
+ 217:../maquina_estados.c **** 	{
+ 218:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 219:../maquina_estados.c **** 		 * ESTADO 0: ESPERANDO_INICIO
+ 220:../maquina_estados.c **** 		 * Evento: INICIAR_JUEGO
+ 221:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 222:../maquina_estados.c **** 		case ESPERANDO_INICIO:
+ 223:../maquina_estados.c **** 			if (evento == EVENTO_INICIAR_JUEGO)
+ 4059              		.loc 1 223 0
+ 4060 0794 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4061 0798 000053E3 		cmp	r3, #0
+ 4062 079c 5B02001A 		bne	.L109
+ 224:../maquina_estados.c **** 			{
+ 225:../maquina_estados.c **** 				/* Guardar tiempo de inicio */
+ 226:../maquina_estados.c **** 				tiempo_inicio = timer2_count();
+ 4063              		.loc 1 226 0
+ 4064 07a0 FEFFFFEB 		bl	timer2_count
+ 4065 07a4 0020A0E1 		mov	r2, r0
+ 4066 07a8 94399FE5 		ldr	r3, .L114+4
+ 4067 07ac 002083E5 		str	r2, [r3, #0]
+ 227:../maquina_estados.c **** 				
+ 228:../maquina_estados.c **** 				/* Calcular candidatos por primera vez */
+ 229:../maquina_estados.c **** 				celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 4068              		.loc 1 229 0
+ 4069 07b0 90399FE5 		ldr	r3, .L114+8
+ 4070 07b4 003093E5 		ldr	r3, [r3, #0]
+ 4071 07b8 0300A0E1 		mov	r0, r3
+ 4072 07bc FEFFFFEB 		bl	candidatos_actualizar_all
+ 4073 07c0 0020A0E1 		mov	r2, r0
+ 4074 07c4 80399FE5 		ldr	r3, .L114+12
+ 4075 07c8 002083E5 		str	r2, [r3, #0]
+ 230:../maquina_estados.c **** 				
+ 231:../maquina_estados.c **** 				/* Dibujar el tablero del juego */
+ 232:../maquina_estados.c **** 				Sudoku_Dibujar_Tablero();
+ 4076              		.loc 1 232 0
+ 4077 07cc FEFFFFEB 		bl	Sudoku_Dibujar_Tablero
+ 233:../maquina_estados.c **** 				Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 4078              		.loc 1 233 0
+ 4079 07d0 70399FE5 		ldr	r3, .L114+8
+ 4080 07d4 003093E5 		ldr	r3, [r3, #0]
+ 4081 07d8 0300A0E1 		mov	r0, r3
+ 4082 07dc FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 234:../maquina_estados.c **** 				
+ 235:../maquina_estados.c **** 				/* Pasar a introducir fila */
+ 236:../maquina_estados.c **** 				estado_juego = INTRODUCIR_FILA;
+ 4083              		.loc 1 236 0
+ 4084 07e0 58399FE5 		ldr	r3, .L114
+ 4085 07e4 0120A0E3 		mov	r2, #1
+ 4086 07e8 0020C3E5 		strb	r2, [r3, #0]
+ 237:../maquina_estados.c **** 				int_count = 9;  /* Iniciar en 9 para que al incrementar vaya a 0 */
+ 4087              		.loc 1 237 0
+ 4088 07ec 5C399FE5 		ldr	r3, .L114+16
+ 4089 07f0 0920A0E3 		mov	r2, #9
+ 4090 07f4 0020C3E5 		strb	r2, [r3, #0]
+ 238:../maquina_estados.c **** 				D8Led_symbol(15);  /* Mostrar 'F' de Fila */
+ 4091              		.loc 1 238 0
+ 4092 07f8 0F00A0E3 		mov	r0, #15
+ 4093 07fc FEFFFFEB 		bl	D8Led_symbol
+ 239:../maquina_estados.c **** 				pantalla_mostrada = 0;
+ 4094              		.loc 1 239 0
+ 4095 0800 4C399FE5 		ldr	r3, .L114+20
+ 4096 0804 0020A0E3 		mov	r2, #0
+ 4097 0808 0020C3E5 		strb	r2, [r3, #0]
+ 240:../maquina_estados.c **** 			}
+ 241:../maquina_estados.c **** 			break;
+ 4098              		.loc 1 241 0
+ 4099 080c 480200EA 		b	.L59
+ 4100              	.L62:
+ 242:../maquina_estados.c **** 		
+ 243:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 244:../maquina_estados.c **** 		 * ESTADO 1: INTRODUCIR_FILA
+ 245:../maquina_estados.c **** 		 * Eventos: INCREMENTAR (incrementa fila), CONFIRMAR (selecciona fila)
+ 246:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 247:../maquina_estados.c **** 		case INTRODUCIR_FILA:
+ 248:../maquina_estados.c **** 			if (evento == EVENTO_INCREMENTAR)
+ 4101              		.loc 1 248 0
+ 4102 0810 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4103 0814 010053E3 		cmp	r3, #1
+ 4104 0818 1500001A 		bne	.L71
+ 249:../maquina_estados.c **** 			{
+ 250:../maquina_estados.c **** 				/* Incrementar fila (ciclo: 0â†’1â†’...â†’9â†’0) */
+ 251:../maquina_estados.c **** 				int_count++;
+ 4105              		.loc 1 251 0
+ 4106 081c 2C399FE5 		ldr	r3, .L114+16
+ 4107 0820 0030D3E5 		ldrb	r3, [r3, #0]
+ 4108 0824 FF3003E2 		and	r3, r3, #255
+ 4109 0828 013083E2 		add	r3, r3, #1
+ 4110 082c FF2003E2 		and	r2, r3, #255
+ 4111 0830 18399FE5 		ldr	r3, .L114+16
+ 4112 0834 0020C3E5 		strb	r2, [r3, #0]
+ 252:../maquina_estados.c **** 				if (int_count > 9)
+ 4113              		.loc 1 252 0
+ 4114 0838 10399FE5 		ldr	r3, .L114+16
+ 4115 083c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4116 0840 FF3003E2 		and	r3, r3, #255
+ 4117 0844 090053E3 		cmp	r3, #9
+ 4118 0848 0200009A 		bls	.L72
+ 253:../maquina_estados.c **** 				{
+ 254:../maquina_estados.c **** 					int_count = 0;
+ 4119              		.loc 1 254 0
+ 4120 084c FC389FE5 		ldr	r3, .L114+16
+ 4121 0850 0020A0E3 		mov	r2, #0
+ 4122 0854 0020C3E5 		strb	r2, [r3, #0]
+ 4123              	.L72:
+ 255:../maquina_estados.c **** 				}
+ 256:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 4124              		.loc 1 256 0
+ 4125 0858 F0389FE5 		ldr	r3, .L114+16
+ 4126 085c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4127 0860 FF3003E2 		and	r3, r3, #255
+ 4128 0864 0F3003E2 		and	r3, r3, #15
+ 4129 0868 0300A0E1 		mov	r0, r3
+ 4130 086c FEFFFFEB 		bl	D8Led_symbol
+ 257:../maquina_estados.c **** 			}
+ 258:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 259:../maquina_estados.c **** 			{
+ 260:../maquina_estados.c **** 				/* Verificar si se eligiÃ³ fila 0 (terminar partida) */
+ 261:../maquina_estados.c **** 				if (int_count == 0)
+ 262:../maquina_estados.c **** 				{
+ 263:../maquina_estados.c **** 					/* Fila 0: terminar la partida */
+ 264:../maquina_estados.c **** 					tiempo_final = timer2_count() - tiempo_inicio;
+ 265:../maquina_estados.c **** 					estado_juego = PARTIDA_TERMINADA;
+ 266:../maquina_estados.c **** 				}
+ 267:../maquina_estados.c **** 				else
+ 268:../maquina_estados.c **** 				{
+ 269:../maquina_estados.c **** 					/* Confirmar fila y pasar a introducir columna */
+ 270:../maquina_estados.c **** 					fila = int_count - 1;  /* Convertir a Ã­ndice 0-8 */
+ 271:../maquina_estados.c **** 					estado_juego = INTRODUCIR_COLUMNA;
+ 272:../maquina_estados.c **** 					int_count = 0;
+ 273:../maquina_estados.c **** 					D8Led_symbol(12);  /* Mostrar 'C' de Columna */
+ 274:../maquina_estados.c **** 				}
+ 275:../maquina_estados.c **** 			}
+ 276:../maquina_estados.c **** 			break;
+ 4131              		.loc 1 276 0
+ 4132 0870 2F0200EA 		b	.L59
+ 4133              	.L71:
+ 258:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 4134              		.loc 1 258 0
+ 4135 0874 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4136 0878 020053E3 		cmp	r3, #2
+ 4137 087c 2502001A 		bne	.L110
+ 261:../maquina_estados.c **** 				if (int_count == 0)
+ 4138              		.loc 1 261 0
+ 4139 0880 C8389FE5 		ldr	r3, .L114+16
+ 4140 0884 0030D3E5 		ldrb	r3, [r3, #0]
+ 4141 0888 FF3003E2 		and	r3, r3, #255
+ 4142 088c 000053E3 		cmp	r3, #0
+ 4143 0890 0A00001A 		bne	.L74
+ 264:../maquina_estados.c **** 					tiempo_final = timer2_count() - tiempo_inicio;
+ 4144              		.loc 1 264 0
+ 4145 0894 FEFFFFEB 		bl	timer2_count
+ 4146 0898 0020A0E1 		mov	r2, r0
+ 4147 089c A0389FE5 		ldr	r3, .L114+4
+ 4148 08a0 003093E5 		ldr	r3, [r3, #0]
+ 4149 08a4 022063E0 		rsb	r2, r3, r2
+ 4150 08a8 A8389FE5 		ldr	r3, .L114+24
+ 4151 08ac 002083E5 		str	r2, [r3, #0]
+ 265:../maquina_estados.c **** 					estado_juego = PARTIDA_TERMINADA;
+ 4152              		.loc 1 265 0
+ 4153 08b0 88389FE5 		ldr	r3, .L114
+ 4154 08b4 0720A0E3 		mov	r2, #7
+ 4155 08b8 0020C3E5 		strb	r2, [r3, #0]
+ 4156              		.loc 1 276 0
+ 4157 08bc 1C0200EA 		b	.L59
+ 4158              	.L74:
+ 270:../maquina_estados.c **** 					fila = int_count - 1;  /* Convertir a Ã­ndice 0-8 */
+ 4159              		.loc 1 270 0
+ 4160 08c0 88389FE5 		ldr	r3, .L114+16
+ 4161 08c4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4162 08c8 FF3003E2 		and	r3, r3, #255
+ 4163 08cc 013043E2 		sub	r3, r3, #1
+ 4164 08d0 FF2003E2 		and	r2, r3, #255
+ 4165 08d4 80389FE5 		ldr	r3, .L114+28
+ 4166 08d8 0020C3E5 		strb	r2, [r3, #0]
+ 271:../maquina_estados.c **** 					estado_juego = INTRODUCIR_COLUMNA;
+ 4167              		.loc 1 271 0
+ 4168 08dc 5C389FE5 		ldr	r3, .L114
+ 4169 08e0 0220A0E3 		mov	r2, #2
+ 4170 08e4 0020C3E5 		strb	r2, [r3, #0]
+ 272:../maquina_estados.c **** 					int_count = 0;
+ 4171              		.loc 1 272 0
+ 4172 08e8 60389FE5 		ldr	r3, .L114+16
+ 4173 08ec 0020A0E3 		mov	r2, #0
+ 4174 08f0 0020C3E5 		strb	r2, [r3, #0]
+ 273:../maquina_estados.c **** 					D8Led_symbol(12);  /* Mostrar 'C' de Columna */
+ 4175              		.loc 1 273 0
+ 4176 08f4 0C00A0E3 		mov	r0, #12
+ 4177 08f8 FEFFFFEB 		bl	D8Led_symbol
+ 4178              		.loc 1 276 0
+ 4179 08fc 0C0200EA 		b	.L59
+ 4180              	.L63:
+ 277:../maquina_estados.c **** 		
+ 278:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 279:../maquina_estados.c **** 		 * ESTADO 2: INTRODUCIR_COLUMNA
+ 280:../maquina_estados.c **** 		 * Eventos: INCREMENTAR (incrementa columna), CONFIRMAR (selecciona columna)
+ 281:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 282:../maquina_estados.c **** 		case INTRODUCIR_COLUMNA:
+ 283:../maquina_estados.c **** 			if (evento == EVENTO_INCREMENTAR)
+ 4181              		.loc 1 283 0
+ 4182 0900 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4183 0904 010053E3 		cmp	r3, #1
+ 4184 0908 1500001A 		bne	.L75
+ 284:../maquina_estados.c **** 			{
+ 285:../maquina_estados.c **** 				/* Incrementar columna */
+ 286:../maquina_estados.c **** 				int_count++;
+ 4185              		.loc 1 286 0
+ 4186 090c 3C389FE5 		ldr	r3, .L114+16
+ 4187 0910 0030D3E5 		ldrb	r3, [r3, #0]
+ 4188 0914 FF3003E2 		and	r3, r3, #255
+ 4189 0918 013083E2 		add	r3, r3, #1
+ 4190 091c FF2003E2 		and	r2, r3, #255
+ 4191 0920 28389FE5 		ldr	r3, .L114+16
+ 4192 0924 0020C3E5 		strb	r2, [r3, #0]
+ 287:../maquina_estados.c **** 				if (int_count > 9)
+ 4193              		.loc 1 287 0
+ 4194 0928 20389FE5 		ldr	r3, .L114+16
+ 4195 092c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4196 0930 FF3003E2 		and	r3, r3, #255
+ 4197 0934 090053E3 		cmp	r3, #9
+ 4198 0938 0200009A 		bls	.L76
+ 288:../maquina_estados.c **** 				{
+ 289:../maquina_estados.c **** 					int_count = 1;
+ 4199              		.loc 1 289 0
+ 4200 093c 0C389FE5 		ldr	r3, .L114+16
+ 4201 0940 0120A0E3 		mov	r2, #1
+ 4202 0944 0020C3E5 		strb	r2, [r3, #0]
+ 4203              	.L76:
+ 290:../maquina_estados.c **** 				}
+ 291:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 4204              		.loc 1 291 0
+ 4205 0948 00389FE5 		ldr	r3, .L114+16
+ 4206 094c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4207 0950 FF3003E2 		and	r3, r3, #255
+ 4208 0954 0F3003E2 		and	r3, r3, #15
+ 4209 0958 0300A0E1 		mov	r0, r3
+ 4210 095c FEFFFFEB 		bl	D8Led_symbol
+ 292:../maquina_estados.c **** 			}
+ 293:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 294:../maquina_estados.c **** 			{
+ 295:../maquina_estados.c **** 				/* Confirmar columna y verificar celda */
+ 296:../maquina_estados.c **** 				columna = int_count - 1;  /* Convertir a Ã­ndice 0-8 */
+ 297:../maquina_estados.c **** 				estado_juego = VERIFICAR_CELDA;
+ 298:../maquina_estados.c **** 				int_count = 0;
+ 299:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 300:../maquina_estados.c **** 			}
+ 301:../maquina_estados.c **** 			break;
+ 4211              		.loc 1 301 0
+ 4212 0960 F30100EA 		b	.L59
+ 4213              	.L75:
+ 293:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 4214              		.loc 1 293 0
+ 4215 0964 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4216 0968 020053E3 		cmp	r3, #2
+ 4217 096c EB01001A 		bne	.L111
+ 296:../maquina_estados.c **** 				columna = int_count - 1;  /* Convertir a Ã­ndice 0-8 */
+ 4218              		.loc 1 296 0
+ 4219 0970 D8379FE5 		ldr	r3, .L114+16
+ 4220 0974 0030D3E5 		ldrb	r3, [r3, #0]
+ 4221 0978 FF3003E2 		and	r3, r3, #255
+ 4222 097c 013043E2 		sub	r3, r3, #1
+ 4223 0980 FF2003E2 		and	r2, r3, #255
+ 4224 0984 D4379FE5 		ldr	r3, .L114+32
+ 4225 0988 0020C3E5 		strb	r2, [r3, #0]
+ 297:../maquina_estados.c **** 				estado_juego = VERIFICAR_CELDA;
+ 4226              		.loc 1 297 0
+ 4227 098c AC379FE5 		ldr	r3, .L114
+ 4228 0990 0320A0E3 		mov	r2, #3
+ 4229 0994 0020C3E5 		strb	r2, [r3, #0]
+ 298:../maquina_estados.c **** 				int_count = 0;
+ 4230              		.loc 1 298 0
+ 4231 0998 B0379FE5 		ldr	r3, .L114+16
+ 4232 099c 0020A0E3 		mov	r2, #0
+ 4233 09a0 0020C3E5 		strb	r2, [r3, #0]
+ 299:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 4234              		.loc 1 299 0
+ 4235 09a4 A4379FE5 		ldr	r3, .L114+16
+ 4236 09a8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4237 09ac FF3003E2 		and	r3, r3, #255
+ 4238 09b0 0F3003E2 		and	r3, r3, #15
+ 4239 09b4 0300A0E1 		mov	r0, r3
+ 4240 09b8 FEFFFFEB 		bl	D8Led_symbol
+ 4241              		.loc 1 301 0
+ 4242 09bc DC0100EA 		b	.L59
+ 4243              	.L64:
+ 302:../maquina_estados.c **** 		
+ 303:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 304:../maquina_estados.c **** 		 * ESTADO 3: VERIFICAR_CELDA
+ 305:../maquina_estados.c **** 		 * Verifica automÃ¡ticamente (sin evento externo)
+ 306:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 307:../maquina_estados.c **** 		case VERIFICAR_CELDA:
+ 308:../maquina_estados.c **** 			if (celda_es_pista(cuadricula[fila][columna]))
+ 4244              		.loc 1 308 0
+ 4245 09c0 80379FE5 		ldr	r3, .L114+8
+ 4246 09c4 002093E5 		ldr	r2, [r3, #0]
+ 4247 09c8 8C379FE5 		ldr	r3, .L114+28
+ 4248 09cc 0030D3E5 		ldrb	r3, [r3, #0]
+ 4249 09d0 FF3003E2 		and	r3, r3, #255
+ 4250 09d4 8332A0E1 		mov	r3, r3, asl #5
+ 4251 09d8 032082E0 		add	r2, r2, r3
+ 4252 09dc 7C379FE5 		ldr	r3, .L114+32
+ 4253 09e0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4254 09e4 FF3003E2 		and	r3, r3, #255
+ 4255 09e8 8330A0E1 		mov	r3, r3, asl #1
+ 4256 09ec 033082E0 		add	r3, r2, r3
+ 4257 09f0 B030D3E1 		ldrh	r3, [r3, #0]
+ 4258 09f4 0300A0E1 		mov	r0, r3
+ 4259 09f8 C0FDFFEB 		bl	celda_es_pista
+ 4260 09fc 0030A0E1 		mov	r3, r0
+ 4261 0a00 000053E3 		cmp	r3, #0
+ 4262 0a04 0800000A 		beq	.L78
+ 309:../maquina_estados.c **** 			{
+ 310:../maquina_estados.c **** 				/* Es pista: volver a introducir fila */
+ 311:../maquina_estados.c **** 				estado_juego = INTRODUCIR_FILA;
+ 4263              		.loc 1 311 0
+ 4264 0a08 30379FE5 		ldr	r3, .L114
+ 4265 0a0c 0120A0E3 		mov	r2, #1
+ 4266 0a10 0020C3E5 		strb	r2, [r3, #0]
+ 312:../maquina_estados.c **** 				int_count = 0;
+ 4267              		.loc 1 312 0
+ 4268 0a14 34379FE5 		ldr	r3, .L114+16
+ 4269 0a18 0020A0E3 		mov	r2, #0
+ 4270 0a1c 0020C3E5 		strb	r2, [r3, #0]
+ 313:../maquina_estados.c **** 				D8Led_symbol(15);  /* 'F' */
+ 4271              		.loc 1 313 0
+ 4272 0a20 0F00A0E3 		mov	r0, #15
+ 4273 0a24 FEFFFFEB 		bl	D8Led_symbol
+ 314:../maquina_estados.c **** 			}
+ 315:../maquina_estados.c **** 			else
+ 316:../maquina_estados.c **** 			{
+ 317:../maquina_estados.c **** 				/* No es pista: pasar a introducir valor */
+ 318:../maquina_estados.c **** 				estado_juego = INTRODUCIR_VALOR;
+ 319:../maquina_estados.c **** 				int_count = 0;
+ 320:../maquina_estados.c **** 			}
+ 321:../maquina_estados.c **** 			break;
+ 4274              		.loc 1 321 0
+ 4275 0a28 C10100EA 		b	.L59
+ 4276              	.L78:
+ 318:../maquina_estados.c **** 				estado_juego = INTRODUCIR_VALOR;
+ 4277              		.loc 1 318 0
+ 4278 0a2c 0C379FE5 		ldr	r3, .L114
+ 4279 0a30 0420A0E3 		mov	r2, #4
+ 4280 0a34 0020C3E5 		strb	r2, [r3, #0]
+ 319:../maquina_estados.c **** 				int_count = 0;
+ 4281              		.loc 1 319 0
+ 4282 0a38 10379FE5 		ldr	r3, .L114+16
+ 4283 0a3c 0020A0E3 		mov	r2, #0
+ 4284 0a40 0020C3E5 		strb	r2, [r3, #0]
+ 4285              		.loc 1 321 0
+ 4286 0a44 BA0100EA 		b	.L59
+ 4287              	.L65:
+ 322:../maquina_estados.c **** 		
+ 323:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 324:../maquina_estados.c **** 		 * ESTADO 4: INTRODUCIR_VALOR
+ 325:../maquina_estados.c **** 		 * Eventos: INCREMENTAR (incrementa valor), CONFIRMAR (selecciona valor),
+ 326:../maquina_estados.c **** 		 *          INSERTAR_VALOR (touch directo), BORRAR_VALOR (touch borrar)
+ 327:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 328:../maquina_estados.c **** 		case INTRODUCIR_VALOR:
+ 329:../maquina_estados.c **** 			if (evento == EVENTO_INCREMENTAR)
+ 4288              		.loc 1 329 0
+ 4289 0a48 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4290 0a4c 010053E3 		cmp	r3, #1
+ 4291 0a50 1500001A 		bne	.L80
+ 330:../maquina_estados.c **** 			{
+ 331:../maquina_estados.c **** 				/* Incrementar valor */
+ 332:../maquina_estados.c **** 				int_count++;
+ 4292              		.loc 1 332 0
+ 4293 0a54 F4369FE5 		ldr	r3, .L114+16
+ 4294 0a58 0030D3E5 		ldrb	r3, [r3, #0]
+ 4295 0a5c FF3003E2 		and	r3, r3, #255
+ 4296 0a60 013083E2 		add	r3, r3, #1
+ 4297 0a64 FF2003E2 		and	r2, r3, #255
+ 4298 0a68 E0369FE5 		ldr	r3, .L114+16
+ 4299 0a6c 0020C3E5 		strb	r2, [r3, #0]
+ 333:../maquina_estados.c **** 				if (int_count > 9)
+ 4300              		.loc 1 333 0
+ 4301 0a70 D8369FE5 		ldr	r3, .L114+16
+ 4302 0a74 0030D3E5 		ldrb	r3, [r3, #0]
+ 4303 0a78 FF3003E2 		and	r3, r3, #255
+ 4304 0a7c 090053E3 		cmp	r3, #9
+ 4305 0a80 0200009A 		bls	.L81
+ 334:../maquina_estados.c **** 				{
+ 335:../maquina_estados.c **** 					int_count = 0;
+ 4306              		.loc 1 335 0
+ 4307 0a84 C4369FE5 		ldr	r3, .L114+16
+ 4308 0a88 0020A0E3 		mov	r2, #0
+ 4309 0a8c 0020C3E5 		strb	r2, [r3, #0]
+ 4310              	.L81:
+ 336:../maquina_estados.c **** 				}
+ 337:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 4311              		.loc 1 337 0
+ 4312 0a90 B8369FE5 		ldr	r3, .L114+16
+ 4313 0a94 0030D3E5 		ldrb	r3, [r3, #0]
+ 4314 0a98 FF3003E2 		and	r3, r3, #255
+ 4315 0a9c 0F3003E2 		and	r3, r3, #15
+ 4316 0aa0 0300A0E1 		mov	r0, r3
+ 4317 0aa4 FEFFFFEB 		bl	D8Led_symbol
+ 338:../maquina_estados.c **** 			}
+ 339:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 340:../maquina_estados.c **** 			{
+ 341:../maquina_estados.c **** 				/* Confirmar valor e intentar escribir */
+ 342:../maquina_estados.c **** 				valor = int_count;
+ 343:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 344:../maquina_estados.c **** 				int_count = 0;
+ 345:../maquina_estados.c **** 			}
+ 346:../maquina_estados.c **** 			else if (evento == EVENTO_INSERTAR_VALOR)
+ 347:../maquina_estados.c **** 			{
+ 348:../maquina_estados.c **** 				/* Touch directo: valor ya estÃ¡ en la variable 'valor' */
+ 349:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 350:../maquina_estados.c **** 			}
+ 351:../maquina_estados.c **** 			else if (evento == EVENTO_BORRAR_VALOR)
+ 352:../maquina_estados.c **** 			{
+ 353:../maquina_estados.c **** 				/* Touch borrar: establecer valor a 0 */
+ 354:../maquina_estados.c **** 				valor = 0;
+ 355:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 356:../maquina_estados.c **** 			}
+ 357:../maquina_estados.c **** 			break;
+ 4318              		.loc 1 357 0
+ 4319 0aa8 A10100EA 		b	.L59
+ 4320              	.L80:
+ 339:../maquina_estados.c **** 			else if (evento == EVENTO_CONFIRMAR)
+ 4321              		.loc 1 339 0
+ 4322 0aac 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4323 0ab0 020053E3 		cmp	r3, #2
+ 4324 0ab4 0B00001A 		bne	.L83
+ 342:../maquina_estados.c **** 				valor = int_count;
+ 4325              		.loc 1 342 0
+ 4326 0ab8 90369FE5 		ldr	r3, .L114+16
+ 4327 0abc 0030D3E5 		ldrb	r3, [r3, #0]
+ 4328 0ac0 FF2003E2 		and	r2, r3, #255
+ 4329 0ac4 98369FE5 		ldr	r3, .L114+36
+ 4330 0ac8 0020C3E5 		strb	r2, [r3, #0]
+ 343:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 4331              		.loc 1 343 0
+ 4332 0acc 6C369FE5 		ldr	r3, .L114
+ 4333 0ad0 0520A0E3 		mov	r2, #5
+ 4334 0ad4 0020C3E5 		strb	r2, [r3, #0]
+ 344:../maquina_estados.c **** 				int_count = 0;
+ 4335              		.loc 1 344 0
+ 4336 0ad8 70369FE5 		ldr	r3, .L114+16
+ 4337 0adc 0020A0E3 		mov	r2, #0
+ 4338 0ae0 0020C3E5 		strb	r2, [r3, #0]
+ 4339              		.loc 1 357 0
+ 4340 0ae4 920100EA 		b	.L59
+ 4341              	.L83:
+ 346:../maquina_estados.c **** 			else if (evento == EVENTO_INSERTAR_VALOR)
+ 4342              		.loc 1 346 0
+ 4343 0ae8 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4344 0aec 030053E3 		cmp	r3, #3
+ 4345 0af0 0300001A 		bne	.L84
+ 349:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 4346              		.loc 1 349 0
+ 4347 0af4 44369FE5 		ldr	r3, .L114
+ 4348 0af8 0520A0E3 		mov	r2, #5
+ 4349 0afc 0020C3E5 		strb	r2, [r3, #0]
+ 4350              		.loc 1 357 0
+ 4351 0b00 8B0100EA 		b	.L59
+ 4352              	.L84:
+ 351:../maquina_estados.c **** 			else if (evento == EVENTO_BORRAR_VALOR)
+ 4353              		.loc 1 351 0
+ 4354 0b04 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4355 0b08 040053E3 		cmp	r3, #4
+ 4356 0b0c 8501001A 		bne	.L112
+ 354:../maquina_estados.c **** 				valor = 0;
+ 4357              		.loc 1 354 0
+ 4358 0b10 4C369FE5 		ldr	r3, .L114+36
+ 4359 0b14 0020A0E3 		mov	r2, #0
+ 4360 0b18 0020C3E5 		strb	r2, [r3, #0]
+ 355:../maquina_estados.c **** 				estado_juego = VERIFICAR_VALOR;
+ 4361              		.loc 1 355 0
+ 4362 0b1c 1C369FE5 		ldr	r3, .L114
+ 4363 0b20 0520A0E3 		mov	r2, #5
+ 4364 0b24 0020C3E5 		strb	r2, [r3, #0]
+ 4365              		.loc 1 357 0
+ 4366 0b28 810100EA 		b	.L59
+ 4367              	.L66:
+ 358:../maquina_estados.c **** 		
+ 359:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 360:../maquina_estados.c **** 		 * ESTADO 5: VERIFICAR_VALOR
+ 361:../maquina_estados.c **** 		 * Valida si el valor es candidato:
+ 362:../maquina_estados.c **** 		 * - Si valor=0 â†’ borrar celda â†’ INTRODUCIR_FILA
+ 363:../maquina_estados.c **** 		 * - Si es candidato â†’ insertar â†’ INTRODUCIR_FILA
+ 364:../maquina_estados.c **** 		 * - Si NO es candidato â†’ ERROR â†’ INTRODUCIR_FILA
+ 365:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 366:../maquina_estados.c **** 		case VERIFICAR_VALOR:
+ 367:../maquina_estados.c **** 			/* Guardar valor previo de la celda */
+ 368:../maquina_estados.c **** 			valor_previo = celda_leer_valor(cuadricula[fila][columna]);
+ 4368              		.loc 1 368 0
+ 4369 0b2c 14369FE5 		ldr	r3, .L114+8
+ 4370 0b30 002093E5 		ldr	r2, [r3, #0]
+ 4371 0b34 20369FE5 		ldr	r3, .L114+28
+ 4372 0b38 0030D3E5 		ldrb	r3, [r3, #0]
+ 4373 0b3c FF3003E2 		and	r3, r3, #255
+ 4374 0b40 8332A0E1 		mov	r3, r3, asl #5
+ 4375 0b44 032082E0 		add	r2, r2, r3
+ 4376 0b48 10369FE5 		ldr	r3, .L114+32
+ 4377 0b4c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4378 0b50 FF3003E2 		and	r3, r3, #255
+ 4379 0b54 8330A0E1 		mov	r3, r3, asl #1
+ 4380 0b58 033082E0 		add	r3, r2, r3
+ 4381 0b5c B030D3E1 		ldrh	r3, [r3, #0]
+ 4382 0b60 0300A0E1 		mov	r0, r3
+ 4383 0b64 43FDFFEB 		bl	celda_leer_valor
+ 4384 0b68 0030A0E1 		mov	r3, r0
+ 4385 0b6c 0320A0E1 		mov	r2, r3
+ 4386 0b70 F0359FE5 		ldr	r3, .L114+40
+ 4387 0b74 0020C3E5 		strb	r2, [r3, #0]
+ 369:../maquina_estados.c **** 			
+ 370:../maquina_estados.c **** 			if (valor == 0)
+ 4388              		.loc 1 370 0
+ 4389 0b78 E4359FE5 		ldr	r3, .L114+36
+ 4390 0b7c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4391 0b80 FF3003E2 		and	r3, r3, #255
+ 4392 0b84 000053E3 		cmp	r3, #0
+ 4393 0b88 4A00001A 		bne	.L85
+ 4394              	.LBB2:
+ 371:../maquina_estados.c **** 			{
+ 372:../maquina_estados.c **** 				/* BORRAR VALOR */
+ 373:../maquina_estados.c **** 			INT8U f, c;
+ 374:../maquina_estados.c **** 				{
+ 375:../maquina_estados.c **** 					for (c = 0; c < NUM_COLUMNAS; c++)
+ 4395              		.loc 1 375 0
+ 4396 0b8c 0030A0E3 		mov	r3, #0
+ 4397 0b90 0D304BE5 		strb	r3, [fp, #-13]
+ 4398 0b94 0D0000EA 		b	.L86
+ 4399              	.L87:
+ 376:../maquina_estados.c **** 					{
+ 377:../maquina_estados.c **** 						celda_limpiar_error(&cuadricula[f][c]);
+ 4400              		.loc 1 377 0 discriminator 2
+ 4401 0b98 A8359FE5 		ldr	r3, .L114+8
+ 4402 0b9c 003093E5 		ldr	r3, [r3, #0]
+ 4403 0ba0 0320A0E1 		mov	r2, r3
+ 4404 0ba4 0F305BE5 		ldrb	r3, [fp, #-15]	@ zero_extendqisi2
+ 4405 0ba8 0312A0E1 		mov	r1, r3, asl #4
+ 4406 0bac 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4407 0bb0 033081E0 		add	r3, r1, r3
+ 4408 0bb4 8330A0E1 		mov	r3, r3, asl #1
+ 4409 0bb8 033082E0 		add	r3, r2, r3
+ 4410 0bbc 0300A0E1 		mov	r0, r3
+ 4411 0bc0 6CFDFFEB 		bl	celda_limpiar_error
+ 375:../maquina_estados.c **** 					for (c = 0; c < NUM_COLUMNAS; c++)
+ 4412              		.loc 1 375 0 discriminator 2
+ 4413 0bc4 0D305BE5 		ldrb	r3, [fp, #-13]
+ 4414 0bc8 013083E2 		add	r3, r3, #1
+ 4415 0bcc 0D304BE5 		strb	r3, [fp, #-13]
+ 4416              	.L86:
+ 375:../maquina_estados.c **** 					for (c = 0; c < NUM_COLUMNAS; c++)
+ 4417              		.loc 1 375 0 is_stmt 0 discriminator 1
+ 4418 0bd0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 4419 0bd4 0F0053E3 		cmp	r3, #15
+ 4420 0bd8 EEFFFF9A 		bls	.L87
+ 378:../maquina_estados.c **** 					}
+ 379:../maquina_estados.c **** 				}
+ 380:../maquina_estados.c **** 				
+ 381:../maquina_estados.c **** 				/* Borrar el valor */
+ 382:../maquina_estados.c **** 				celda_poner_valor(&cuadricula[fila][columna], 0);
+ 4421              		.loc 1 382 0 is_stmt 1
+ 4422 0bdc 64359FE5 		ldr	r3, .L114+8
+ 4423 0be0 003093E5 		ldr	r3, [r3, #0]
+ 4424 0be4 0320A0E1 		mov	r2, r3
+ 4425 0be8 6C359FE5 		ldr	r3, .L114+28
+ 4426 0bec 0030D3E5 		ldrb	r3, [r3, #0]
+ 4427 0bf0 FF3003E2 		and	r3, r3, #255
+ 4428 0bf4 0312A0E1 		mov	r1, r3, asl #4
+ 4429 0bf8 60359FE5 		ldr	r3, .L114+32
+ 4430 0bfc 0030D3E5 		ldrb	r3, [r3, #0]
+ 4431 0c00 FF3003E2 		and	r3, r3, #255
+ 4432 0c04 033081E0 		add	r3, r1, r3
+ 4433 0c08 8330A0E1 		mov	r3, r3, asl #1
+ 4434 0c0c 033082E0 		add	r3, r2, r3
+ 4435 0c10 0300A0E1 		mov	r0, r3
+ 4436 0c14 0010A0E3 		mov	r1, #0
+ 4437 0c18 F8FCFFEB 		bl	celda_poner_valor
+ 383:../maquina_estados.c **** 				celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 4438              		.loc 1 383 0
+ 4439 0c1c 24359FE5 		ldr	r3, .L114+8
+ 4440 0c20 003093E5 		ldr	r3, [r3, #0]
+ 4441 0c24 0300A0E1 		mov	r0, r3
+ 4442 0c28 FEFFFFEB 		bl	candidatos_actualizar_all
+ 4443 0c2c 0020A0E1 		mov	r2, r0
+ 4444 0c30 14359FE5 		ldr	r3, .L114+12
+ 4445 0c34 002083E5 		str	r2, [r3, #0]
+ 384:../maquina_estados.c **** 				
+ 385:../maquina_estados.c **** 				/* Actualizar pantalla segÃºn el modo */
+ 386:../maquina_estados.c **** 				if (Sudoku_Esta_Region_Expandida_Activa())
+ 4446              		.loc 1 386 0
+ 4447 0c38 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4448 0c3c 0030A0E1 		mov	r3, r0
+ 4449 0c40 000053E3 		cmp	r3, #0
+ 4450 0c44 0100000A 		beq	.L88
+ 387:../maquina_estados.c **** 				{
+ 388:../maquina_estados.c **** 					/* En modo zoom: solo redibujar la regiÃ³n expandida */
+ 389:../maquina_estados.c **** 					Sudoku_Redibujar_Region_Expandida();
+ 4451              		.loc 1 389 0
+ 4452 0c48 FEFFFFEB 		bl	Sudoku_Redibujar_Region_Expandida
+ 4453 0c4c 030000EA 		b	.L89
+ 4454              	.L88:
+ 390:../maquina_estados.c **** 				}
+ 391:../maquina_estados.c **** 				else
+ 392:../maquina_estados.c **** 				{
+ 393:../maquina_estados.c **** 					/* Modo normal: redibujar tablero completo */
+ 394:../maquina_estados.c **** 					Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 4455              		.loc 1 394 0
+ 4456 0c50 F0349FE5 		ldr	r3, .L114+8
+ 4457 0c54 003093E5 		ldr	r3, [r3, #0]
+ 4458 0c58 0300A0E1 		mov	r0, r3
+ 4459 0c5c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 4460              	.L89:
+ 395:../maquina_estados.c **** 				}
+ 396:../maquina_estados.c **** 				
+ 397:../maquina_estados.c **** 				/* Volver al estado apropiado */
+ 398:../maquina_estados.c **** 				if (Sudoku_Esta_Region_Expandida_Activa())
+ 4461              		.loc 1 398 0
+ 4462 0c60 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4463 0c64 0030A0E1 		mov	r3, r0
+ 4464 0c68 000053E3 		cmp	r3, #0
+ 4465 0c6c 0800000A 		beq	.L90
+ 399:../maquina_estados.c **** 				{
+ 400:../maquina_estados.c **** 					/* En zoom: quedarse en INTRODUCIR_VALOR */
+ 401:../maquina_estados.c **** 					estado_juego = INTRODUCIR_VALOR;
+ 4466              		.loc 1 401 0
+ 4467 0c70 C8349FE5 		ldr	r3, .L114
+ 4468 0c74 0420A0E3 		mov	r2, #4
+ 4469 0c78 0020C3E5 		strb	r2, [r3, #0]
+ 402:../maquina_estados.c **** 					int_count = 0;
+ 4470              		.loc 1 402 0
+ 4471 0c7c CC349FE5 		ldr	r3, .L114+16
+ 4472 0c80 0020A0E3 		mov	r2, #0
+ 4473 0c84 0020C3E5 		strb	r2, [r3, #0]
+ 403:../maquina_estados.c **** 					D8Led_symbol(0);
+ 4474              		.loc 1 403 0
+ 4475 0c88 0000A0E3 		mov	r0, #0
+ 4476 0c8c FEFFFFEB 		bl	D8Led_symbol
+ 4477              	.LBE2:
+ 404:../maquina_estados.c **** 				}
+ 405:../maquina_estados.c **** 				else
+ 406:../maquina_estados.c **** 				{
+ 407:../maquina_estados.c **** 					/* Modo normal: volver a introducir fila */
+ 408:../maquina_estados.c **** 					estado_juego = INTRODUCIR_FILA;
+ 409:../maquina_estados.c **** 					int_count = 9;
+ 410:../maquina_estados.c **** 					D8Led_symbol(15);  /* 'F' */
+ 411:../maquina_estados.c **** 				}
+ 412:../maquina_estados.c **** 			} else
+ 413:../maquina_estados.c **** 			{
+ 414:../maquina_estados.c **** 				/* INSERTAR VALOR (verificar si es candidato) */
+ 415:../maquina_estados.c **** 				if (celda_es_candidato(cuadricula[fila][columna], valor))
+ 416:../maquina_estados.c **** 				{
+ 417:../maquina_estados.c **** 					/* âœ… ES CANDIDATO: Insertar */
+ 418:../maquina_estados.c **** 				INT8U f, c;
+ 419:../maquina_estados.c **** 					{
+ 420:../maquina_estados.c **** 						for (c = 0; c < NUM_COLUMNAS; c++)
+ 421:../maquina_estados.c **** 						{
+ 422:../maquina_estados.c **** 							celda_limpiar_error(&cuadricula[f][c]);
+ 423:../maquina_estados.c **** 						}
+ 424:../maquina_estados.c **** 					}
+ 425:../maquina_estados.c **** 					
+ 426:../maquina_estados.c **** 					/* Insertar valor */
+ 427:../maquina_estados.c **** 					celda_poner_valor(&cuadricula[fila][columna], valor);
+ 428:../maquina_estados.c **** 					
+ 429:../maquina_estados.c **** 					/* Actualizar candidatos */
+ 430:../maquina_estados.c **** 					if (valor_previo != 0)
+ 431:../maquina_estados.c **** 					{
+ 432:../maquina_estados.c **** 						celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 433:../maquina_estados.c **** 					}
+ 434:../maquina_estados.c **** 					else
+ 435:../maquina_estados.c **** 					{
+ 436:../maquina_estados.c **** 						candidatos_propagar_arm(cuadricula, fila, columna);
+ 437:../maquina_estados.c **** 						celdas_vacias--;
+ 438:../maquina_estados.c **** 					}
+ 439:../maquina_estados.c **** 					
+ 440:../maquina_estados.c **** 					/* Verificar si se completÃ³ el Sudoku */
+ 441:../maquina_estados.c **** 					if (celdas_vacias == 0)
+ 442:../maquina_estados.c **** 					{
+ 443:../maquina_estados.c **** 						/* Â¡Sudoku completado! */
+ 444:../maquina_estados.c **** 						tiempo_final = timer2_count() - tiempo_inicio;
+ 445:../maquina_estados.c **** 						estado_juego = PARTIDA_TERMINADA;
+ 446:../maquina_estados.c **** 						D8Led_symbol(0);
+ 447:../maquina_estados.c **** 					}
+ 448:../maquina_estados.c **** 					else
+ 449:../maquina_estados.c **** 					{
+ 450:../maquina_estados.c **** 						/* Actualizar pantalla segÃºn el modo */
+ 451:../maquina_estados.c **** 						if (Sudoku_Esta_Region_Expandida_Activa())
+ 452:../maquina_estados.c **** 						{
+ 453:../maquina_estados.c **** 							/* En modo zoom: solo redibujar la regiÃ³n expandida */
+ 454:../maquina_estados.c **** 							Sudoku_Redibujar_Region_Expandida();
+ 455:../maquina_estados.c **** 						}
+ 456:../maquina_estados.c **** 						else
+ 457:../maquina_estados.c **** 						{
+ 458:../maquina_estados.c **** 							/* Modo normal: redibujar tablero completo */
+ 459:../maquina_estados.c **** 							Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 460:../maquina_estados.c **** 						}
+ 461:../maquina_estados.c **** 						
+ 462:../maquina_estados.c **** 						/* Volver al estado apropiado */
+ 463:../maquina_estados.c **** 						if (Sudoku_Esta_Region_Expandida_Activa())
+ 464:../maquina_estados.c **** 						{
+ 465:../maquina_estados.c **** 							/* En zoom: quedarse en INTRODUCIR_VALOR */
+ 466:../maquina_estados.c **** 							estado_juego = INTRODUCIR_VALOR;
+ 467:../maquina_estados.c **** 							int_count = 0;
+ 468:../maquina_estados.c **** 							D8Led_symbol(0);
+ 469:../maquina_estados.c **** 						}
+ 470:../maquina_estados.c **** 						else
+ 471:../maquina_estados.c **** 						{
+ 472:../maquina_estados.c **** 							/* Modo normal: volver a introducir fila */
+ 473:../maquina_estados.c **** 							estado_juego = INTRODUCIR_FILA;
+ 474:../maquina_estados.c **** 							int_count = 9;
+ 475:../maquina_estados.c **** 							D8Led_symbol(15);  /* 'F' */
+ 476:../maquina_estados.c **** 						}
+ 477:../maquina_estados.c **** 					}
+ 478:../maquina_estados.c **** 				} else
+ 479:../maquina_estados.c **** 				{
+ 480:../maquina_estados.c **** 					/* â�Œ NO ES CANDIDATO: Error */
+ 481:../maquina_estados.c **** 					celda_marcar_error(&cuadricula[fila][columna]);
+ 482:../maquina_estados.c **** 					D8Led_symbol(14);  /* 'E' de Error */
+ 483:../maquina_estados.c **** 					
+ 484:../maquina_estados.c **** 					/* Esperar 2 segundos para visualizar el error */
+ 485:../maquina_estados.c **** 					Delay(200);
+ 486:../maquina_estados.c **** 					
+ 487:../maquina_estados.c **** 					/* Poner el valor incorrecto para visualizarlo */
+ 488:../maquina_estados.c **** 					celda_poner_valor(&cuadricula[fila][columna], valor);
+ 489:../maquina_estados.c **** 					
+ 490:../maquina_estados.c **** 					/* Actualizar candidatos */
+ 491:../maquina_estados.c **** 					if (valor_previo != 0)
+ 492:../maquina_estados.c **** 					{
+ 493:../maquina_estados.c **** 						celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 494:../maquina_estados.c **** 					}
+ 495:../maquina_estados.c **** 					else
+ 496:../maquina_estados.c **** 					{
+ 497:../maquina_estados.c **** 						candidatos_propagar_arm(cuadricula, fila, columna);
+ 498:../maquina_estados.c **** 					}
+ 499:../maquina_estados.c **** 					
+ 500:../maquina_estados.c **** 					/* Marcar todas las celdas en conflicto */
+ 501:../maquina_estados.c **** 					marcar_celdas_en_conflicto(fila, columna, valor);
+ 502:../maquina_estados.c **** 					
+ 503:../maquina_estados.c **** 					/* Actualizar pantalla segÃºn el modo */
+ 504:../maquina_estados.c **** 					if (Sudoku_Esta_Region_Expandida_Activa())
+ 505:../maquina_estados.c **** 					{
+ 506:../maquina_estados.c **** 						/* En modo zoom: solo redibujar la regiÃ³n expandida */
+ 507:../maquina_estados.c **** 						Sudoku_Redibujar_Region_Expandida();
+ 508:../maquina_estados.c **** 					}
+ 509:../maquina_estados.c **** 					else
+ 510:../maquina_estados.c **** 					{
+ 511:../maquina_estados.c **** 						/* Modo normal: redibujar tablero completo */
+ 512:../maquina_estados.c **** 						Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 513:../maquina_estados.c **** 					}
+ 514:../maquina_estados.c **** 					
+ 515:../maquina_estados.c **** 					/* Volver al estado apropiado */
+ 516:../maquina_estados.c **** 					if (Sudoku_Esta_Region_Expandida_Activa())
+ 517:../maquina_estados.c **** 					{
+ 518:../maquina_estados.c **** 						/* En zoom: quedarse en INTRODUCIR_VALOR */
+ 519:../maquina_estados.c **** 						estado_juego = INTRODUCIR_VALOR;
+ 520:../maquina_estados.c **** 						int_count = 0;
+ 521:../maquina_estados.c **** 						D8Led_symbol(0);
+ 522:../maquina_estados.c **** 					}
+ 523:../maquina_estados.c **** 					else
+ 524:../maquina_estados.c **** 					{
+ 525:../maquina_estados.c **** 						/* Modo normal: volver a introducir fila */
+ 526:../maquina_estados.c **** 						estado_juego = INTRODUCIR_FILA;
+ 527:../maquina_estados.c **** 						int_count = 9;
+ 528:../maquina_estados.c **** 						D8Led_symbol(15);  /* 'F' */
+ 529:../maquina_estados.c **** 					}
+ 530:../maquina_estados.c **** 				}
+ 531:../maquina_estados.c **** 			}
+ 532:../maquina_estados.c **** 			break;
+ 4478              		.loc 1 532 0
+ 4479 0c90 270100EA 		b	.L59
+ 4480              	.L90:
+ 4481              	.LBB3:
+ 408:../maquina_estados.c **** 					estado_juego = INTRODUCIR_FILA;
+ 4482              		.loc 1 408 0
+ 4483 0c94 A4349FE5 		ldr	r3, .L114
+ 4484 0c98 0120A0E3 		mov	r2, #1
+ 4485 0c9c 0020C3E5 		strb	r2, [r3, #0]
+ 409:../maquina_estados.c **** 					int_count = 9;
+ 4486              		.loc 1 409 0
+ 4487 0ca0 A8349FE5 		ldr	r3, .L114+16
+ 4488 0ca4 0920A0E3 		mov	r2, #9
+ 4489 0ca8 0020C3E5 		strb	r2, [r3, #0]
+ 410:../maquina_estados.c **** 					D8Led_symbol(15);  /* 'F' */
+ 4490              		.loc 1 410 0
+ 4491 0cac 0F00A0E3 		mov	r0, #15
+ 4492 0cb0 FEFFFFEB 		bl	D8Led_symbol
+ 4493              	.LBE3:
+ 4494              		.loc 1 532 0
+ 4495 0cb4 1E0100EA 		b	.L59
+ 4496              	.L85:
+ 415:../maquina_estados.c **** 				if (celda_es_candidato(cuadricula[fila][columna], valor))
+ 4497              		.loc 1 415 0
+ 4498 0cb8 88349FE5 		ldr	r3, .L114+8
+ 4499 0cbc 002093E5 		ldr	r2, [r3, #0]
+ 4500 0cc0 94349FE5 		ldr	r3, .L114+28
+ 4501 0cc4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4502 0cc8 FF3003E2 		and	r3, r3, #255
+ 4503 0ccc 8332A0E1 		mov	r3, r3, asl #5
+ 4504 0cd0 032082E0 		add	r2, r2, r3
+ 4505 0cd4 84349FE5 		ldr	r3, .L114+32
+ 4506 0cd8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4507 0cdc FF3003E2 		and	r3, r3, #255
+ 4508 0ce0 8330A0E1 		mov	r3, r3, asl #1
+ 4509 0ce4 033082E0 		add	r3, r2, r3
+ 4510 0ce8 B020D3E1 		ldrh	r2, [r3, #0]
+ 4511 0cec 70349FE5 		ldr	r3, .L114+36
+ 4512 0cf0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4513 0cf4 FF3003E2 		and	r3, r3, #255
+ 4514 0cf8 0200A0E1 		mov	r0, r2
+ 4515 0cfc 0310A0E1 		mov	r1, r3
+ 4516 0d00 EAFCFFEB 		bl	celda_es_candidato
+ 4517 0d04 0030A0E1 		mov	r3, r0
+ 4518 0d08 000053E3 		cmp	r3, #0
+ 4519 0d0c 7500000A 		beq	.L92
+ 4520              	.LBB4:
+ 420:../maquina_estados.c **** 						for (c = 0; c < NUM_COLUMNAS; c++)
+ 4521              		.loc 1 420 0
+ 4522 0d10 0030A0E3 		mov	r3, #0
+ 4523 0d14 0E304BE5 		strb	r3, [fp, #-14]
+ 4524 0d18 0D0000EA 		b	.L93
+ 4525              	.L94:
+ 422:../maquina_estados.c **** 							celda_limpiar_error(&cuadricula[f][c]);
+ 4526              		.loc 1 422 0 discriminator 2
+ 4527 0d1c 24349FE5 		ldr	r3, .L114+8
+ 4528 0d20 003093E5 		ldr	r3, [r3, #0]
+ 4529 0d24 0320A0E1 		mov	r2, r3
+ 4530 0d28 10305BE5 		ldrb	r3, [fp, #-16]	@ zero_extendqisi2
+ 4531 0d2c 0312A0E1 		mov	r1, r3, asl #4
+ 4532 0d30 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4533 0d34 033081E0 		add	r3, r1, r3
+ 4534 0d38 8330A0E1 		mov	r3, r3, asl #1
+ 4535 0d3c 033082E0 		add	r3, r2, r3
+ 4536 0d40 0300A0E1 		mov	r0, r3
+ 4537 0d44 0BFDFFEB 		bl	celda_limpiar_error
+ 420:../maquina_estados.c **** 						for (c = 0; c < NUM_COLUMNAS; c++)
+ 4538              		.loc 1 420 0 discriminator 2
+ 4539 0d48 0E305BE5 		ldrb	r3, [fp, #-14]
+ 4540 0d4c 013083E2 		add	r3, r3, #1
+ 4541 0d50 0E304BE5 		strb	r3, [fp, #-14]
+ 4542              	.L93:
+ 420:../maquina_estados.c **** 						for (c = 0; c < NUM_COLUMNAS; c++)
+ 4543              		.loc 1 420 0 is_stmt 0 discriminator 1
+ 4544 0d54 0E305BE5 		ldrb	r3, [fp, #-14]	@ zero_extendqisi2
+ 4545 0d58 0F0053E3 		cmp	r3, #15
+ 4546 0d5c EEFFFF9A 		bls	.L94
+ 427:../maquina_estados.c **** 					celda_poner_valor(&cuadricula[fila][columna], valor);
+ 4547              		.loc 1 427 0 is_stmt 1
+ 4548 0d60 E0339FE5 		ldr	r3, .L114+8
+ 4549 0d64 003093E5 		ldr	r3, [r3, #0]
+ 4550 0d68 0320A0E1 		mov	r2, r3
+ 4551 0d6c E8339FE5 		ldr	r3, .L114+28
+ 4552 0d70 0030D3E5 		ldrb	r3, [r3, #0]
+ 4553 0d74 FF3003E2 		and	r3, r3, #255
+ 4554 0d78 0312A0E1 		mov	r1, r3, asl #4
+ 4555 0d7c DC339FE5 		ldr	r3, .L114+32
+ 4556 0d80 0030D3E5 		ldrb	r3, [r3, #0]
+ 4557 0d84 FF3003E2 		and	r3, r3, #255
+ 4558 0d88 033081E0 		add	r3, r1, r3
+ 4559 0d8c 8330A0E1 		mov	r3, r3, asl #1
+ 4560 0d90 032082E0 		add	r2, r2, r3
+ 4561 0d94 C8339FE5 		ldr	r3, .L114+36
+ 4562 0d98 0030D3E5 		ldrb	r3, [r3, #0]
+ 4563 0d9c FF3003E2 		and	r3, r3, #255
+ 4564 0da0 0200A0E1 		mov	r0, r2
+ 4565 0da4 0310A0E1 		mov	r1, r3
+ 4566 0da8 94FCFFEB 		bl	celda_poner_valor
+ 430:../maquina_estados.c **** 					if (valor_previo != 0)
+ 4567              		.loc 1 430 0
+ 4568 0dac B4339FE5 		ldr	r3, .L114+40
+ 4569 0db0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4570 0db4 FF3003E2 		and	r3, r3, #255
+ 4571 0db8 000053E3 		cmp	r3, #0
+ 4572 0dbc 0700000A 		beq	.L95
+ 432:../maquina_estados.c **** 						celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 4573              		.loc 1 432 0
+ 4574 0dc0 80339FE5 		ldr	r3, .L114+8
+ 4575 0dc4 003093E5 		ldr	r3, [r3, #0]
+ 4576 0dc8 0300A0E1 		mov	r0, r3
+ 4577 0dcc FEFFFFEB 		bl	candidatos_actualizar_all
+ 4578 0dd0 0020A0E1 		mov	r2, r0
+ 4579 0dd4 70339FE5 		ldr	r3, .L114+12
+ 4580 0dd8 002083E5 		str	r2, [r3, #0]
+ 4581 0ddc 100000EA 		b	.L96
+ 4582              	.L95:
+ 436:../maquina_estados.c **** 						candidatos_propagar_arm(cuadricula, fila, columna);
+ 4583              		.loc 1 436 0
+ 4584 0de0 60339FE5 		ldr	r3, .L114+8
+ 4585 0de4 001093E5 		ldr	r1, [r3, #0]
+ 4586 0de8 6C339FE5 		ldr	r3, .L114+28
+ 4587 0dec 0030D3E5 		ldrb	r3, [r3, #0]
+ 4588 0df0 FF2003E2 		and	r2, r3, #255
+ 4589 0df4 64339FE5 		ldr	r3, .L114+32
+ 4590 0df8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4591 0dfc FF3003E2 		and	r3, r3, #255
+ 4592 0e00 0100A0E1 		mov	r0, r1
+ 4593 0e04 0210A0E1 		mov	r1, r2
+ 4594 0e08 0320A0E1 		mov	r2, r3
+ 4595 0e0c FEFFFFEB 		bl	candidatos_propagar_arm
+ 437:../maquina_estados.c **** 						celdas_vacias--;
+ 4596              		.loc 1 437 0
+ 4597 0e10 34339FE5 		ldr	r3, .L114+12
+ 4598 0e14 003093E5 		ldr	r3, [r3, #0]
+ 4599 0e18 012043E2 		sub	r2, r3, #1
+ 4600 0e1c 28339FE5 		ldr	r3, .L114+12
+ 4601 0e20 002083E5 		str	r2, [r3, #0]
+ 4602              	.L96:
+ 441:../maquina_estados.c **** 					if (celdas_vacias == 0)
+ 4603              		.loc 1 441 0
+ 4604 0e24 20339FE5 		ldr	r3, .L114+12
+ 4605 0e28 003093E5 		ldr	r3, [r3, #0]
+ 4606 0e2c 000053E3 		cmp	r3, #0
+ 4607 0e30 0C00001A 		bne	.L97
+ 444:../maquina_estados.c **** 						tiempo_final = timer2_count() - tiempo_inicio;
+ 4608              		.loc 1 444 0
+ 4609 0e34 FEFFFFEB 		bl	timer2_count
+ 4610 0e38 0020A0E1 		mov	r2, r0
+ 4611 0e3c 00339FE5 		ldr	r3, .L114+4
+ 4612 0e40 003093E5 		ldr	r3, [r3, #0]
+ 4613 0e44 022063E0 		rsb	r2, r3, r2
+ 4614 0e48 08339FE5 		ldr	r3, .L114+24
+ 4615 0e4c 002083E5 		str	r2, [r3, #0]
+ 445:../maquina_estados.c **** 						estado_juego = PARTIDA_TERMINADA;
+ 4616              		.loc 1 445 0
+ 4617 0e50 E8329FE5 		ldr	r3, .L114
+ 4618 0e54 0720A0E3 		mov	r2, #7
+ 4619 0e58 0020C3E5 		strb	r2, [r3, #0]
+ 446:../maquina_estados.c **** 						D8Led_symbol(0);
+ 4620              		.loc 1 446 0
+ 4621 0e5c 0000A0E3 		mov	r0, #0
+ 4622 0e60 FEFFFFEB 		bl	D8Led_symbol
+ 4623              	.LBE4:
+ 4624              		.loc 1 532 0
+ 4625 0e64 B20000EA 		b	.L59
+ 4626              	.L97:
+ 4627              	.LBB5:
+ 451:../maquina_estados.c **** 						if (Sudoku_Esta_Region_Expandida_Activa())
+ 4628              		.loc 1 451 0
+ 4629 0e68 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4630 0e6c 0030A0E1 		mov	r3, r0
+ 4631 0e70 000053E3 		cmp	r3, #0
+ 4632 0e74 0100000A 		beq	.L98
+ 454:../maquina_estados.c **** 							Sudoku_Redibujar_Region_Expandida();
+ 4633              		.loc 1 454 0
+ 4634 0e78 FEFFFFEB 		bl	Sudoku_Redibujar_Region_Expandida
+ 4635 0e7c 030000EA 		b	.L99
+ 4636              	.L98:
+ 459:../maquina_estados.c **** 							Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 4637              		.loc 1 459 0
+ 4638 0e80 C0329FE5 		ldr	r3, .L114+8
+ 4639 0e84 003093E5 		ldr	r3, [r3, #0]
+ 4640 0e88 0300A0E1 		mov	r0, r3
+ 4641 0e8c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 4642              	.L99:
+ 463:../maquina_estados.c **** 						if (Sudoku_Esta_Region_Expandida_Activa())
+ 4643              		.loc 1 463 0
+ 4644 0e90 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4645 0e94 0030A0E1 		mov	r3, r0
+ 4646 0e98 000053E3 		cmp	r3, #0
+ 4647 0e9c 0800000A 		beq	.L100
+ 466:../maquina_estados.c **** 							estado_juego = INTRODUCIR_VALOR;
+ 4648              		.loc 1 466 0
+ 4649 0ea0 98329FE5 		ldr	r3, .L114
+ 4650 0ea4 0420A0E3 		mov	r2, #4
+ 4651 0ea8 0020C3E5 		strb	r2, [r3, #0]
+ 467:../maquina_estados.c **** 							int_count = 0;
+ 4652              		.loc 1 467 0
+ 4653 0eac 9C329FE5 		ldr	r3, .L114+16
+ 4654 0eb0 0020A0E3 		mov	r2, #0
+ 4655 0eb4 0020C3E5 		strb	r2, [r3, #0]
+ 468:../maquina_estados.c **** 							D8Led_symbol(0);
+ 4656              		.loc 1 468 0
+ 4657 0eb8 0000A0E3 		mov	r0, #0
+ 4658 0ebc FEFFFFEB 		bl	D8Led_symbol
+ 4659              	.LBE5:
+ 4660              		.loc 1 532 0
+ 4661 0ec0 9B0000EA 		b	.L59
+ 4662              	.L100:
+ 4663              	.LBB6:
+ 473:../maquina_estados.c **** 							estado_juego = INTRODUCIR_FILA;
+ 4664              		.loc 1 473 0
+ 4665 0ec4 74329FE5 		ldr	r3, .L114
+ 4666 0ec8 0120A0E3 		mov	r2, #1
+ 4667 0ecc 0020C3E5 		strb	r2, [r3, #0]
+ 474:../maquina_estados.c **** 							int_count = 9;
+ 4668              		.loc 1 474 0
+ 4669 0ed0 78329FE5 		ldr	r3, .L114+16
+ 4670 0ed4 0920A0E3 		mov	r2, #9
+ 4671 0ed8 0020C3E5 		strb	r2, [r3, #0]
+ 475:../maquina_estados.c **** 							D8Led_symbol(15);  /* 'F' */
+ 4672              		.loc 1 475 0
+ 4673 0edc 0F00A0E3 		mov	r0, #15
+ 4674 0ee0 FEFFFFEB 		bl	D8Led_symbol
+ 4675              	.LBE6:
+ 4676              		.loc 1 532 0
+ 4677 0ee4 920000EA 		b	.L59
+ 4678              	.L92:
+ 481:../maquina_estados.c **** 					celda_marcar_error(&cuadricula[fila][columna]);
+ 4679              		.loc 1 481 0
+ 4680 0ee8 58329FE5 		ldr	r3, .L114+8
+ 4681 0eec 003093E5 		ldr	r3, [r3, #0]
+ 4682 0ef0 0320A0E1 		mov	r2, r3
+ 4683 0ef4 60329FE5 		ldr	r3, .L114+28
+ 4684 0ef8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4685 0efc FF3003E2 		and	r3, r3, #255
+ 4686 0f00 0312A0E1 		mov	r1, r3, asl #4
+ 4687 0f04 54329FE5 		ldr	r3, .L114+32
+ 4688 0f08 0030D3E5 		ldrb	r3, [r3, #0]
+ 4689 0f0c FF3003E2 		and	r3, r3, #255
+ 4690 0f10 033081E0 		add	r3, r1, r3
+ 4691 0f14 8330A0E1 		mov	r3, r3, asl #1
+ 4692 0f18 033082E0 		add	r3, r2, r3
+ 4693 0f1c 0300A0E1 		mov	r0, r3
+ 4694 0f20 85FCFFEB 		bl	celda_marcar_error
+ 482:../maquina_estados.c **** 					D8Led_symbol(14);  /* 'E' de Error */
+ 4695              		.loc 1 482 0
+ 4696 0f24 0E00A0E3 		mov	r0, #14
+ 4697 0f28 FEFFFFEB 		bl	D8Led_symbol
+ 485:../maquina_estados.c **** 					Delay(200);
+ 4698              		.loc 1 485 0
+ 4699 0f2c C800A0E3 		mov	r0, #200
+ 4700 0f30 FEFFFFEB 		bl	Delay
+ 488:../maquina_estados.c **** 					celda_poner_valor(&cuadricula[fila][columna], valor);
+ 4701              		.loc 1 488 0
+ 4702 0f34 0C329FE5 		ldr	r3, .L114+8
+ 4703 0f38 003093E5 		ldr	r3, [r3, #0]
+ 4704 0f3c 0320A0E1 		mov	r2, r3
+ 4705 0f40 14329FE5 		ldr	r3, .L114+28
+ 4706 0f44 0030D3E5 		ldrb	r3, [r3, #0]
+ 4707 0f48 FF3003E2 		and	r3, r3, #255
+ 4708 0f4c 0312A0E1 		mov	r1, r3, asl #4
+ 4709 0f50 08329FE5 		ldr	r3, .L114+32
+ 4710 0f54 0030D3E5 		ldrb	r3, [r3, #0]
+ 4711 0f58 FF3003E2 		and	r3, r3, #255
+ 4712 0f5c 033081E0 		add	r3, r1, r3
+ 4713 0f60 8330A0E1 		mov	r3, r3, asl #1
+ 4714 0f64 032082E0 		add	r2, r2, r3
+ 4715 0f68 F4319FE5 		ldr	r3, .L114+36
+ 4716 0f6c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4717 0f70 FF3003E2 		and	r3, r3, #255
+ 4718 0f74 0200A0E1 		mov	r0, r2
+ 4719 0f78 0310A0E1 		mov	r1, r3
+ 4720 0f7c 1FFCFFEB 		bl	celda_poner_valor
+ 491:../maquina_estados.c **** 					if (valor_previo != 0)
+ 4721              		.loc 1 491 0
+ 4722 0f80 E0319FE5 		ldr	r3, .L114+40
+ 4723 0f84 0030D3E5 		ldrb	r3, [r3, #0]
+ 4724 0f88 FF3003E2 		and	r3, r3, #255
+ 4725 0f8c 000053E3 		cmp	r3, #0
+ 4726 0f90 0700000A 		beq	.L101
+ 493:../maquina_estados.c **** 						celdas_vacias = candidatos_actualizar_all(cuadricula);
+ 4727              		.loc 1 493 0
+ 4728 0f94 AC319FE5 		ldr	r3, .L114+8
+ 4729 0f98 003093E5 		ldr	r3, [r3, #0]
+ 4730 0f9c 0300A0E1 		mov	r0, r3
+ 4731 0fa0 FEFFFFEB 		bl	candidatos_actualizar_all
+ 4732 0fa4 0020A0E1 		mov	r2, r0
+ 4733 0fa8 9C319FE5 		ldr	r3, .L114+12
+ 4734 0fac 002083E5 		str	r2, [r3, #0]
+ 4735 0fb0 0B0000EA 		b	.L102
+ 4736              	.L101:
+ 497:../maquina_estados.c **** 						candidatos_propagar_arm(cuadricula, fila, columna);
+ 4737              		.loc 1 497 0
+ 4738 0fb4 8C319FE5 		ldr	r3, .L114+8
+ 4739 0fb8 001093E5 		ldr	r1, [r3, #0]
+ 4740 0fbc 98319FE5 		ldr	r3, .L114+28
+ 4741 0fc0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4742 0fc4 FF2003E2 		and	r2, r3, #255
+ 4743 0fc8 90319FE5 		ldr	r3, .L114+32
+ 4744 0fcc 0030D3E5 		ldrb	r3, [r3, #0]
+ 4745 0fd0 FF3003E2 		and	r3, r3, #255
+ 4746 0fd4 0100A0E1 		mov	r0, r1
+ 4747 0fd8 0210A0E1 		mov	r1, r2
+ 4748 0fdc 0320A0E1 		mov	r2, r3
+ 4749 0fe0 FEFFFFEB 		bl	candidatos_propagar_arm
+ 4750              	.L102:
+ 501:../maquina_estados.c **** 					marcar_celdas_en_conflicto(fila, columna, valor);
+ 4751              		.loc 1 501 0
+ 4752 0fe4 70319FE5 		ldr	r3, .L114+28
+ 4753 0fe8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4754 0fec FF1003E2 		and	r1, r3, #255
+ 4755 0ff0 68319FE5 		ldr	r3, .L114+32
+ 4756 0ff4 0030D3E5 		ldrb	r3, [r3, #0]
+ 4757 0ff8 FF2003E2 		and	r2, r3, #255
+ 4758 0ffc 60319FE5 		ldr	r3, .L114+36
+ 4759 1000 0030D3E5 		ldrb	r3, [r3, #0]
+ 4760 1004 FF3003E2 		and	r3, r3, #255
+ 4761 1008 0100A0E1 		mov	r0, r1
+ 4762 100c 0210A0E1 		mov	r1, r2
+ 4763 1010 0320A0E1 		mov	r2, r3
+ 4764 1014 92FCFFEB 		bl	marcar_celdas_en_conflicto
+ 504:../maquina_estados.c **** 					if (Sudoku_Esta_Region_Expandida_Activa())
+ 4765              		.loc 1 504 0
+ 4766 1018 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4767 101c 0030A0E1 		mov	r3, r0
+ 4768 1020 000053E3 		cmp	r3, #0
+ 4769 1024 0100000A 		beq	.L103
+ 507:../maquina_estados.c **** 						Sudoku_Redibujar_Region_Expandida();
+ 4770              		.loc 1 507 0
+ 4771 1028 FEFFFFEB 		bl	Sudoku_Redibujar_Region_Expandida
+ 4772 102c 030000EA 		b	.L104
+ 4773              	.L103:
+ 512:../maquina_estados.c **** 						Sudoku_Actualizar_Tablero_Completo(cuadricula);
+ 4774              		.loc 1 512 0
+ 4775 1030 10319FE5 		ldr	r3, .L114+8
+ 4776 1034 003093E5 		ldr	r3, [r3, #0]
+ 4777 1038 0300A0E1 		mov	r0, r3
+ 4778 103c FEFFFFEB 		bl	Sudoku_Actualizar_Tablero_Completo
+ 4779              	.L104:
+ 516:../maquina_estados.c **** 					if (Sudoku_Esta_Region_Expandida_Activa())
+ 4780              		.loc 1 516 0
+ 4781 1040 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 4782 1044 0030A0E1 		mov	r3, r0
+ 4783 1048 000053E3 		cmp	r3, #0
+ 4784 104c 0800000A 		beq	.L105
+ 519:../maquina_estados.c **** 						estado_juego = INTRODUCIR_VALOR;
+ 4785              		.loc 1 519 0
+ 4786 1050 E8309FE5 		ldr	r3, .L114
+ 4787 1054 0420A0E3 		mov	r2, #4
+ 4788 1058 0020C3E5 		strb	r2, [r3, #0]
+ 520:../maquina_estados.c **** 						int_count = 0;
+ 4789              		.loc 1 520 0
+ 4790 105c EC309FE5 		ldr	r3, .L114+16
+ 4791 1060 0020A0E3 		mov	r2, #0
+ 4792 1064 0020C3E5 		strb	r2, [r3, #0]
+ 521:../maquina_estados.c **** 						D8Led_symbol(0);
+ 4793              		.loc 1 521 0
+ 4794 1068 0000A0E3 		mov	r0, #0
+ 4795 106c FEFFFFEB 		bl	D8Led_symbol
+ 4796              		.loc 1 532 0
+ 4797 1070 2F0000EA 		b	.L59
+ 4798              	.L105:
+ 526:../maquina_estados.c **** 						estado_juego = INTRODUCIR_FILA;
+ 4799              		.loc 1 526 0
+ 4800 1074 C4309FE5 		ldr	r3, .L114
+ 4801 1078 0120A0E3 		mov	r2, #1
+ 4802 107c 0020C3E5 		strb	r2, [r3, #0]
+ 527:../maquina_estados.c **** 						int_count = 9;
+ 4803              		.loc 1 527 0
+ 4804 1080 C8309FE5 		ldr	r3, .L114+16
+ 4805 1084 0920A0E3 		mov	r2, #9
+ 4806 1088 0020C3E5 		strb	r2, [r3, #0]
+ 528:../maquina_estados.c **** 						D8Led_symbol(15);  /* 'F' */
+ 4807              		.loc 1 528 0
+ 4808 108c 0F00A0E3 		mov	r0, #15
+ 4809 1090 FEFFFFEB 		bl	D8Led_symbol
+ 4810              		.loc 1 532 0
+ 4811 1094 260000EA 		b	.L59
+ 4812              	.L67:
+ 533:../maquina_estados.c **** 		
+ 534:../maquina_estados.c **** 		/*------------------------------------------------------------------
+ 535:../maquina_estados.c **** 		 * ESTADO 7: PARTIDA_TERMINADA
+ 536:../maquina_estados.c **** 		 * Evento: CONFIRMAR (reinicia el juego)
+ 537:../maquina_estados.c **** 		 *-----------------------------------------------------------------*/
+ 538:../maquina_estados.c **** 		case PARTIDA_TERMINADA:
+ 539:../maquina_estados.c **** 			if (evento == EVENTO_CONFIRMAR)
+ 4813              		.loc 1 539 0
+ 4814 1098 15305BE5 		ldrb	r3, [fp, #-21]	@ zero_extendqisi2
+ 4815 109c 020053E3 		cmp	r3, #2
+ 4816 10a0 2200001A 		bne	.L113
+ 540:../maquina_estados.c **** 			{
+ 541:../maquina_estados.c **** 				if (!pantalla_mostrada)
+ 4817              		.loc 1 541 0
+ 4818 10a4 A8309FE5 		ldr	r3, .L114+20
+ 4819 10a8 0030D3E5 		ldrb	r3, [r3, #0]
+ 4820 10ac FF3003E2 		and	r3, r3, #255
+ 4821 10b0 000053E3 		cmp	r3, #0
+ 4822 10b4 0700001A 		bne	.L107
+ 542:../maquina_estados.c **** 				{
+ 543:../maquina_estados.c **** 					/* Primera pulsaciÃ³n: mostrar pantalla final */
+ 544:../maquina_estados.c **** 					Sudoku_Pantalla_Final(tiempo_final);
+ 4823              		.loc 1 544 0
+ 4824 10b8 98309FE5 		ldr	r3, .L114+24
+ 4825 10bc 003093E5 		ldr	r3, [r3, #0]
+ 4826 10c0 0300A0E1 		mov	r0, r3
+ 4827 10c4 FEFFFFEB 		bl	Sudoku_Pantalla_Final
+ 545:../maquina_estados.c **** 					pantalla_mostrada = 1;
+ 4828              		.loc 1 545 0
+ 4829 10c8 84309FE5 		ldr	r3, .L114+20
+ 4830 10cc 0120A0E3 		mov	r2, #1
+ 4831 10d0 0020C3E5 		strb	r2, [r3, #0]
+ 546:../maquina_estados.c **** 				}
+ 547:../maquina_estados.c **** 				else
+ 548:../maquina_estados.c **** 				{
+ 549:../maquina_estados.c **** 					/* Segunda pulsaciÃ³n: reiniciar juego */
+ 550:../maquina_estados.c **** 					restaurar_cuadricula_original();
+ 551:../maquina_estados.c **** 					Sudoku_Pantalla_Inicial();
+ 552:../maquina_estados.c **** 					
+ 553:../maquina_estados.c **** 					/* Volver al estado inicial */
+ 554:../maquina_estados.c **** 					estado_juego = ESPERANDO_INICIO;
+ 555:../maquina_estados.c **** 					int_count = 0;
+ 556:../maquina_estados.c **** 					pantalla_mostrada = 0;
+ 557:../maquina_estados.c **** 				}
+ 558:../maquina_estados.c **** 			}
+ 559:../maquina_estados.c **** 			break;
+ 4832              		.loc 1 559 0
+ 4833 10d4 160000EA 		b	.L59
+ 4834              	.L107:
+ 550:../maquina_estados.c **** 					restaurar_cuadricula_original();
+ 4835              		.loc 1 550 0
+ 4836 10d8 35FCFFEB 		bl	restaurar_cuadricula_original
+ 551:../maquina_estados.c **** 					Sudoku_Pantalla_Inicial();
+ 4837              		.loc 1 551 0
+ 4838 10dc FEFFFFEB 		bl	Sudoku_Pantalla_Inicial
+ 554:../maquina_estados.c **** 					estado_juego = ESPERANDO_INICIO;
+ 4839              		.loc 1 554 0
+ 4840 10e0 58309FE5 		ldr	r3, .L114
+ 4841 10e4 0020A0E3 		mov	r2, #0
+ 4842 10e8 0020C3E5 		strb	r2, [r3, #0]
+ 555:../maquina_estados.c **** 					int_count = 0;
+ 4843              		.loc 1 555 0
+ 4844 10ec 5C309FE5 		ldr	r3, .L114+16
+ 4845 10f0 0020A0E3 		mov	r2, #0
+ 4846 10f4 0020C3E5 		strb	r2, [r3, #0]
+ 556:../maquina_estados.c **** 					pantalla_mostrada = 0;
+ 4847              		.loc 1 556 0
+ 4848 10f8 54309FE5 		ldr	r3, .L114+20
+ 4849 10fc 0020A0E3 		mov	r2, #0
+ 4850 1100 0020C3E5 		strb	r2, [r3, #0]
+ 4851              		.loc 1 559 0
+ 4852 1104 0A0000EA 		b	.L59
+ 4853              	.L108:
+ 560:../maquina_estados.c **** 		
+ 561:../maquina_estados.c **** 		default:
+ 562:../maquina_estados.c **** 			/* Estado desconocido: no hacer nada */
+ 563:../maquina_estados.c **** 			break;
+ 4854              		.loc 1 563 0
+ 4855 1108 0000A0E1 		mov	r0, r0	@ nop
+ 4856 110c 080000EA 		b	.L59
+ 4857              	.L109:
+ 241:../maquina_estados.c **** 			break;
+ 4858              		.loc 1 241 0
+ 4859 1110 0000A0E1 		mov	r0, r0	@ nop
+ 4860 1114 060000EA 		b	.L59
+ 4861              	.L110:
+ 276:../maquina_estados.c **** 			break;
+ 4862              		.loc 1 276 0
+ 4863 1118 0000A0E1 		mov	r0, r0	@ nop
+ 4864 111c 040000EA 		b	.L59
+ 4865              	.L111:
+ 301:../maquina_estados.c **** 			break;
+ 4866              		.loc 1 301 0
+ 4867 1120 0000A0E1 		mov	r0, r0	@ nop
+ 4868 1124 020000EA 		b	.L59
+ 4869              	.L112:
+ 357:../maquina_estados.c **** 			break;
+ 4870              		.loc 1 357 0
+ 4871 1128 0000A0E1 		mov	r0, r0	@ nop
+ 4872 112c 000000EA 		b	.L59
+ 4873              	.L113:
+ 559:../maquina_estados.c **** 			break;
+ 4874              		.loc 1 559 0
+ 4875 1130 0000A0E1 		mov	r0, r0	@ nop
+ 4876              	.L59:
+ 564:../maquina_estados.c **** 	}
+ 565:../maquina_estados.c **** }
+ 4877              		.loc 1 565 0
+ 4878 1134 0CD04BE2 		sub	sp, fp, #12
+ 4879 1138 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 4880 113c 1EFF2FE1 		bx	lr
+ 4881              	.L115:
+ 4882              		.align	2
+ 4883              	.L114:
+ 4884 1140 00000000 		.word	estado_juego
+ 4885 1144 08000000 		.word	tiempo_inicio
+ 4886 1148 00000000 		.word	cuadricula
+ 4887 114c 00000000 		.word	celdas_vacias
+ 4888 1150 01000000 		.word	int_count
+ 4889 1154 06000000 		.word	pantalla_mostrada
+ 4890 1158 0C000000 		.word	tiempo_final
+ 4891 115c 02000000 		.word	fila
+ 4892 1160 03000000 		.word	columna
+ 4893 1164 04000000 		.word	valor
+ 4894 1168 05000000 		.word	valor_previo
+ 4895              		.cfi_endproc
+ 4896              	.LFE14:
+ 4898              		.align	2
+ 4899              		.global	Maquina_Procesar_Boton
+ 4901              	Maquina_Procesar_Boton:
+ 4902              	.LFB15:
+ 566:../maquina_estados.c **** 
+ 567:../maquina_estados.c **** 
+ 568:../maquina_estados.c **** /*=====================================================================================
+ 569:../maquina_estados.c ****  * ADAPTADORES: BOTONES FÃ�SICOS â†’ EVENTOS GENÃ‰RICOS
+ 570:../maquina_estados.c ****  *====================================================================================*/
+ 571:../maquina_estados.c **** 
+ 572:../maquina_estados.c **** /*********************************************************************************************
+ 573:../maquina_estados.c **** * name:		Maquina_Procesar_Boton
+ 574:../maquina_estados.c **** * func:		Adaptador para botones fÃ­sicos: traduce botones â†’ eventos genÃ©ricos
+ 575:../maquina_estados.c **** * para:		boton_id - ID del botÃ³n (EVENTO_BOTON_IZQUIERDO o EVENTO_BOTON_DERECHO)
+ 576:../maquina_estados.c **** * ret:		none
+ 577:../maquina_estados.c **** * comment:	Esta funciÃ³n es un WRAPPER que adapta la entrada de botones fÃ­sicos
+ 578:../maquina_estados.c **** *			al formato genÃ©rico que entiende la mÃ¡quina de estados.
+ 579:../maquina_estados.c **** *			Flujo: BotÃ³n â†’ Adaptador â†’ Maquina_Procesar_Evento()
+ 580:../maquina_estados.c **** *********************************************************************************************/
+ 581:../maquina_estados.c **** void Maquina_Procesar_Boton(INT8U boton_id)
+ 582:../maquina_estados.c **** {
+ 4903              		.loc 1 582 0
+ 4904              		.cfi_startproc
+ 4905              		@ Function supports interworking.
+ 4906              		@ args = 0, pretend = 0, frame = 24
+ 4907              		@ frame_needed = 1, uses_anonymous_args = 0
+ 4908 116c 0DC0A0E1 		mov	ip, sp
+ 4909              	.LCFI28:
+ 4910              		.cfi_def_cfa_register 12
+ 4911 1170 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 4912 1174 04B04CE2 		sub	fp, ip, #4
+ 4913              		.cfi_offset 14, -8
+ 4914              		.cfi_offset 13, -12
+ 4915              		.cfi_offset 11, -16
+ 4916              	.LCFI29:
+ 4917              		.cfi_def_cfa 11, 4
+ 4918 1178 18D04DE2 		sub	sp, sp, #24
+ 4919 117c 0030A0E1 		mov	r3, r0
+ 4920 1180 1D304BE5 		strb	r3, [fp, #-29]
+ 583:../maquina_estados.c **** 	/* Registrar en la cola de depuración */
+ 584:../maquina_estados.c **** 	cola_depuracion(timer2_count(), boton_id, estado_juego);
+ 4921              		.loc 1 584 0
+ 4922 1184 FEFFFFEB 		bl	timer2_count
+ 4923 1188 0010A0E1 		mov	r1, r0
+ 4924 118c 2C329FE5 		ldr	r3, .L131
+ 4925 1190 0030D3E5 		ldrb	r3, [r3, #0]
+ 4926 1194 FF3003E2 		and	r3, r3, #255
+ 4927 1198 1D205BE5 		ldrb	r2, [fp, #-29]	@ zero_extendqisi2
+ 4928 119c 0100A0E1 		mov	r0, r1
+ 4929 11a0 0210A0E1 		mov	r1, r2
+ 4930 11a4 0320A0E1 		mov	r2, r3
+ 4931 11a8 FEFFFFEB 		bl	cola_depuracion
+ 585:../maquina_estados.c **** 	
+ 586:../maquina_estados.c **** 	/* MODO ZOOM CON CELDA SELECCIONADA: Actuar directamente sobre la celda */
+ 587:../maquina_estados.c **** 	if (Sudoku_Hay_Celda_Seleccionada() && estado_juego == INTRODUCIR_VALOR)
+ 4932              		.loc 1 587 0
+ 4933 11ac FEFFFFEB 		bl	Sudoku_Hay_Celda_Seleccionada
+ 4934 11b0 0030A0E1 		mov	r3, r0
+ 4935 11b4 000053E3 		cmp	r3, #0
+ 4936 11b8 3C00000A 		beq	.L117
+ 4937              		.loc 1 587 0 is_stmt 0 discriminator 1
+ 4938 11bc FC319FE5 		ldr	r3, .L131
+ 4939 11c0 0030D3E5 		ldrb	r3, [r3, #0]
+ 4940 11c4 FF3003E2 		and	r3, r3, #255
+ 4941 11c8 040053E3 		cmp	r3, #4
+ 4942 11cc 3700001A 		bne	.L117
+ 4943              	.LBB7:
+ 588:../maquina_estados.c **** 	{
+ 589:../maquina_estados.c **** 		int fila_sel, col_sel;
+ 590:../maquina_estados.c **** 		if (Sudoku_Obtener_Celda_Seleccionada(&fila_sel, &col_sel))
+ 4944              		.loc 1 590 0 is_stmt 1
+ 4945 11d0 14204BE2 		sub	r2, fp, #20
+ 4946 11d4 18304BE2 		sub	r3, fp, #24
+ 4947 11d8 0200A0E1 		mov	r0, r2
+ 4948 11dc 0310A0E1 		mov	r1, r3
+ 4949 11e0 FEFFFFEB 		bl	Sudoku_Obtener_Celda_Seleccionada
+ 4950 11e4 0030A0E1 		mov	r3, r0
+ 4951 11e8 000053E3 		cmp	r3, #0
+ 4952 11ec 2F00000A 		beq	.L117
+ 591:../maquina_estados.c **** 		{
+ 592:../maquina_estados.c **** 			/* Establecer contexto en las variables globales */
+ 593:../maquina_estados.c **** 			fila = fila_sel;
+ 4953              		.loc 1 593 0
+ 4954 11f0 14301BE5 		ldr	r3, [fp, #-20]
+ 4955 11f4 FF2003E2 		and	r2, r3, #255
+ 4956 11f8 C4319FE5 		ldr	r3, .L131+4
+ 4957 11fc 0020C3E5 		strb	r2, [r3, #0]
+ 594:../maquina_estados.c **** 			columna = col_sel;
+ 4958              		.loc 1 594 0
+ 4959 1200 18301BE5 		ldr	r3, [fp, #-24]
+ 4960 1204 FF2003E2 		and	r2, r3, #255
+ 4961 1208 B8319FE5 		ldr	r3, .L131+8
+ 4962 120c 0020C3E5 		strb	r2, [r3, #0]
+ 595:../maquina_estados.c **** 			
+ 596:../maquina_estados.c **** 			if (boton_id == EVENTO_BOTON_DERECHO)
+ 4963              		.loc 1 596 0
+ 4964 1210 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 4965 1214 080053E3 		cmp	r3, #8
+ 4966 1218 1600001A 		bne	.L118
+ 597:../maquina_estados.c **** 			{
+ 598:../maquina_estados.c **** 				/* Incrementar valor */
+ 599:../maquina_estados.c **** 				int_count++;
+ 4967              		.loc 1 599 0
+ 4968 121c A8319FE5 		ldr	r3, .L131+12
+ 4969 1220 0030D3E5 		ldrb	r3, [r3, #0]
+ 4970 1224 FF3003E2 		and	r3, r3, #255
+ 4971 1228 013083E2 		add	r3, r3, #1
+ 4972 122c FF2003E2 		and	r2, r3, #255
+ 4973 1230 94319FE5 		ldr	r3, .L131+12
+ 4974 1234 0020C3E5 		strb	r2, [r3, #0]
+ 600:../maquina_estados.c **** 				if (int_count > 9)
+ 4975              		.loc 1 600 0
+ 4976 1238 8C319FE5 		ldr	r3, .L131+12
+ 4977 123c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4978 1240 FF3003E2 		and	r3, r3, #255
+ 4979 1244 090053E3 		cmp	r3, #9
+ 4980 1248 0200009A 		bls	.L119
+ 601:../maquina_estados.c **** 				{
+ 602:../maquina_estados.c **** 					int_count = 0;
+ 4981              		.loc 1 602 0
+ 4982 124c 78319FE5 		ldr	r3, .L131+12
+ 4983 1250 0020A0E3 		mov	r2, #0
+ 4984 1254 0020C3E5 		strb	r2, [r3, #0]
+ 4985              	.L119:
+ 603:../maquina_estados.c **** 				}
+ 604:../maquina_estados.c **** 				D8Led_symbol(int_count & 0x000f);
+ 4986              		.loc 1 604 0
+ 4987 1258 6C319FE5 		ldr	r3, .L131+12
+ 4988 125c 0030D3E5 		ldrb	r3, [r3, #0]
+ 4989 1260 FF3003E2 		and	r3, r3, #255
+ 4990 1264 0F3003E2 		and	r3, r3, #15
+ 4991 1268 0300A0E1 		mov	r0, r3
+ 4992 126c FEFFFFEB 		bl	D8Led_symbol
+ 605:../maquina_estados.c **** 				
+ 606:../maquina_estados.c **** 				/* Redibujar solo la región zoom */
+ 607:../maquina_estados.c **** 				Sudoku_Redibujar_Region_Expandida();
+ 4993              		.loc 1 607 0
+ 4994 1270 FEFFFFEB 		bl	Sudoku_Redibujar_Region_Expandida
+ 608:../maquina_estados.c **** 				return;
+ 4995              		.loc 1 608 0
+ 4996 1274 4E0000EA 		b	.L116
+ 4997              	.L118:
+ 609:../maquina_estados.c **** 			}
+ 610:../maquina_estados.c **** 			else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 4998              		.loc 1 610 0
+ 4999 1278 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 5000 127c 040053E3 		cmp	r3, #4
+ 5001 1280 0A00001A 		bne	.L117
+ 611:../maquina_estados.c **** 			{
+ 612:../maquina_estados.c **** 				/* Confirmar: insertar valor directamente */
+ 613:../maquina_estados.c **** 				Maquina_Procesar_Touch(EVENTO_INSERTAR_VALOR, fila_sel, col_sel, int_count);
+ 5002              		.loc 1 613 0
+ 5003 1284 14101BE5 		ldr	r1, [fp, #-20]
+ 5004 1288 18201BE5 		ldr	r2, [fp, #-24]
+ 5005 128c 38319FE5 		ldr	r3, .L131+12
+ 5006 1290 0030D3E5 		ldrb	r3, [r3, #0]
+ 5007 1294 FF3003E2 		and	r3, r3, #255
+ 5008 1298 0300A0E3 		mov	r0, #3
+ 5009 129c FEFFFFEB 		bl	Maquina_Procesar_Touch
+ 614:../maquina_estados.c **** 				int_count = 0;
+ 5010              		.loc 1 614 0
+ 5011 12a0 24319FE5 		ldr	r3, .L131+12
+ 5012 12a4 0020A0E3 		mov	r2, #0
+ 5013 12a8 0020C3E5 		strb	r2, [r3, #0]
+ 615:../maquina_estados.c **** 				return;
+ 5014              		.loc 1 615 0
+ 5015 12ac 400000EA 		b	.L116
+ 5016              	.L117:
+ 5017              	.LBE7:
+ 616:../maquina_estados.c **** 			}
+ 617:../maquina_estados.c **** 		}
+ 618:../maquina_estados.c **** 	}
+ 619:../maquina_estados.c **** 	
+ 620:../maquina_estados.c **** 	/* MODO ZOOM SIN CELDA SELECCIONADA: No hacer nada */
+ 621:../maquina_estados.c **** 	if (Sudoku_Esta_Region_Expandida_Activa() && estado_juego == INTRODUCIR_VALOR)
+ 5018              		.loc 1 621 0
+ 5019 12b0 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 5020 12b4 0030A0E1 		mov	r3, r0
+ 5021 12b8 000053E3 		cmp	r3, #0
+ 5022 12bc 0400000A 		beq	.L121
+ 5023              		.loc 1 621 0 is_stmt 0 discriminator 1
+ 5024 12c0 F8309FE5 		ldr	r3, .L131
+ 5025 12c4 0030D3E5 		ldrb	r3, [r3, #0]
+ 5026 12c8 FF3003E2 		and	r3, r3, #255
+ 5027 12cc 040053E3 		cmp	r3, #4
+ 5028 12d0 3400000A 		beq	.L129
+ 5029              	.L121:
+ 622:../maquina_estados.c **** 	{
+ 623:../maquina_estados.c **** 		/* Usuario debe seleccionar una celda primero con el touch */
+ 624:../maquina_estados.c **** 		return;
+ 625:../maquina_estados.c **** 	}
+ 626:../maquina_estados.c **** 	
+ 627:../maquina_estados.c **** 	/* MODO NORMAL: Traducir botón físico → evento genérico */
+ 628:../maquina_estados.c **** 	EventoGenerico evento;
+ 629:../maquina_estados.c **** 	
+ 630:../maquina_estados.c **** 	if (boton_id == EVENTO_BOTON_DERECHO)
+ 5030              		.loc 1 630 0 is_stmt 1
+ 5031 12d4 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 5032 12d8 080053E3 		cmp	r3, #8
+ 5033 12dc 1200001A 		bne	.L122
+ 631:../maquina_estados.c **** 	{
+ 632:../maquina_estados.c **** 		/* En estados de pantallas estÃ¡ticas, ambos botones hacen lo mismo */
+ 633:../maquina_estados.c **** 		if (estado_juego == ESPERANDO_INICIO)
+ 5034              		.loc 1 633 0
+ 5035 12e0 D8309FE5 		ldr	r3, .L131
+ 5036 12e4 0030D3E5 		ldrb	r3, [r3, #0]
+ 5037 12e8 FF3003E2 		and	r3, r3, #255
+ 5038 12ec 000053E3 		cmp	r3, #0
+ 5039 12f0 0200001A 		bne	.L123
+ 634:../maquina_estados.c **** 		{
+ 635:../maquina_estados.c **** 			evento = EVENTO_INICIAR_JUEGO;
+ 5040              		.loc 1 635 0
+ 5041 12f4 0030A0E3 		mov	r3, #0
+ 5042 12f8 0D304BE5 		strb	r3, [fp, #-13]
+ 5043 12fc 170000EA 		b	.L124
+ 5044              	.L123:
+ 636:../maquina_estados.c **** 		}
+ 637:../maquina_estados.c **** 		else if (estado_juego == PARTIDA_TERMINADA)
+ 5045              		.loc 1 637 0
+ 5046 1300 B8309FE5 		ldr	r3, .L131
+ 5047 1304 0030D3E5 		ldrb	r3, [r3, #0]
+ 5048 1308 FF3003E2 		and	r3, r3, #255
+ 5049 130c 070053E3 		cmp	r3, #7
+ 5050 1310 0200001A 		bne	.L125
+ 638:../maquina_estados.c **** 		{
+ 639:../maquina_estados.c **** 			evento = EVENTO_CONFIRMAR;
+ 5051              		.loc 1 639 0
+ 5052 1314 0230A0E3 		mov	r3, #2
+ 5053 1318 0D304BE5 		strb	r3, [fp, #-13]
+ 5054 131c 0F0000EA 		b	.L124
+ 5055              	.L125:
+ 640:../maquina_estados.c **** 		}
+ 641:../maquina_estados.c **** 		else
+ 642:../maquina_estados.c **** 		{
+ 643:../maquina_estados.c **** 			evento = EVENTO_INCREMENTAR;
+ 5056              		.loc 1 643 0
+ 5057 1320 0130A0E3 		mov	r3, #1
+ 5058 1324 0D304BE5 		strb	r3, [fp, #-13]
+ 5059 1328 0C0000EA 		b	.L124
+ 5060              	.L122:
+ 644:../maquina_estados.c **** 		}
+ 645:../maquina_estados.c **** 	}
+ 646:../maquina_estados.c **** 	else if (boton_id == EVENTO_BOTON_IZQUIERDO)
+ 5061              		.loc 1 646 0
+ 5062 132c 1D305BE5 		ldrb	r3, [fp, #-29]	@ zero_extendqisi2
+ 5063 1330 040053E3 		cmp	r3, #4
+ 5064 1334 1D00001A 		bne	.L130
+ 647:../maquina_estados.c **** 	{
+ 648:../maquina_estados.c **** 		if (estado_juego == ESPERANDO_INICIO)
+ 5065              		.loc 1 648 0
+ 5066 1338 80309FE5 		ldr	r3, .L131
+ 5067 133c 0030D3E5 		ldrb	r3, [r3, #0]
+ 5068 1340 FF3003E2 		and	r3, r3, #255
+ 5069 1344 000053E3 		cmp	r3, #0
+ 5070 1348 0200001A 		bne	.L127
+ 649:../maquina_estados.c **** 		{
+ 650:../maquina_estados.c **** 			evento = EVENTO_INICIAR_JUEGO;
+ 5071              		.loc 1 650 0
+ 5072 134c 0030A0E3 		mov	r3, #0
+ 5073 1350 0D304BE5 		strb	r3, [fp, #-13]
+ 5074 1354 010000EA 		b	.L124
+ 5075              	.L127:
+ 651:../maquina_estados.c **** 		}
+ 652:../maquina_estados.c **** 		else
+ 653:../maquina_estados.c **** 		{
+ 654:../maquina_estados.c **** 			evento = EVENTO_CONFIRMAR;
+ 5076              		.loc 1 654 0
+ 5077 1358 0230A0E3 		mov	r3, #2
+ 5078 135c 0D304BE5 		strb	r3, [fp, #-13]
+ 5079              	.L124:
+ 655:../maquina_estados.c **** 		}
+ 656:../maquina_estados.c **** 	}
+ 657:../maquina_estados.c **** 	else
+ 658:../maquina_estados.c **** 	{
+ 659:../maquina_estados.c **** 		return;  /* BotÃ³n desconocido */
+ 660:../maquina_estados.c **** 	}
+ 661:../maquina_estados.c **** 	
+ 662:../maquina_estados.c **** 	/* Delegar al nÃºcleo genÃ©rico de la mÃ¡quina */
+ 663:../maquina_estados.c **** 	Maquina_Procesar_Evento(evento);
+ 5080              		.loc 1 663 0
+ 5081 1360 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5082 1364 0300A0E1 		mov	r0, r3
+ 5083 1368 F5FCFFEB 		bl	Maquina_Procesar_Evento
+ 664:../maquina_estados.c **** 	
+ 665:../maquina_estados.c **** 	/* Si estamos en VERIFICAR_CELDA, procesarlo automÃ¡ticamente */
+ 666:../maquina_estados.c **** 	if (estado_juego == VERIFICAR_CELDA)
+ 5084              		.loc 1 666 0
+ 5085 136c 4C309FE5 		ldr	r3, .L131
+ 5086 1370 0030D3E5 		ldrb	r3, [r3, #0]
+ 5087 1374 FF3003E2 		and	r3, r3, #255
+ 5088 1378 030053E3 		cmp	r3, #3
+ 5089 137c 0100001A 		bne	.L128
+ 667:../maquina_estados.c **** 	{
+ 668:../maquina_estados.c **** 		Maquina_Procesar_Evento(EVENTO_CONFIRMAR);  /* Auto-procesar verificaciÃ³n */
+ 5090              		.loc 1 668 0
+ 5091 1380 0200A0E3 		mov	r0, #2
+ 5092 1384 EEFCFFEB 		bl	Maquina_Procesar_Evento
+ 5093              	.L128:
+ 669:../maquina_estados.c **** 	}
+ 670:../maquina_estados.c **** 	
+ 671:../maquina_estados.c **** 	/* Si estamos en VERIFICAR_VALOR, procesarlo automÃ¡ticamente */
+ 672:../maquina_estados.c **** 	if (estado_juego == VERIFICAR_VALOR)
+ 5094              		.loc 1 672 0
+ 5095 1388 30309FE5 		ldr	r3, .L131
+ 5096 138c 0030D3E5 		ldrb	r3, [r3, #0]
+ 5097 1390 FF3003E2 		and	r3, r3, #255
+ 5098 1394 050053E3 		cmp	r3, #5
+ 5099 1398 0500001A 		bne	.L116
+ 673:../maquina_estados.c **** 	{
+ 674:../maquina_estados.c **** 		Maquina_Procesar_Evento(EVENTO_CONFIRMAR);  /* Auto-procesar verificaciÃ³n */
+ 5100              		.loc 1 674 0
+ 5101 139c 0200A0E3 		mov	r0, #2
+ 5102 13a0 E7FCFFEB 		bl	Maquina_Procesar_Evento
+ 5103 13a4 020000EA 		b	.L116
+ 5104              	.L129:
+ 624:../maquina_estados.c **** 		return;
+ 5105              		.loc 1 624 0
+ 5106 13a8 0000A0E1 		mov	r0, r0	@ nop
+ 5107 13ac 000000EA 		b	.L116
+ 5108              	.L130:
+ 659:../maquina_estados.c **** 		return;  /* BotÃ³n desconocido */
+ 5109              		.loc 1 659 0
+ 5110 13b0 0000A0E1 		mov	r0, r0	@ nop
+ 5111              	.L116:
+ 675:../maquina_estados.c **** 	}
+ 676:../maquina_estados.c **** }
+ 5112              		.loc 1 676 0
+ 5113 13b4 0CD04BE2 		sub	sp, fp, #12
+ 5114 13b8 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5115 13bc 1EFF2FE1 		bx	lr
+ 5116              	.L132:
+ 5117              		.align	2
+ 5118              	.L131:
+ 5119 13c0 00000000 		.word	estado_juego
+ 5120 13c4 02000000 		.word	fila
+ 5121 13c8 03000000 		.word	columna
+ 5122 13cc 01000000 		.word	int_count
+ 5123              		.cfi_endproc
+ 5124              	.LFE15:
+ 5126              		.align	2
+ 5127              		.global	Maquina_Procesar_Touch
+ 5129              	Maquina_Procesar_Touch:
+ 5130              	.LFB16:
+ 677:../maquina_estados.c **** 
+ 678:../maquina_estados.c **** 
+ 679:../maquina_estados.c **** /*=====================================================================================
+ 680:../maquina_estados.c ****  * ADAPTADORES: LCD TOUCHSCREEN â†’ EVENTOS GENÃ‰RICOS
+ 681:../maquina_estados.c ****  *====================================================================================*/
+ 682:../maquina_estados.c **** 
+ 683:../maquina_estados.c **** /*********************************************************************************************
+ 684:../maquina_estados.c **** * name:		Maquina_Procesar_Touch
+ 685:../maquina_estados.c **** * func:		Adaptador para touchscreen: traduce acciones tÃ¡ctiles â†’ eventos genÃ©ricos
+ 686:../maquina_estados.c **** * para:		accion - tipo de acciÃ³n (EVENTO_INSERTAR_VALOR o EVENTO_BORRAR_VALOR)
+ 687:../maquina_estados.c **** *			fila_param, col_param - posiciÃ³n de la celda (0-8)
+ 688:../maquina_estados.c **** *			valor_param - valor a insertar (1-9), ignorado si accion=BORRAR
+ 689:../maquina_estados.c **** * ret:		none
+ 690:../maquina_estados.c **** * comment:	Esta funciÃ³n es un WRAPPER que adapta la entrada del touchscreen
+ 691:../maquina_estados.c **** *			al formato genÃ©rico que entiende la mÃ¡quina de estados.
+ 692:../maquina_estados.c **** *			Flujo: Touch â†’ Validar â†’ Adaptador â†’ Maquina_Procesar_Evento()
+ 693:../maquina_estados.c **** *********************************************************************************************/
+ 694:../maquina_estados.c **** void Maquina_Procesar_Touch(EventoGenerico accion, int fila_param, int col_param, int valor_param)
+ 695:../maquina_estados.c **** {
+ 5131              		.loc 1 695 0
+ 5132              		.cfi_startproc
+ 5133              		@ Function supports interworking.
+ 5134              		@ args = 0, pretend = 0, frame = 16
+ 5135              		@ frame_needed = 1, uses_anonymous_args = 0
+ 5136 13d0 0DC0A0E1 		mov	ip, sp
+ 5137              	.LCFI30:
+ 5138              		.cfi_def_cfa_register 12
+ 5139 13d4 00D82DE9 		stmfd	sp!, {fp, ip, lr, pc}
+ 5140 13d8 04B04CE2 		sub	fp, ip, #4
+ 5141              		.cfi_offset 14, -8
+ 5142              		.cfi_offset 13, -12
+ 5143              		.cfi_offset 11, -16
+ 5144              	.LCFI31:
+ 5145              		.cfi_def_cfa 11, 4
+ 5146 13dc 10D04DE2 		sub	sp, sp, #16
+ 5147 13e0 14100BE5 		str	r1, [fp, #-20]
+ 5148 13e4 18200BE5 		str	r2, [fp, #-24]
+ 5149 13e8 1C300BE5 		str	r3, [fp, #-28]
+ 5150 13ec 0030A0E1 		mov	r3, r0
+ 5151 13f0 0D304BE5 		strb	r3, [fp, #-13]
+ 696:../maquina_estados.c **** 	/* En modo zoom, permitir insertar/borrar siempre si hay celda seleccionada */
+ 697:../maquina_estados.c **** 	/* En modo normal, solo permitir en estado INTRODUCIR_VALOR */
+ 698:../maquina_estados.c **** 	if (!Sudoku_Esta_Region_Expandida_Activa())
+ 5152              		.loc 1 698 0
+ 5153 13f4 FEFFFFEB 		bl	Sudoku_Esta_Region_Expandida_Activa
+ 5154 13f8 0030A0E1 		mov	r3, r0
+ 5155 13fc 000053E3 		cmp	r3, #0
+ 5156 1400 0400001A 		bne	.L134
+ 699:../maquina_estados.c **** 	{
+ 700:../maquina_estados.c **** 		/* Modo normal: verificar estado */
+ 701:../maquina_estados.c **** 		if (estado_juego != INTRODUCIR_VALOR)
+ 5157              		.loc 1 701 0
+ 5158 1404 F8309FE5 		ldr	r3, .L146
+ 5159 1408 0030D3E5 		ldrb	r3, [r3, #0]
+ 5160 140c FF3003E2 		and	r3, r3, #255
+ 5161 1410 040053E3 		cmp	r3, #4
+ 5162 1414 2E00001A 		bne	.L141
+ 5163              	.L134:
+ 702:../maquina_estados.c **** 			return;
+ 703:../maquina_estados.c **** 	}
+ 704:../maquina_estados.c **** 	
+ 705:../maquina_estados.c **** 	/* Verificar que es una celda válida y no es pista */
+ 706:../maquina_estados.c **** 	if (fila_param >= NUM_FILAS || col_param >= NUM_FILAS || 
+ 5164              		.loc 1 706 0
+ 5165 1418 14301BE5 		ldr	r3, [fp, #-20]
+ 5166 141c 080053E3 		cmp	r3, #8
+ 5167 1420 2D0000CA 		bgt	.L142
+ 5168              		.loc 1 706 0 is_stmt 0 discriminator 1
+ 5169 1424 18301BE5 		ldr	r3, [fp, #-24]
+ 5170 1428 080053E3 		cmp	r3, #8
+ 5171 142c 2C0000CA 		bgt	.L143
+ 707:../maquina_estados.c **** 	    celda_es_pista(cuadricula[fila_param][col_param]))
+ 5172              		.loc 1 707 0 is_stmt 1 discriminator 1
+ 5173 1430 D0309FE5 		ldr	r3, .L146+4
+ 5174 1434 002093E5 		ldr	r2, [r3, #0]
+ 5175 1438 14301BE5 		ldr	r3, [fp, #-20]
+ 5176 143c 8332A0E1 		mov	r3, r3, asl #5
+ 5177 1440 032082E0 		add	r2, r2, r3
+ 5178 1444 18301BE5 		ldr	r3, [fp, #-24]
+ 5179 1448 8330A0E1 		mov	r3, r3, asl #1
+ 5180 144c 033082E0 		add	r3, r2, r3
+ 5181 1450 B030D3E1 		ldrh	r3, [r3, #0]
+ 5182 1454 0300A0E1 		mov	r0, r3
+ 5183 1458 28FBFFEB 		bl	celda_es_pista
+ 5184 145c 0030A0E1 		mov	r3, r0
+ 706:../maquina_estados.c **** 	if (fila_param >= NUM_FILAS || col_param >= NUM_FILAS || 
+ 5185              		.loc 1 706 0 discriminator 1
+ 5186 1460 000053E3 		cmp	r3, #0
+ 5187 1464 2000001A 		bne	.L144
+ 5188              	.L137:
+ 708:../maquina_estados.c **** 		return;
+ 709:../maquina_estados.c **** 	
+ 710:../maquina_estados.c **** 	/* Verificar que la acciÃ³n es vÃ¡lida */
+ 711:../maquina_estados.c **** 	if (accion != EVENTO_INSERTAR_VALOR && accion != EVENTO_BORRAR_VALOR)
+ 5189              		.loc 1 711 0
+ 5190 1468 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5191 146c 030053E3 		cmp	r3, #3
+ 5192 1470 0200000A 		beq	.L138
+ 5193              		.loc 1 711 0 is_stmt 0 discriminator 1
+ 5194 1474 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5195 1478 040053E3 		cmp	r3, #4
+ 5196 147c 1C00001A 		bne	.L145
+ 5197              	.L138:
+ 712:../maquina_estados.c **** 		return;
+ 713:../maquina_estados.c **** 	
+ 714:../maquina_estados.c **** 	/* Guardar contexto para la mÃ¡quina de estados */
+ 715:../maquina_estados.c **** 	fila = fila_param;
+ 5198              		.loc 1 715 0 is_stmt 1
+ 5199 1480 14301BE5 		ldr	r3, [fp, #-20]
+ 5200 1484 FF2003E2 		and	r2, r3, #255
+ 5201 1488 7C309FE5 		ldr	r3, .L146+8
+ 5202 148c 0020C3E5 		strb	r2, [r3, #0]
+ 716:../maquina_estados.c **** 	columna = col_param;
+ 5203              		.loc 1 716 0
+ 5204 1490 18301BE5 		ldr	r3, [fp, #-24]
+ 5205 1494 FF2003E2 		and	r2, r3, #255
+ 5206 1498 70309FE5 		ldr	r3, .L146+12
+ 5207 149c 0020C3E5 		strb	r2, [r3, #0]
+ 717:../maquina_estados.c **** 	valor = (accion == EVENTO_INSERTAR_VALOR) ? valor_param : 0;
+ 5208              		.loc 1 717 0
+ 5209 14a0 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5210 14a4 030053E3 		cmp	r3, #3
+ 5211 14a8 0200001A 		bne	.L139
+ 5212              		.loc 1 717 0 is_stmt 0 discriminator 1
+ 5213 14ac 1C301BE5 		ldr	r3, [fp, #-28]
+ 5214 14b0 FF3003E2 		and	r3, r3, #255
+ 5215 14b4 000000EA 		b	.L140
+ 5216              	.L139:
+ 5217              		.loc 1 717 0 discriminator 2
+ 5218 14b8 0030A0E3 		mov	r3, #0
+ 5219              	.L140:
+ 5220              		.loc 1 717 0 discriminator 3
+ 5221 14bc 50209FE5 		ldr	r2, .L146+16
+ 5222 14c0 0030C2E5 		strb	r3, [r2, #0]
+ 718:../maquina_estados.c **** 	
+ 719:../maquina_estados.c **** 	/* Delegar al nÃºcleo genÃ©rico de la mÃ¡quina */
+ 720:../maquina_estados.c **** 	Maquina_Procesar_Evento(accion);
+ 5223              		.loc 1 720 0 is_stmt 1 discriminator 3
+ 5224 14c4 0D305BE5 		ldrb	r3, [fp, #-13]	@ zero_extendqisi2
+ 5225 14c8 0300A0E1 		mov	r0, r3
+ 5226 14cc 9CFCFFEB 		bl	Maquina_Procesar_Evento
+ 5227 14d0 080000EA 		b	.L133
+ 5228              	.L141:
+ 702:../maquina_estados.c **** 			return;
+ 5229              		.loc 1 702 0
+ 5230 14d4 0000A0E1 		mov	r0, r0	@ nop
+ 5231 14d8 060000EA 		b	.L133
+ 5232              	.L142:
+ 708:../maquina_estados.c **** 		return;
+ 5233              		.loc 1 708 0
+ 5234 14dc 0000A0E1 		mov	r0, r0	@ nop
+ 5235 14e0 040000EA 		b	.L133
+ 5236              	.L143:
+ 5237 14e4 0000A0E1 		mov	r0, r0	@ nop
+ 5238 14e8 020000EA 		b	.L133
+ 5239              	.L144:
+ 5240 14ec 0000A0E1 		mov	r0, r0	@ nop
+ 5241 14f0 000000EA 		b	.L133
+ 5242              	.L145:
+ 712:../maquina_estados.c **** 		return;
+ 5243              		.loc 1 712 0
+ 5244 14f4 0000A0E1 		mov	r0, r0	@ nop
+ 5245              	.L133:
+ 721:../maquina_estados.c **** }
+ 5246              		.loc 1 721 0
+ 5247 14f8 0CD04BE2 		sub	sp, fp, #12
+ 5248 14fc 00689DE8 		ldmfd	sp, {fp, sp, lr}
+ 5249 1500 1EFF2FE1 		bx	lr
+ 5250              	.L147:
+ 5251              		.align	2
+ 5252              	.L146:
+ 5253 1504 00000000 		.word	estado_juego
+ 5254 1508 00000000 		.word	cuadricula
+ 5255 150c 02000000 		.word	fila
+ 5256 1510 03000000 		.word	columna
+ 5257 1514 04000000 		.word	valor
+ 5258              		.cfi_endproc
+ 5259              	.LFE16:
+ 5261              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 maquina_estados.c
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2114   .text:00000000 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2116   .text:00000000 celda_poner_valor
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2167   .text:00000078 celda_leer_valor
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2202   .text:000000b0 celda_es_candidato
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2243   .text:00000100 celda_es_pista
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2279   .text:0000013c celda_marcar_error
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2315   .text:00000178 celda_limpiar_error
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2350   .data:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2353   .data:00000000 cuadricula_C_C
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2501   .data:00000120 cuadricula_C_ARM
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2649   .data:00000240 cuadricula_ARM_C
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2797   .data:00000360 cuadricula_ARM_ARM
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2943   .rodata:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:2946   .rodata:00000000 cuadricula_Respaldo
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3095   .data:00000480 cuadricula_ARM_ARM_ALL
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3243   .data:000005a0 solucion
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3389   .bss:00000000 estado_juego
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3390   .bss:00000000 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3391   .bss:00000001 int_count
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3393   .bss:00000002 fila
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3395   .bss:00000003 columna
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3397   .bss:00000004 valor
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3399   .bss:00000005 valor_previo
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3401   .bss:00000006 pantalla_mostrada
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3404   .bss:00000008 tiempo_inicio
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3407   .bss:0000000c tiempo_final
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3412   .text:000001b4 restaurar_cuadricula_original
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3483   .text:0000025c $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3488   .text:00000264 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3490   .text:00000264 marcar_celdas_en_conflicto
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3761   .text:00000598 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3766   .text:000005a0 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3769   .text:000005a0 Sudoku_Obtener_Estado
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3798   .text:000005c8 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3802   .text:000005cc $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3805   .text:000005cc Sudoku_Partida_Terminada
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3837   .text:00000600 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3841   .text:00000604 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3844   .text:00000604 Sudoku_Juego_En_Progreso
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3887   .text:00000654 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3891   .text:00000658 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3894   .text:00000658 Sudoku_Obtener_Tiempo_Inicio
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3922   .text:0000067c $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3926   .text:00000680 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3929   .text:00000680 Sudoku_Cambiar_Estado
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3962   .text:000006c0 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:3970   .text:000006d8 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4015   .text:0000073c $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4020   .text:00000744 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4022   .text:00000744 Maquina_Procesar_Evento
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4050   .text:00000774 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4060   .text:00000794 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4884   .text:00001140 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4898   .text:0000116c $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:4901   .text:0000116c Maquina_Procesar_Boton
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:5129   .text:000013d0 Maquina_Procesar_Touch
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:5119   .text:000013c0 $d
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:5126   .text:000013d0 $a
+C:\Users\jaime\AppData\Local\Temp\cclXoHhZ.s:5253   .text:00001504 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+cuadricula
+D8Led_symbol
+timer2_count
+candidatos_actualizar_all
+Sudoku_Dibujar_Tablero
+Sudoku_Actualizar_Tablero_Completo
+Sudoku_Esta_Region_Expandida_Activa
+Sudoku_Redibujar_Region_Expandida
+candidatos_propagar_arm
+Delay
+Sudoku_Pantalla_Final
+Sudoku_Pantalla_Inicial
+celdas_vacias
+cola_depuracion
+Sudoku_Hay_Celda_Seleccionada
+Sudoku_Obtener_Celda_Seleccionada

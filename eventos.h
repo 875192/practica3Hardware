@@ -14,6 +14,17 @@ typedef enum {
         EVENTO_BOTON_DERECHO   = 8,
 } ID_Evento;
 
+/*--- Eventos genéricos para la máquina de estados ---*/
+typedef enum {
+    EVENTO_INICIAR_JUEGO,       /* Iniciar nueva partida */
+    EVENTO_INCREMENTAR,         /* Incrementar valor (fila/columna/valor) */
+    EVENTO_CONFIRMAR,           /* Confirmar selección actual */
+    EVENTO_INSERTAR_VALOR,      /* Insertar un valor específico (desde touch) */
+    EVENTO_BORRAR_VALOR,        /* Borrar valor de una celda (desde touch) */
+    EVENTO_ZOOM_REGION,         /* Hacer zoom en una región (desde touch) */
+    EVENTO_CERRAR_ZOOM,         /* Cerrar zoom y volver (desde touch) */
+} EventoGenerico;
+
 
 /*--- Maquina de estados ---*/
 typedef enum {

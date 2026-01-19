@@ -14,7 +14,7 @@
 #include "Bmp.h"
 #include "celda.h"
 #include "sudoku_2025.h"
-#include "button.h"  /* Para integración con máquina de estados */
+#include "maquina_estados.h"  /* Máquina de estados del juego (para integración con touchscreen) */
 
 /*--- definici�n de macros ---*/
 #define DMA_Byte  (0)
@@ -1052,7 +1052,7 @@ static void Sudoku_Dibujar_Teclado_Virtual(void)
 * name:		Sudoku_Redibujar_Region_Expandida()
 * func:		Redibuja la región expandida completa
 *********************************************************************************************/
-static void Sudoku_Redibujar_Region_Expandida(void)
+void Sudoku_Redibujar_Region_Expandida(void)
 {
 	extern CELDA (*cuadricula)[NUM_COLUMNAS];
 	int i, j;
@@ -1127,6 +1127,8 @@ static void Sudoku_Redibujar_Region_Expandida(void)
 *********************************************************************************************/
 void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col)
 {
+	extern CELDA (*cuadricula)[NUM_COLUMNAS];
+	
 	/* Guardar estado de región expandida */
 	g_region_expandida_activa = 1;
 	g_region_fila_actual = region_fila;
@@ -1134,6 +1136,29 @@ void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col)
 	g_celda_seleccionada_i = -1;
 	g_celda_seleccionada_j = -1;
 	
+	/* Seleccionar automáticamente la primera celda no-pista */
+	int i, j;
+	int fila_inicio = region_fila * 3;
+	int col_inicio = region_col * 3;
+	
+	for (i = 0; i < 3; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			int fila_global = fila_inicio + i;
+			int col_global = col_inicio + j;
+			
+			if (!celda_es_pista(cuadricula[fila_global][col_global]))
+			{
+				/* Encontramos una celda no-pista, seleccionarla */
+				g_celda_seleccionada_i = i;
+				g_celda_seleccionada_j = j;
+				goto celda_encontrada;
+			}
+		}
+	}
+	
+celda_encontrada:
 	/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
 	/* Al hacer zoom en una región, cambiar al estado INTRODUCIR_VALOR */
 	if (Sudoku_Juego_En_Progreso())
@@ -1156,6 +1181,32 @@ void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col)
 int Sudoku_Esta_Region_Expandida_Activa(void)
 {
 	return g_region_expandida_activa;
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Hay_Celda_Seleccionada()
+* func:		Verifica si hay una celda seleccionada en modo zoom
+* ret:		1 si hay celda seleccionada, 0 si no
+*********************************************************************************************/
+int Sudoku_Hay_Celda_Seleccionada(void)
+{
+	return (g_region_expandida_activa && g_celda_seleccionada_i >= 0 && g_celda_seleccionada_j >= 0);
+}
+
+/*********************************************************************************************
+* name:		Sudoku_Obtener_Celda_Seleccionada()
+* func:		Obtiene la posición de la celda seleccionada en el tablero completo
+* para:		fila, col - punteros para devolver la posición (0-8)
+* ret:		1 si hay celda seleccionada, 0 si no
+*********************************************************************************************/
+int Sudoku_Obtener_Celda_Seleccionada(int* fila, int* col)
+{
+	if (!Sudoku_Hay_Celda_Seleccionada())
+		return 0;
+	
+	*fila = g_region_fila_actual * 3 + g_celda_seleccionada_i;
+	*col = g_region_col_actual * 3 + g_celda_seleccionada_j;
+	return 1;
 }
 
 /*********************************************************************************************
@@ -1245,8 +1296,8 @@ int Sudoku_Procesar_Touch_Region_Expandida(int x, int y)
 			if (!celda_es_pista(cuadricula[fila][col]))
 			{
 				/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
-				/* Usar la función de button.c que maneja estados */
-				Sudoku_Insertar_Valor_Touch(fila, col, numero);
+				/* Llamar directamente al adaptador del touchscreen */
+				Maquina_Procesar_Touch(EVENTO_INSERTAR_VALOR, fila, col, numero);
 				
 				/* Redibujar */
 				Sudoku_Redibujar_Region_Expandida();
@@ -1271,8 +1322,8 @@ int Sudoku_Procesar_Touch_Region_Expandida(int x, int y)
 			if (!celda_es_pista(cuadricula[fila][col]))
 			{
 				/* INTEGRACIÓN CON MÁQUINA DE ESTADOS */
-				/* Usar la función de button.c que maneja estados */
-				Sudoku_Borrar_Valor_Touch(fila, col);
+				/* Llamar directamente al adaptador del touchscreen */
+				Maquina_Procesar_Touch(EVENTO_BORRAR_VALOR, fila, col, 0);
 				
 				/* Redibujar */
 				Sudoku_Redibujar_Region_Expandida();

@@ -155,7 +155,10 @@ void Sudoku_Procesar_Touch(int x, int y);
 void Sudoku_Mostrar_Region_Expandida(int region_fila, int region_col);
 int Sudoku_Procesar_Touch_Region_Expandida(int x, int y);
 int Sudoku_Esta_Region_Expandida_Activa(void);
+int Sudoku_Hay_Celda_Seleccionada(void);
+int Sudoku_Obtener_Celda_Seleccionada(int* fila, int* col);
 void Sudoku_Cerrar_Region_Expandida(void);
+void Sudoku_Redibujar_Region_Expandida(void);
 
 #ifdef __cplusplus
 }
